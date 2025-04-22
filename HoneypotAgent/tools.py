@@ -1,18 +1,37 @@
-from typing import Any, Callable, List
-import json
-import subprocess
-import re
 from datetime import datetime
-import os
-import time
+import json
+from collections import defaultdict
 
 def getFirewallStatus():
     """Retrieve the list of current firewall rules."""
-    pass
+    return {
+        "firewall_rules": []
+        }
 
-def getNetworkStatus():
-    """Retrieve the current network status from parsed logs."""
-    pass
+def getNetworkStatus(file_path="../logsSSH/tshark_pcap/ssh_traffic.json", summary_level="detailed") -> dict:
+    """
+    Retrieve current network activity from parsed logs.
+    
+    Parameters:
+    - file_path (str): Path to the JSON file containing tshark output
+    
+    Returns:
+    - dict: network activity
+    """
+    
+    
+    try:
+        # Load the JSON data from tshark output
+        with open(file_path, 'r') as file:
+            raw_data = json.load(file)
+        
+        
+    except Exception as e:
+        return {
+            "error": "Processing error",
+            "details": str(e)
+        }
+    return raw_data
 
 def getPastRules():
     """Retrieve past rules from the database."""
@@ -21,6 +40,3 @@ def getPastRules():
 def firwallUpdate():
     """Update the firewall rules using system commands based on the analysis of network traffic logs."""
     pass
-
-
-TOOLS: List[Callable[..., Any]] = [getFirewallStatus, getNetworkStatus, getPastRules, firwallUpdate]
