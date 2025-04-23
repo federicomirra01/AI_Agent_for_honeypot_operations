@@ -6,7 +6,7 @@ def getFirewallStatus():
         "firewall_rules": []
         }
 
-def getNetworkStatus(file_path="../logsSSH/tshark_pcap/ssh_traffic.json") -> dict:
+def getNetworkStatus(file_path="/home/c0ff3k1ll3r/Desktop/Thesis/AI_Agent_for_honeypot_operations/logsSSH/tshark_pcap/ssh_traffic.json") -> dict:
     """
     Retrieve current network activity from parsed logs.
     
