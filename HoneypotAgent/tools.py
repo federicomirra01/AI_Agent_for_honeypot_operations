@@ -1,6 +1,4 @@
-from datetime import datetime
 import json
-from collections import defaultdict
 
 def getFirewallStatus():
     """Retrieve the list of current firewall rules."""
@@ -8,7 +6,7 @@ def getFirewallStatus():
         "firewall_rules": []
         }
 
-def getNetworkStatus(file_path="../logsSSH/tshark_pcap/ssh_traffic.json", summary_level="detailed") -> dict:
+def getNetworkStatus(file_path="../logsSSH/tshark_pcap/ssh_traffic.json") -> dict:
     """
     Retrieve current network activity from parsed logs.
     
