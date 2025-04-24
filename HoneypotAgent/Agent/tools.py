@@ -1,11 +1,5 @@
 import json
 
-def getFirewallStatus():
-    """Retrieve the list of current firewall rules."""
-    return {
-        "firewall_rules": []
-        }
-
 def getNetworkStatus(file_path="/home/c0ff3k1ll3r/Desktop/Thesis/AI_Agent_for_honeypot_operations/logsSSH/tshark_pcap/ssh_traffic.json") -> dict:
     """
     Retrieve current network activity from parsed logs.
@@ -30,6 +24,13 @@ def getNetworkStatus(file_path="/home/c0ff3k1ll3r/Desktop/Thesis/AI_Agent_for_ho
             "details": str(e)
         }
     return raw_data
+
+
+def getFirewallStatus():
+    """Retrieve the list of current firewall rules."""
+    return {
+        "firewall_rules": []
+        }
 
 def getPastRules():
     """Retrieve past rules from the database."""

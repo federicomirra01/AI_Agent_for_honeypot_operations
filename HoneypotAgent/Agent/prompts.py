@@ -1,4 +1,5 @@
-"""Default prompts used by the agent."""
+from langchain_core.prompts import ChatPromptTemplate
+
 
 SYSTEM_PROMPT_V0 = """You are a cybersecurity AI agent responsible for analyzing network traffic logs and generating appropriate firewall rules using iptables syntax to protect a honeypot system. 
 At this stage, your only task is to read parsed network logs and current firewall rules using the TOOLS that are provided and generate iptables firewall rules based solely on your reasoning and understanding of the traffic.
@@ -131,6 +132,40 @@ Output ONLY the rules selected
 
 """
 
+SUMMARIZE_PROMPT = ChatPromptTemplate.from_template("""
+**Network Log Analysis for Firewall Policy Creation**
+
+Analyze these network logs and extract firewall-relevant patterns:
+{logs}
+                                                    
+The summarizing process need to take into account that the logs come from an honeypot which the current configuration comprises the following services: SSH on ip address 172.17.0.2 on port 2222.
+
+Structure findings in these categories using precise technical terms:
+
+1. **IP Threat Indicators**
+   - High-frequency sources: `[IP: count]` (Threshold: >15 requests/min)
+   - Known malicious IPs: `[IP]` (Cross-referenced with threat DB)
+   - Unverified/new IPs: `[IP: first_seen]`
+
+2. **Port/Protocol Risks** 
+   - Suspicious port clusters: `[port: protocol: count]` 
+     - Focus on: non-standard ports for services (e.g., HTTP on 8080)
+     - Uncommon protocol mixes (e.g., SSH over UDP)
+   - Baseline comparison: `[Percentage deviation from normal port distribution]`
+
+3. **Geo-Location Threats**
+   - Unexpected regions: `[country: percentage of total traffic]` 
+     - Flag if: >5% traffic from non-operational regions
+   - ASN anomalies: `[autonomous_system: expected? Y/N]`
+
+4. **Behavioral Red Flags**
+   - Scan patterns: `[IP: ports_scanned/time_window]`
+   - Protocol violations: `[e.g., DNS tunneling attempts]`
+   - Session abnormalities: `[short-lived:long-lived ratio]`
+
+The output must be in a json format and should be efficiently structured to be given in input to an LLM to generate firewall rules. Hence, you should summarize the logs but maintaining the information needed to generate the rules.
+
+""")
 
 # Expected output format:
 

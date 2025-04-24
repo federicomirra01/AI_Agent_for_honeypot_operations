@@ -2,21 +2,20 @@ import prompts
 import os
 from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage
-from langchain_core.prompts import ChatPromptTemplate
 from state import HoneypotState
 from langchain_openai import ChatOpenAI
 from tools import getNetworkStatus, getFirewallStatus
 
-load_dotenv()
 
 # Load environment variables from .env file
+load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-
+# Initialize the LLM with the model name
 llm = ChatOpenAI(model="gpt-4o")
 llm_with_tools = llm.bind_tools([getNetworkStatus, getFirewallStatus])
 
-
+# Assistant function to handle the state and generate responses
 def assistant(state: HoneypotState):
     print(f"state.messages: {state.messages}")
     print(f"State summary: {state.summary}")
@@ -27,56 +26,21 @@ def assistant(state: HoneypotState):
     
     return {"messages": [response]}
 
-
-
-
-SUMMARIZE_PROMPT = ChatPromptTemplate.from_template("""
-**Network Log Analysis for Firewall Policy Creation**
-
-Analyze these network logs and extract firewall-relevant patterns:
-{logs}
-                                                    
-The summarizing process need to take into account that the logs come from an honeypot which the current configuration comprises the following services: SSH on ip address 172.17.0.2 on port 2222.
-
-Structure findings in these categories using precise technical terms:
-
-1. **IP Threat Indicators**
-   - High-frequency sources: `[IP: count]` (Threshold: >15 requests/min)
-   - Known malicious IPs: `[IP]` (Cross-referenced with threat DB)
-   - Unverified/new IPs: `[IP: first_seen]`
-
-2. **Port/Protocol Risks** 
-   - Suspicious port clusters: `[port: protocol: count]` 
-     - Focus on: non-standard ports for services (e.g., HTTP on 8080)
-     - Uncommon protocol mixes (e.g., SSH over UDP)
-   - Baseline comparison: `[Percentage deviation from normal port distribution]`
-
-3. **Geo-Location Threats**
-   - Unexpected regions: `[country: percentage of total traffic]` 
-     - Flag if: >5% traffic from non-operational regions
-   - ASN anomalies: `[autonomous_system: expected? Y/N]`
-
-4. **Behavioral Red Flags**
-   - Scan patterns: `[IP: ports_scanned/time_window]`
-   - Protocol violations: `[e.g., DNS tunneling attempts]`
-   - Session abnormalities: `[short-lived:long-lived ratio]`
-
-The output must be in a json format and should be efficiently structured to be given in input to an LLM to generate firewall rules. Hence, you should summarize the logs but maintaining the information needed to generate the rules.
-
-""")
-
+# Retrieving logs node
 def retrieve_logs(state: HoneypotState):
     # Your actual log retrieval logic here
     print("Network node")
     new_logs = getNetworkStatus()  
     return {"network_logs": [new_logs]}
 
+# Summarizing logs node
 def summarize_logs(state: HoneypotState):
     recent_logs = state.network_logs[-1000:]  # Last 1000 entries
     print("Summarizing node")
-    summary = llm.invoke(SUMMARIZE_PROMPT.format(logs=recent_logs))
+    summary = llm.invoke(prompts.SUMMARIZE_PROMPT.format(logs=recent_logs))
     return {"summary": [summary]}
 
+# Retrieving firewall rules node
 def retrieve_rules(state: HoneypotState):
     print("Firewall node")
     rules = getFirewallStatus()
