@@ -21,7 +21,7 @@ def assistant(state: HoneypotState):
     print(f"state.messages: {state.messages}")
     print(f"State summary: {state.summary}")
     print(f"State firewall rules {state.firewall_config}")
-    llm_input = f"""Role: {prompts.SYSTEM_PROMPT_V1}\nFirewall configuration: {state.firewall_config}\nNetwork summary: {state.summary if state.summary else state.network_logs}"""
+    llm_input = f"""Role: {prompts.SYSTEM_PROMPT_V1_ONLY_RULES}\nFirewall configuration: {state.firewall_config}\nNetwork summary: {state.summary if state.summary else state.network_logs}"""
     message = [SystemMessage(content=llm_input)]
     response = llm_with_tools.invoke(message)
     
@@ -35,6 +35,8 @@ SUMMARIZE_PROMPT = ChatPromptTemplate.from_template("""
 
 Analyze these network logs and extract firewall-relevant patterns:
 {logs}
+                                                    
+The summarizing process need to take into account that the logs come from an honeypot which the current configuration comprises the following services: SSH on ip address 172.17.0.2 on port 2222.
 
 Structure findings in these categories using precise technical terms:
 
