@@ -2,7 +2,7 @@ import prompts
 import os
 from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage
-from state import HoneypotState
+from state import HoneypotState, HoneypotStateReact
 from langchain_openai import ChatOpenAI
 from tools import getNetworkStatus, getFirewallConfiguration, getDockerContainers
 
@@ -18,8 +18,7 @@ llm_with_tools = llm.bind_tools([getNetworkStatus, getFirewallConfiguration, get
 # Assistant function to handle the state and generate responses
 def assistant(state: HoneypotState):
     print("Assistant node")
-    print(f"Honeypot configuration: {state.honeypot_config}")
-    llm_input = f"""Role: {prompts.SYSTEM_PROMPT_GPT}\nState: {state}"""
+    llm_input = f"""Role: {prompts.SYSTEM_PROMPT_GPT_REACT}\nState: {state}"""
     message = [SystemMessage(content=llm_input)]
     response = llm_with_tools.invoke(message)
     if hasattr(response, "tool_calls") and response.tool_calls:
@@ -39,7 +38,7 @@ def assistant(state: HoneypotState):
         }
 
 # Retrieving logs node
-def NetworkStatusNode(state: HoneypotState):
+def NetworkStatusNode(state: HoneypotStateReact):
     # Your actual log retrieval logic here
     print("Network node")
     new_logs = getNetworkStatus()  
@@ -52,12 +51,12 @@ def NetworkStatusNode(state: HoneypotState):
 
 
 # Retrieving firewall rules node
-def FirewallConfigurationNode(state: HoneypotState):
+def FirewallConfigurationNode(state: HoneypotStateReact):
     print("Firewall node")
     rules = getFirewallConfiguration()
     return {"firewall_config": rules}
 
-def HoneypotConfigurationNode(state: HoneypotState):
+def HoneypotConfigurationNode(state: HoneypotStateReact):
     """
     Tool function for an agent to retrieve information about running Docker containers.
     """
@@ -71,7 +70,7 @@ def HoneypotConfigurationNode(state: HoneypotState):
     return {"honeypot_config": containers}
 
 # Summarizing logs node
-def summarize_logs(state: HoneypotState):
+def summarize_logs(state: HoneypotStateReact):
     print("Summarizing node")
     summary = llm.invoke(prompts.SUMMARIZE_PROMPT.format(logs=state.network_logs))
     return {"network_logs": [summary], "to_summarize": False}

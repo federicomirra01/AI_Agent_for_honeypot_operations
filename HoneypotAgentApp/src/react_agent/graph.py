@@ -145,6 +145,48 @@ Success Metrics
 - Well-reasoned rules demonstrating understanding of network traffic patterns.
 """
 
+SYSTEM_PROMPT_GPT_REACT = """
+Honeypot Firewall Guardian: AI Agent Specification
+
+Role & Identity
+You are a cybersecurity AI agent specializing in dynamic firewall management for honeypot systems. Your primary function is to analyze network traffic and autonomously generate iptables rules that both protect the honeypot and strategically engage potential attackers.
+You have granted access to the following tools: 
+- getNetworkStatus: retrieve the network logs captured
+- getFirewallConfiguration: retrieve the current firewall configuration
+- getHoneypotConfiguration: retrieve the current honeypot configuration
+
+Objectives
+1. Protect the honeypot from traffic surges and malicious attack patterns.
+2. Guide attacker behavior by strategically exposing or filtering ports.
+3. Enhance the likelihood of capturing complete attack sequences.
+4. Engage attackers in prolonged interactions to collect intelligence.
+
+Operational Parameters
+- Autonomy: Operate without human initiation.
+- Environment: Test setting to demonstrate reasoning capabilities.
+- You have to gather information from your tools only once: one call for each tool and the output the relevant iptables rules
+
+Tactical Guidelines
+- Expose one container at a time based on observed traffic patterns. So if one container is already exposed you must decide what other container expose and close the already opened one.
+- Close previously opened ports when opening new ones to maintain control.
+- Use DROP rules for clearly malicious IPs.
+- Implement rate-limiting (-m limit) for ports experiencing repeated access.
+- Apply ACCEPT, DROP, or REJECT actions appropriately based on context.
+- Target rules precisely to avoid overblocking legitimate traffic.
+- Include explanatory comments for each rule generated.
+
+Output Requirements
+- Produce valid iptables syntax only.
+- Provide strategic justification for each rule.
+- Offer a clear explanation of traffic analysis reasoning.
+- Explain for each Docker container why it is accessible or not.
+
+Success Metrics
+- Effective mitigation of identified threats.
+- Strategic port management guiding attacker exploration.
+- Well-reasoned rules demonstrating understanding of network traffic patterns.
+"""
+
 
 def getNetworkStatus(file_path="/home/c0ff3k1ll3r/Desktop/Thesis/AI_Agent_for_honeypot_operations/logsSSH/tshark_pcap/ssh_traffic.json") -> dict:
     """
@@ -228,7 +270,7 @@ def getDockerContainers():
 
 
 # Summarizing logs node
-def summarize_logs(state: HoneypotState):
+def summarize_logs(state: HoneypotStateReact):
     print("Summarizing node")
     summary = llm.invoke(SUMMARIZE_PROMPT.format(logs=state.network_logs))
     return {"network_logs": [summary], "to_summarize": False}
@@ -250,13 +292,13 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 # Initialize the LLM with the model name
 llm = ChatOpenAI(model="gpt-4o")
 
-#llm  = llm.bind_tools([getNetworkStatus, getFirewallConfiguration, getDockerContainers])
+llm_bind_tools  = llm.bind_tools([getNetworkStatus, getFirewallConfiguration, getDockerContainers])
 
 # Assistant function to handle the state and generate responses
-def assistant(state: HoneypotState):
-    llm_input = f"""{SYSTEM_PROMPT_GPT}\nState: {state}"""
+def assistant(state: HoneypotStateReact):
+    llm_input = f"""{SYSTEM_PROMPT_GPT_REACT}\nState: {state}"""
     message = [SystemMessage(content=llm_input)]
-    response = llm.invoke(message)
+    response = llm_bind_tools.invoke(message)
     if hasattr(response, "tool_calls") and response.tool_calls:
         pending_tool_calls = list(response.tool_calls)
         tools_completed = False
@@ -273,7 +315,7 @@ def assistant(state: HoneypotState):
         }
 
 # Retrieving logs node
-def NetworkStatusNode(state: HoneypotState):
+def NetworkStatusNode(state: HoneypotStateReact):
     # Your actual log retrieval logic here
     print("Network node")
     new_logs = getNetworkStatus()  
@@ -285,12 +327,12 @@ def NetworkStatusNode(state: HoneypotState):
 
 
 # Retrieving firewall rules node
-def FirewallConfigurationNode(state: HoneypotState):
+def FirewallConfigurationNode(state: HoneypotStateReact):
     print("Firewall node")
     rules = getFirewallConfiguration()
     return {"firewall_config": rules}
 
-def HoneypotConfigurationNode(state: HoneypotState):
+def HoneypotConfigurationNode(state: HoneypotStateReact):
     """
     Tool function for an agent to retrieve information about running Docker containers.
     """
@@ -304,7 +346,7 @@ def HoneypotConfigurationNode(state: HoneypotState):
     return {"honeypot_config": containers}
 
 
-def route_message(state: HoneypotState) -> Tuple[Literal["NetworkStatusNode", "FirewallConfigurationNode", "HoneypotConfigurationNode", "summarize", "__end__"], Dict[str, Any]]:
+def route_message(state: HoneypotStateReact) -> Tuple[Literal["NetworkStatusNode", "FirewallConfigurationNode", "HoneypotConfigurationNode", "summarize", "__end__"], Dict[str, Any]]:
     # Check if we're in final response mode
     if hasattr(state, "tools_completed") and state.tools_completed:
         return END, {}
@@ -345,7 +387,7 @@ def route_message(state: HoneypotState) -> Tuple[Literal["NetworkStatusNode", "F
     }
 
 # Graph
-builder = StateGraph(HoneypotState)
+builder = StateGraph(HoneypotStateReact)
 
 # # Define nodes: 
 def build_graph_react(builder: StateGraph):
@@ -365,7 +407,7 @@ def build_graph_react(builder: StateGraph):
     builder.add_edge("HoneypotConfigurationNode", "assistant")
     builder.add_edge("summarize", "assistant")
 
-def build_graph_concurrent(builder:StateGraph):
+def build_graph(builder:StateGraph):
     # Define nodes: 
     builder.add_node("assistant", assistant)
     builder.add_node("FirewallConfigurationNode", FirewallConfigurationNode)
@@ -382,7 +424,7 @@ def build_graph_concurrent(builder:StateGraph):
     builder.add_edge(["FirewallConfigurationNode", "HoneypotConfigurationNode","summarize"], "assistant")
     builder.add_edge("assistant", END)
 
-build_graph_concurrent(builder)
+build_graph_react(builder)
 
 graph = builder.compile()
 
