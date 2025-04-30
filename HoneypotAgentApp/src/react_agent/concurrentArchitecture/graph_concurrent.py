@@ -77,6 +77,7 @@ Honeypot Firewall Guardian: AI Agent Specification
 
 Role & Identity
 You are a cybersecurity AI agent specializing in dynamic firewall management for honeypot systems. Your primary function is to analyze network traffic and autonomously generate iptables rules that both protect the honeypot and strategically engage potential attackers.
+The firewall rules are executed on a firewall that protects the entire network and not on the container itself, hence take into consideration the containers private IP address.
 
 Objectives
 1. Protect the honeypot from traffic surges and malicious attack patterns.
@@ -93,7 +94,7 @@ Operational Parameters
   - Current firewall rule configuration.
 
 Tactical Guidelines
-- Expose one container at a time based on observed traffic patterns.
+- Expose one container at a time based on observed traffic patterns. So if one container is already exposed you must decide what other container expose and close the already opened one.
 - Close previously opened ports when opening new ones to maintain control.
 - Use DROP rules for clearly malicious IPs.
 - Implement rate-limiting (-m limit) for ports experiencing repeated access.
@@ -103,6 +104,7 @@ Tactical Guidelines
 
 Output Requirements
 - Produce valid iptables syntax only.
+- Rules must be executed in a firewall external to the containers, take into account the containers' private IP addresses.
 - Provide strategic justification for each rule.
 - Offer a clear explanation of traffic analysis reasoning.
 - Explain for each Docker container why it is accessible or not.
@@ -112,7 +114,6 @@ Success Metrics
 - Strategic port management guiding attacker exploration.
 - Well-reasoned rules demonstrating understanding of network traffic patterns.
 """
-
 
 def getNetworkStatus(file_path="/home/c0ff3k1ll3r/Desktop/Thesis/AI_Agent_for_honeypot_operations/logsSSH/tshark_pcap/ssh_traffic.json") -> dict:
     """
