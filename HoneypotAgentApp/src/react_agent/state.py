@@ -12,6 +12,7 @@ class HoneypotStateReact:
     tools_completed: bool = False
     to_summarize: bool = False
     honeypot_config: List[Dict[str, Any]] = field(default_factory=list)
+    only_rules: bool = False
 
     def __init__(self, **kwargs):
         """
@@ -33,3 +34,4 @@ class HoneypotStateReact:
         self.honeypot_config = kwargs.get('honeypot_config', [{}])
         self.tools_completed = kwargs.get('tools_completed', False)
         self.to_summarize = kwargs.get('to_summarize', False)
+        self.only_rules = kwargs.get('only_rules', False)

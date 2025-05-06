@@ -17,8 +17,8 @@ llm_with_tools = llm.bind_tools([getNetworkStatus, getFirewallConfiguration, get
 
 # Assistant function to handle the state and generate responses
 def assistant(state: HoneypotStateReact):
-    print("Assistant node")
-    llm_input = f"""Role: {prompts.SYSTEM_PROMPT_GPT_REACT}\nState: {state}"""
+    prompt = prompts.SYSTEM_PROMPT_GPT_REACT_ONLY_RULES if state.only_rules else prompts.SYSTEM_PROMPT_GPT_REACT
+    llm_input = f"""Role: {prompt}\nState: {state}"""
     message = [SystemMessage(content=llm_input)]
     response = llm_with_tools.invoke(message)
     if hasattr(response, "tool_calls") and response.tool_calls:

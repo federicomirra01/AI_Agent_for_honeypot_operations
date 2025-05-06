@@ -27,16 +27,16 @@ def getNetworkStatus(file_path="/home/c0ff3k1ll3r/Desktop/Thesis/AI_Agent_for_ho
         }
     return json.dumps(raw_data)
 
-rules = [
-    "iptables -P INPUT DROP",
-    "iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
-    "iptables -A INPUT -p tcp --dport 2222 -j ACCEPT",
-    "iptables -A INPUT -p tcp --sport 2222 -j ACCEPT",
-    "iptables -A INPUT -s 172.17.0.1 -j DROP",
-    "iptables -A INPUT -s 172.17.0.2 -j DROP",
-    "iptables -A INPUT -p tcp --dport 2222 -m limit --limit 10/minute --limit-burst 3 -j ACCEPT",
-    "iptables -I INPUT -p tcp --match multiport --dports 45502:45630 -j DROP"
-]
+# rules = [
+#     "iptables -P INPUT DROP",
+#     "iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
+#     "iptables -A INPUT -p tcp --dport 2222 -j ACCEPT",
+#     "iptables -A INPUT -p tcp --sport 2222 -j ACCEPT",
+#     "iptables -A INPUT -s 172.17.0.1 -j DROP",
+#     "iptables -A INPUT -s 172.17.0.2 -j DROP",
+#     "iptables -A INPUT -p tcp --dport 2222 -m limit --limit 10/minute --limit-burst 3 -j ACCEPT",
+#     "iptables -I INPUT -p tcp --match multiport --dports 45502:45630 -j DROP"
+# ]
 
 def getFirewallConfiguration():
     """Retrieve the list of current firewall rules."""

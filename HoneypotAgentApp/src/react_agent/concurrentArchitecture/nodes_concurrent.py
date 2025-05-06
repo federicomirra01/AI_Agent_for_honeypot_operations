@@ -13,14 +13,16 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Initialize the LLM with the model name
 llm = ChatOpenAI(model="gpt-4o")
-llm_with_tools = llm.bind_tools([getNetworkStatus, getFirewallConfiguration, getDockerContainers])
 
 # Assistant function to handle the state and generate responses
 def assistant(state: HoneypotState):
     print("Assistant node")
-    llm_input = f"""Role: {prompts_concurrent.SYSTEM_PROMPT_GPT}\nState: {state}"""
+
+    prompt = prompts_concurrent.SYSTEM_PROMPT_GPT_ONLY_RULES if state.only_rules else prompts_concurrent.SYSTEM_PROMPT_GPT
+    
+    llm_input = f"""Role: {prompt}\nState: {state}"""
     message = [SystemMessage(content=llm_input)]
-    response = llm_with_tools.invoke(message)
+    response = llm.invoke(message)
     
     return {"messages": state.messages + [response]}
 

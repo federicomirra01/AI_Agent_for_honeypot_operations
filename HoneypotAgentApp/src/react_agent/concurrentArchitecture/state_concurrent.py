@@ -9,6 +9,7 @@ class HoneypotState:
     network_logs: List[Dict[str, Any]] = field(default_factory=list)
     firewall_config: List[Dict[str, Any]] = field(default_factory=list)
     honeypot_config: List[Dict[str, Any]] = field(default_factory=list)
+    only_rules: bool = False
 
     def __init__(self, **kwargs):
         """
@@ -27,3 +28,4 @@ class HoneypotState:
         self.summary = kwargs.get('summary', "")
         self.firewall_config = kwargs.get('firewall_config', "")
         self.honeypot_config = kwargs.get('honeypot_config', [{}])
+        self.only_rules = kwargs.get('only_rules', False)
