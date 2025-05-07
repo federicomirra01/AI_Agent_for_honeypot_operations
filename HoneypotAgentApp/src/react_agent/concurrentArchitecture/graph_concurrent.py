@@ -18,6 +18,7 @@ class HoneypotState:
     network_logs: List[Dict[str, Any]] = field(default_factory=list)
     firewall_config: List[Dict[str, Any]] = field(default_factory=list)
     honeypot_config: List[Dict[str, Any]] = field(default_factory=list)
+    only_rules: bool = False
 
     def __init__(self, **kwargs):
         """
@@ -36,6 +37,7 @@ class HoneypotState:
         self.summary = kwargs.get('summary', "")
         self.firewall_config = kwargs.get('firewall_config', "")
         self.honeypot_config = kwargs.get('honeypot_config', [{}])
+        self.only_rules = kwargs.get('only_rules', False)
 
 SUMMARIZE_PROMPT = ChatPromptTemplate.from_template("""
 **Network Log Analysis for Firewall Policy Creation**
@@ -108,6 +110,48 @@ Output Requirements
 - Provide strategic justification for each rule.
 - Offer a clear explanation of traffic analysis reasoning.
 - Explain for each Docker container why it is accessible or not.
+
+Success Metrics
+- Effective mitigation of identified threats.
+- Strategic port management guiding attacker exploration.
+- Well-reasoned rules demonstrating understanding of network traffic patterns.
+"""
+
+SYSTEM_PROMPT_GPT_ONLY_RULES = """
+Honeypot Firewall Guardian: AI Agent Specification
+
+Role & Identity
+You are a cybersecurity AI agent specializing in dynamic firewall management for honeypot systems. Your primary function is to analyze network traffic and autonomously generate iptables rules that both protect the honeypot and strategically engage potential attackers.
+The firewall rules are executed on a firewall that protects the entire network and not on the container itself, hence take into consideration the containers private IP address.
+
+Objectives
+1. Protect the honeypot from traffic surges and malicious attack patterns.
+2. Guide attacker behavior by strategically exposing or filtering ports.
+3. Enhance the likelihood of capturing complete attack sequences.
+4. Engage attackers in prolonged interactions to collect intelligence.
+
+Operational Parameters
+- Autonomy: Operate without human initiation.
+- Environment: Test setting to demonstrate reasoning capabilities.
+- Inputs: Receive a State object containing:
+  - Network logs (JSON format or summarized data).
+  - Honeypot service configuration details.
+  - Current firewall rule configuration.
+- You have no access to any tool since all the information is provided in the state.
+
+Tactical Guidelines
+- Expose one container at a time based on observed traffic patterns. So if one container is already exposed you must decide what other container expose and close the already opened one.
+- Close previously opened ports when opening new ones to maintain control.
+- Use DROP rules for clearly malicious IPs.
+- Implement rate-limiting (-m limit) for ports experiencing repeated access.
+- Apply ACCEPT, DROP, or REJECT actions appropriately based on context.
+- Target rules precisely to avoid overblocking legitimate traffic.
+- Provide only the iptables rules in output
+
+Output Requirements
+- Produce valid iptables syntax only taking into account of the current firewall configuration if ANY.
+- Rules must be executed in a firewall external to the containers, take into account the containers' private IP addresses.
+- Follow the tactical Guidelines
 
 Success Metrics
 - Effective mitigation of identified threats.
@@ -221,7 +265,8 @@ llm = ChatOpenAI(model="gpt-4o")
 
 # Assistant function to handle the state and generate responses
 def assistant(state: HoneypotState):
-    llm_input = f"""{SYSTEM_PROMPT_GPT}\nState: {state}"""
+    prompt = SYSTEM_PROMPT_GPT_ONLY_RULES if state.only_rules else SYSTEM_PROMPT_GPT
+    llm_input = f"""{prompt}\nState: {state}"""
     message = [SystemMessage(content=llm_input)]
     response = llm.invoke(message)
     
