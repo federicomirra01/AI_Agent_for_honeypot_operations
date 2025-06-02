@@ -146,11 +146,3 @@ else
     docker logs vm4_firewall_router
     exit 1
 fi
-
-echo ""
-echo "=== Next Steps ==="
-echo "1. Update attacker container routing to use VM4 as gateway"
-echo "2. Configure AI agent to control firewall via API"
-echo "3. Test connectivity: attacker -> VM4 -> honeypot VMs"
-echo ""
-echo "=== Deployment Complete ==="

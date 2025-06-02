@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Firewall/Router Startup Script
-# This script initializes the firewall container
+# Firewall/Router Startup Script with Packet Monitor
+# This script initializes the firewall container with packet monitoring
 
 echo "=== VM4 Firewall/Router Starting ==="
 
@@ -9,9 +9,9 @@ echo "=== VM4 Firewall/Router Starting ==="
 echo 1 > /proc/sys/net/ipv4/ip_forward
 echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
 
-
-Start rsyslog for logging
-service rsyslog start
+# Start rsyslog for logging
+rsyslogd &
+echo "rsyslog started"
 
 # Wait for network interfaces to be ready
 sleep 5
@@ -24,22 +24,45 @@ echo "Attacker network interface: $ATTACKER_INTERFACE"
 echo "Honeypot network interface: $HONEYPOT_INTERFACE"
 
 # Initialize firewall rules
+echo "Initializing firewall rules..."
 /firewall/scripts/init_firewall.sh
 
 # Set up routing
+echo "Setting up routing..."
 /firewall/scripts/setup_routing.sh
 
 # Start firewall management API
 echo "Starting Firewall Management API..."
 cd /firewall
 python3 scripts/firewall_api.py &
+FIREWALL_API_PID=$!
 
-# Start traffic monitoring
-#echo "Starting Traffic Monitor..."
-#python3 scripts/traffic_monitor.py &
+# Wait a moment for API to start
+sleep 3
+
+# Start packet monitor API service
+echo "Starting Packet Monitor API Service..."
+python3 scripts/packet_monitor.py &
+PACKET_MONITOR_PID=$!
+
+# Function to cleanup processes on exit
+cleanup() {
+    echo "Cleaning up processes..."
+    kill $FIREWALL_API_PID 2>/dev/null
+    kill $PACKET_MONITOR_PID 2>/dev/null
+    exit 0
+}
+
+# Set up signal handlers
+trap cleanup SIGTERM SIGINT
 
 echo "=== VM4 Firewall/Router Ready ==="
+echo "Firewall API: http://localhost:5000"
+echo "Packet Monitor API: http://localhost:6000"
+echo "Agent Network: http://192.168.200.2:6000"
+echo "Packet logs: /firewall/logs/packets.json"
+echo "Monitor logs: /firewall/logs/packet_monitor.log"
 
 # Keep container running and show logs
-touch /var/log/syslog /firewall/logs/firewall.log
-tail -f /var/log/syslog /firewall/logs/firewall.log
+touch /var/log/syslog /firewall/logs/firewall.log /firewall/logs/packet_monitor.log
+tail -f /var/log/syslog /firewall/logs/firewall.log /firewall/logs/packet_monitor.log

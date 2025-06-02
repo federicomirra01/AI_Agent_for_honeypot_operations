@@ -33,6 +33,5 @@ curl -s http://192.168.100.254:5000/health || echo "Firewall API not accessible 
 
 echo ""
 echo "=== Attacker routing configuration complete ==="
-echo "Note: Traffic to honeypot network is still blocked by firewall rules"
 echo "Use the firewall API to allow specific traffic"
 tail -f /dev/null

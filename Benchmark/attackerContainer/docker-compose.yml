@@ -5,8 +5,8 @@ services:
     build:
       context: .
       dockerfile: ./DockerFile
-    container_name: external_attacker
-    hostname: attacker-machine
+    container_name: attacker
+    hostname: attacker-container
     networks:
       - attacker_net
     volumes:

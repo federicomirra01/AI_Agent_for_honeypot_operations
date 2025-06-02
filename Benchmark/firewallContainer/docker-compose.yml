@@ -5,13 +5,15 @@ services:
     build:
       context: .
       dockerfile: DockerFile
-    container_name: vm4_firewall_router
-    hostname: vm4-firewall
+    container_name: firewall_router
+    hostname: firewall_router
     networks:
       attacker_net:
         ipv4_address: 192.168.100.254  # Gateway IP for attacker network
       thesis_net:
         ipv4_address: 172.20.0.254    # Gateway IP for honeypot network
+      agent_net:
+        ipv4_address: 192.168.200.2
     volumes:
       # Mount firewall scripts
       - ./firewall_scripts:/firewall/scripts:ro
@@ -22,6 +24,8 @@ services:
     ports:
       # Management API
       - "5000:5000"
+      # Packet monitor API
+      - "6000:6000"
     environment:
       - ATTACKER_NETWORK=192.168.100.0/24
       - HONEYPOT_NETWORK=172.20.0.0/24
@@ -42,3 +46,6 @@ networks:
   thesis_net:
     external: true
     name: thesis_net
+  agent_net:
+    external: true
+    name: agent_net
