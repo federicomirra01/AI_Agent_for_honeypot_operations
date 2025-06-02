@@ -1,52 +1,270 @@
 import json 
 import docker
+import requests
+import logging
+from typing import Dict, List, Optional, Any
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-def getNetworkStatus(file_path="/home/c0ff3k1ll3r/Desktop/Thesis/AI_Agent_for_honeypot_operations/logsSSH/tshark_pcap/ssh_traffic.json") -> dict:
+# API Configuration
+FIREWALL_URL = "http://192.168.200.2:5000"
+MONITOR_URL = "http://192.168.200.2:6000"
+REQUEST_TIMEOUT = 10
+
+def _make_request(method: str, url: str, **kwargs) -> Dict[str, Any]:
     """
-    Retrieve current network activity from parsed logs.
+    Make HTTP request with error handling
     
-    Parameters:
-    - file_path (str): Path to the JSON file containing tshark output
+    Args:
+        method: HTTP method (GET, POST, DELETE)
+        url: Full URL to request
+        **kwargs: Additional arguments for requests
+        
+    Returns:
+        Dict containing response data or error info
+    """
+    try:
+        response = requests.request(method, url, timeout=REQUEST_TIMEOUT, **kwargs)
+        
+        if response.status_code == 200:
+            return {
+                'success': True,
+                'data': response.json(),
+                'status_code': response.status_code
+            }
+        else:
+            return {
+                'success': False,
+                'error': f"HTTP {response.status_code}: {response.text}",
+                'status_code': response.status_code
+            }
+            
+    except requests.exceptions.Timeout:
+        return {'success': False, 'error': 'Request timeout'}
+    except requests.exceptions.ConnectionError:
+        return {'success': False, 'error': 'Connection failed'}
+    except Exception as e:
+        return {'success': False, 'error': f"Request failed: {str(e)}"}
+
+# Firewall Functions
+def get_firewall_rules() -> Dict[str, Any]:
+    """
+    Get current firewall rules
     
     Returns:
-    - dict: network activity
+        Dict with success status and rules data
     """
+    logger.info("Retrieving firewall rules...")
+    url = f"{FIREWALL_URL}/rules"
+    result = _make_request("GET", url)
     
+    if result['success']:
+        logger.info("Successfully retrieved firewall rules")
+    else:
+        logger.error(f"Failed to get firewall rules: {result['error']}")
+        
+    return result
+
+def add_allow_rule(source_ip: str, dest_ip: str, port=None, protocol: str = "tcp") -> Dict[str, Any]:
+    """
+    Add firewall allow rule
     
-    try:
-        # Load the JSON data from tshark output
-        with open(file_path, 'r') as file:
-            raw_data = json.load(file)
+    Returns:
+        Dict with success status and response data
+    """
+    logger.info(f"Adding allow rule: {source_ip} -> {dest_ip}:{port}")
+    url = f"{FIREWALL_URL}/rules/allow"
+    
+    payload = {
+        'source_ip': source_ip,
+        'dest_ip': dest_ip,
+        'protocol': protocol
+    }
+    
+    if port is not None:
+        payload['port'] = port
         
+    result = _make_request("POST", url, json=payload)
+    
+    if result['success']:
+        logger.info("Successfully added allow rule")
+    else:
+        logger.error(f"Failed to add allow rule: {result['error']}")
         
-    except Exception as e:
-        return {
-            "error": "Processing error",
-            "details": str(e)
-        }
-    return json.dumps(raw_data)
+    return result
 
-rules = [
-    "iptables -P INPUT DROP",
-    "iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT",
-    "iptables -A INPUT -p tcp --dport 2222 -j ACCEPT",
-    "iptables -A INPUT -p tcp --sport 2222 -j ACCEPT",
-    "iptables -A INPUT -s 172.17.0.1 -j DROP",
-    "iptables -A INPUT -s 172.17.0.2 -j DROP",
-    "iptables -A INPUT -p tcp --dport 2222 -m limit --limit 10/minute --limit-burst 3 -j ACCEPT",
-    "iptables -I INPUT -p tcp --match multiport --dports 45502:45630 -j DROP"
-]
+def add_block_rule(source_ip: str, dest_ip: str,
+                  port: Optional[int] = None, protocol: str = "tcp") -> Dict[str, Any]:
+    """
+    Add firewall block rule
+        
+    Returns:
+        Dict with success status and response data
+    """
+    logger.info(f"Adding block rule: {source_ip} -> {dest_ip}:{port}")
+    url = f"{FIREWALL_URL}/rules/block"
+    
+    payload = {
+        'source_ip': source_ip,
+        'dest_ip': dest_ip,
+        'protocol': protocol
+    }
+    
+    if port is not None:
+        payload['port'] = port
+        
+    result = _make_request("POST", url, json=payload)
+    
+    if result['success']:
+        logger.info("Successfully added block rule")
+    else:
+        logger.error(f"Failed to add block rule: {result['error']}")
+        
+    return result
 
-def getFirewallConfiguration():
-    """Retrieve the list of current firewall rules."""
+def remove_firewall_rule(rule_number: int) -> Dict[str, Any]:
+    """
+    Remove firewall rule by number
+        
+    Returns:
+        Dict with success status and response data
+    """
+    logger.info(f"Removing firewall rule #{rule_number}")
+    url = f"{FIREWALL_URL}/rules/{rule_number}"
+    result = _make_request("DELETE", url)
+    
+    if result['success']:
+        logger.info(f"Successfully removed rule #{rule_number}")
+    else:
+        logger.error(f"Failed to remove rule: {result['error']}")
+        
+    return result
+
+def get_firewall_stats() -> Dict[str, Any]:
+    """
+    Get firewall traffic statistics
+    
+    Returns:
+        Dict with success status and stats data
+    """
+    logger.info("Retrieving firewall statistics...")
+    url = f"{FIREWALL_URL}/stats"
+    result = _make_request("GET", url)
+    
+    if result['success']:
+        logger.info("Successfully retrieved firewall stats")
+    else:
+        logger.error(f"Failed to get firewall stats: {result['error']}")
+        
+    return result
+
+# Packet Monitor Functions
+def get_packets(limit: int = 100, protocol: Optional[str] = None,
+               direction: Optional[str] = None, since: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Get captured packets with optional filtering
+        
+    Returns:
+        Dict with success status and packets data
+    """
+    logger.info(f"Retrieving packets (limit: {limit})")
+    url = f"{MONITOR_URL}/packets"
+    
+    params = {'limit': limit}
+    if protocol:
+        params['protocol'] = protocol
+    if direction:
+        params['direction'] = direction
+    if since:
+        params['since'] = since
+        
+    result = _make_request("GET", url, params=params)
+    
+    if result['success']:
+        packet_count = len(result['data'].get('packets', []))
+        logger.info(f"Successfully retrieved {packet_count} packets")
+    else:
+        logger.error(f"Failed to get packets: {result['error']}")
+        
+    return result
+
+def get_recent_packets() -> Dict[str, Any]:
+    """
+    Get packets from the last 5 minutes
+    
+    Returns:
+        Dict with success status and recent packets data
+    """
+    logger.info("Retrieving recent packets (last 5 minutes)...")
+    url = f"{MONITOR_URL}/packets/recent"
+    result = _make_request("GET", url)
+    
+    if result['success']:
+        packet_count = len(result['data'].get('packets', []))
+        logger.info(f"Successfully retrieved {packet_count} recent packets")
+    else:
+        logger.error(f"Failed to get recent packets: {result['error']}")
+        
+    return result
+
+def get_packet_stats() -> Dict[str, Any]:
+    """
+    Get packet capture statistics
+    
+    Returns:
+        Dict with success status and stats data
+    """
+    logger.info("Retrieving packet statistics...")
+    url = f"{MONITOR_URL}/stats"
+    result = _make_request("GET", url)
+    
+    if result['success']:
+        logger.info("Successfully retrieved packet stats")
+    else:
+        logger.error(f"Failed to get packet stats: {result['error']}")
+        
+    return result
+
+def get_traffic_flows() -> Dict[str, Any]:
+    """
+    Get traffic flows summary
+    
+    Returns:
+        Dict with success status and flows data
+    """
+    logger.info("Retrieving traffic flows...")
+    url = f"{MONITOR_URL}/packets/flows"
+    result = _make_request("GET", url)
+    
+    if result['success']:
+        logger.info("Successfully retrieved traffic flows")
+    else:
+        logger.error(f"Failed to get traffic flows: {result['error']}")
+        
+    return result
+
+# Health Check Functions
+def check_services_health() -> Dict[str, Any]:
+    """
+    Check health of both firewall and packet monitor services
+    
+    Returns:
+        Dict with health status of both services
+    """
+    firewall_health = _make_request("GET", f"{FIREWALL_URL}/health")
+    monitor_health = _make_request("GET", f"{MONITOR_URL}/health")
+    
     return {
-        "firewall_rules": []
-        }
+        'firewall': firewall_health,
+        'monitor': monitor_health,
+        'both_healthy': firewall_health['success'] and monitor_health['success']
+    }
 
-def getDockerContainers():
+def getDockerContainers() -> List[Dict[str, Any]]:
     """
-    Returns information about running Docker containers using the Docker API,
+    Get information about running Docker containers using the Docker API,
     including their internal private IP addresses.
     
     Returns:
@@ -82,6 +300,7 @@ def getDockerContainers():
                 'ports': container.ports,
                 'ip_address': ip_address
             }
+            container_info.append(info)
             
         return container_info
         
@@ -89,12 +308,3 @@ def getDockerContainers():
         return {"error": f"Docker connection error: {str(e)}"}
     except Exception as e:
         return {"error": f"Unexpected error: {str(e)}"}
-
-
-def getPastRules():
-    """Retrieve past rules from the database."""
-    pass
-
-def firwallUpdate():
-    """Update the firewall rules using system commands based on the analysis of network traffic logs."""
-    pass

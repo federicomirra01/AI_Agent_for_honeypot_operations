@@ -1,81 +1,81 @@
-import prompts
-import os
-from dotenv import load_dotenv
-from langchain_core.messages import SystemMessage
+from tools import get_firewall_stats, get_firewall_rules, add_allow_rule, add_block_rule, remove_firewall_rule, get_packets, get_recent_packets, get_packet_stats, get_traffic_flows, check_services_health, getDockerContainers
 from state import HoneypotStateReact
+from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
+from prompts import SYSTEM_PROMPT_GPT_REACT_ONLY_RULES, SUMMARIZE_PROMPT
+import json
 from langchain_openai import ChatOpenAI
-from tools import getNetworkStatus, getFirewallConfiguration, getDockerContainers
+from dotenv import load_dotenv
+import os
 
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-# Initialize the LLM with the model name
+# Create list of tools
+tools = [
+    get_firewall_stats,
+    get_firewall_rules,
+    add_allow_rule,
+    add_block_rule,
+    remove_firewall_rule,
+    get_packets,
+    get_recent_packets,
+    get_packet_stats,
+    get_traffic_flows,
+    check_services_health,
+    getDockerContainers
+]
+
+
 llm = ChatOpenAI(model="gpt-4o")
-llm_with_tools = llm.bind_tools([getNetworkStatus, getFirewallConfiguration, getDockerContainers])
+llm_with_tools = llm.bind_tools(tools)
 
-# Assistant function to handle the state and generate responses
 def assistant(state: HoneypotStateReact):
-    prompt = prompts.SYSTEM_PROMPT_GPT_REACT_ONLY_RULES if state.only_rules else prompts.SYSTEM_PROMPT_GPT_REACT
-    llm_input = f"""Role: {prompt}\nState: {state}"""
-    message = [SystemMessage(content=llm_input)]
-    response = llm_with_tools.invoke(message)
-    if hasattr(response, "tool_calls") and response.tool_calls:
-        pending_tool_calls = list(response.tool_calls)
-        tools_completed = False
-        return {
-            "messages": state.messages + [response],
-            "pending_tool_calls": pending_tool_calls,
-            "tools_completed": tools_completed
-        }
+    """Main assistant function that processes the conversation and calls tools"""
+    # Create system message with current state context
+    system_message = SystemMessage(content=SYSTEM_PROMPT_GPT_REACT_ONLY_RULES)
+    
+    # Add packet summary context if available
+    if state.packet_summary:
+        context_message = HumanMessage(content=f"Current packet analysis summary: {state.packet_summary}")
+        messages = [system_message, context_message] + state.messages
     else:
-        # No tool calls or all tools completed
-        print("No tool calls or all tools completed")
-        return {
-            "messages": state.messages + [response],
-            "tools_completed": True
-        }
+        messages = [system_message] + state.messages
     
-# Summarizing logs node
-def summarize_logs(state: HoneypotStateReact):
-    print("Summarizing node")
-    summary = llm.invoke(prompts.SUMMARIZE_PROMPT.format(logs=state.network_logs))
-    return {"network_logs": [summary], "to_summarize": False}
-
-# Retrieving logs node
-def NetworkStatusNode(state: HoneypotStateReact):
-    # Your actual log retrieval logic here
-    print("Network node")
-    new_logs = getNetworkStatus()  
-    to_summarize = False
-    if len(new_logs) > 10:
-        print("Setting summarize flag")
-        to_summarize = True
-
-    return {"network_logs": [new_logs], "to_summarize": to_summarize}
-
-
-# Retrieving firewall rules node
-def FirewallConfigurationNode(state: HoneypotStateReact):
-    print("Firewall node")
-    rules = getFirewallConfiguration()
-    return {"firewall_config": rules}
-
-def HoneypotConfigurationNode(state: HoneypotStateReact):
-    """
-    Tool function for an agent to retrieve information about running Docker containers.
-    """
-    print("Honeypot node")
-
-    containers = getDockerContainers()
-    # Handle errors
-    if isinstance(containers, dict) and "error" in containers:
-        return containers
+    # Get response from LLM
+    response = llm_with_tools.invoke(messages)
     
-    return {"honeypot_config": containers}
+    return {"messages": state.messages + [response]}
 
+def summarize_packets(state: HoneypotStateReact):
+    """Analyze and summarize packet data from tool results"""
+    print("Summarizing packet data...")
+    
+    # Look for packet data in recent tool messages
+    packet_data = None
+    for message in reversed(state.messages):
+        if isinstance(message, ToolMessage) and message.name in ['get_packets', 'get_recent_packets']:
+            try:
+                tool_result = json.loads(message.content)
+                if tool_result.get('success') and tool_result.get('data', {}).get('packets'):
+                    packet_data = tool_result['data']['packets']
+                    break
+            except (json.JSONDecodeError, KeyError):
+                continue
+    
+    if packet_data:
+        # Create summary using LLM
+        summary_response = llm.invoke(
+            PACKET_SUMMARY_PROMPT.format(packets=json.dumps(packet_data, indent=2))
+        )
+        packet_summary = summary_response.content
+        print(f"Generated packet summary: {packet_summary[:200]}...")
+    else:
+        packet_summary = "No packet data available for analysis."
+        print("No packet data found for summarization")
+    
+    return {"packet_summary": packet_summary}
 
-
-
-
+def tool_list():
+    return tools
