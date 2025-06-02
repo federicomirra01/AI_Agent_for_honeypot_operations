@@ -67,7 +67,7 @@ def summarize_packets(state: HoneypotStateReact):
     if packet_data:
         # Create summary using LLM
         summary_response = llm.invoke(
-            PACKET_SUMMARY_PROMPT.format(packets=json.dumps(packet_data, indent=2))
+            SUMMARIZE_PROMPT.format(packets=json.dumps(packet_data, indent=2))
         )
         packet_summary = summary_response.content
         print(f"Generated packet summary: {packet_summary[:200]}...")
