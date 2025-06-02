@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  vm4-firewall:
+    build:
+      context: .
+      dockerfile: DockerFile
+    container_name: vm4_firewall_router
+    hostname: vm4-firewall
+    networks:
+      attacker_net:
+        ipv4_address: 192.168.100.254  # Gateway IP for attacker network
+      thesis_net:
+        ipv4_address: 172.20.0.254    # Gateway IP for honeypot network
+    volumes:
+      # Mount firewall scripts
+      - ./firewall_scripts:/firewall/scripts:ro
+      # Mount logs directory
+      - ./firewall_logs:/firewall/logs:rw
+      # Mount rules directory
+      - ./firewall_rules:/firewall/rules:rw
+    ports:
+      # Management API
+      - "5000:5000"
+    environment:
+      - ATTACKER_NETWORK=192.168.100.0/24
+      - HONEYPOT_NETWORK=172.20.0.0/24
+      - FIREWALL_MANAGEMENT_PORT=5000
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    privileged: true
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
+    restart: unless-stopped
+
+networks:
+  attacker_net:
+    external: true
+    name: attacker_net
+  thesis_net:
+    external: true
+    name: thesis_net

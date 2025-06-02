@@ -36,6 +36,12 @@ def assistant(state: HoneypotStateReact):
             "messages": state.messages + [response],
             "tools_completed": True
         }
+    
+# Summarizing logs node
+def summarize_logs(state: HoneypotStateReact):
+    print("Summarizing node")
+    summary = llm.invoke(prompts.SUMMARIZE_PROMPT.format(logs=state.network_logs))
+    return {"network_logs": [summary], "to_summarize": False}
 
 # Retrieving logs node
 def NetworkStatusNode(state: HoneypotStateReact):
@@ -69,11 +75,7 @@ def HoneypotConfigurationNode(state: HoneypotStateReact):
     
     return {"honeypot_config": containers}
 
-# Summarizing logs node
-def summarize_logs(state: HoneypotStateReact):
-    print("Summarizing node")
-    summary = llm.invoke(prompts.SUMMARIZE_PROMPT.format(logs=state.network_logs))
-    return {"network_logs": [summary], "to_summarize": False}
+
 
 
 

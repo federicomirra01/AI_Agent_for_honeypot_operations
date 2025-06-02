@@ -1,0 +1,45 @@
+# Attacker Container - External Network Attack Simulation
+FROM kalilinux/kali-rolling:latest
+
+# Avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update & install tools and venv dependencies
+RUN apt-get update && apt-get install -y \
+    nmap \
+    curl \
+    wget \
+    python3 \
+    python3-pip \
+    python3-venv \
+    git \
+    iproute2 \
+    iputils-ping \
+    dnsutils \
+    net-tools \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create working directory
+WORKDIR /attacker
+
+# Set up Python virtual environment
+RUN python3 -m venv /attacker/.venv
+ENV PATH="/attacker/.venv/bin:$PATH"
+
+# Install Python dependencies inside venv
+RUN /attacker/.venv/bin/pip install --no-cache-dir colorama tabulate netifaces requests docker
+
+# Create directories for scripts and logs
+RUN mkdir -p /attacker/scripts /attacker/logs /attacker/config
+
+# Set environment variables
+ENV PYTHONPATH=/attacker
+ENV TARGET_NETWORK=172.20.0.0/24
+ENV HONEYPOT_GATEWAY=172.20.0.1
+
+# Set startup script
+COPY startup.sh /attacker/startup.sh
+RUN chmod +x /attacker/startup.sh
+# Keep container running
+
+CMD ["./startup.sh"]
