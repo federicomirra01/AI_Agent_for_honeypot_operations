@@ -1,4 +1,4 @@
-from tools import get_firewall_stats, get_firewall_rules, add_allow_rule, add_block_rule, remove_firewall_rule, get_packets, get_recent_packets, get_packet_stats, get_traffic_flows, check_services_health, getDockerContainers
+from tools import get_firewall_rules, add_allow_rule, add_block_rule, remove_firewall_rule, get_packets, check_services_health, getDockerContainers
 from state import HoneypotStateReact
 from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
 from prompts import SYSTEM_PROMPT_GPT_REACT_ONLY_RULES, SUMMARIZE_PROMPT
@@ -14,15 +14,11 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Create list of tools
 tools = [
-    get_firewall_stats,
     get_firewall_rules,
     add_allow_rule,
     add_block_rule,
     remove_firewall_rule,
     get_packets,
-    get_recent_packets,
-    get_packet_stats,
-    get_traffic_flows,
     check_services_health,
     getDockerContainers
 ]
