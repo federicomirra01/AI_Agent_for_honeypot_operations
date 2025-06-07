@@ -1,8 +1,6 @@
 from langgraph.graph import START, END, StateGraph
 from langgraph.prebuilt import ToolNode
 from typing import Literal
-import json
-import os
 from dotenv import load_dotenv
 from typing import List, Dict, Any, Optional, Tuple
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, ToolMessage, AIMessage
@@ -14,45 +12,28 @@ import docker
 import requests
 import logging
 import openai
-
-
-def is_api_key_valid():
-    try:
-        response = openai.Completion.create(
-            engine="davinci",
-            prompt="This is a test.",
-            max_tokens=5
-        )
-    except:
-        return False
-    else:
-        return True
+import json
+import os
 
 # Load environment variables
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
-#  Check the validity of the API key
-api_key_valid = is_api_key_valid()
-print("API key is valid:", api_key_valid)
-print("\n" * 10)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# API Configuration
-FIREWALL_URL = "http://192.168.200.2:5000"
-MONITOR_URL = "http://192.168.200.2:6000"
-REQUEST_TIMEOUT = 10
 
 @dataclass
 class HoneypotStateReact:
     messages: List[BaseMessage] = field(default_factory=list)
     packet_summary: str = ""
-    tools_completed: bool = False
-    tools_called: set = field(default_factory=set)
-    phase: str = "gathering"
+    network_packets : List[Dict[str, Any]] = field(default_factory=list)
+    firewall_config: List[Dict[str, Any]] = field(default_factory=list)
+    honeypot_config: List[Dict[str, Any]] = field(default_factory=list)
+    firewall_status: str = ""
+    monitor_status: str = ""
 
     def __init__(self, **kwargs):
         """Custom initializer that can handle both direct field assignment and dictionary unpacking."""
@@ -62,94 +43,216 @@ class HoneypotStateReact:
         elif not isinstance(self.messages, list):
             self.messages = []
         
+        self.network_packets = kwargs.get('network_packets', [])
         self.packet_summary = kwargs.get('packet_summary', "")
-        self.tools_completed = kwargs.get('tools_completed', False)
-        self.tools_called = kwargs.get('tools_called', set())
-        self.phase = kwargs.get('phase', 'gathering')
+        self.firewall_config = kwargs.get('firewall_config', [])
+        self.honeypot_config = kwargs.get('honeypot_config', [])
+        self.firewall_status = kwargs.get('firewall_status', "")
+        self.monitor_status = kwargs.get('monitor_status', "")
 
 # System prompts
-# System prompts
-SYSTEM_PROMPT_GPT_REACT = """
+from langchain_core.prompts import ChatPromptTemplate
+
+SYSTEM_PROMPT_GPT_REACT_ONLY_RULES_v0 = """
 Honeypot Firewall Guardian: AI Agent Specification
 
 Role & Identity
 You are a cybersecurity AI agent specializing in dynamic firewall management for honeypot systems. Your primary function is to analyze network traffic and autonomously generate iptables rules that both protect the honeypot and strategically engage potential attackers.
+The firewall rules are executed on a firewall that protects the entire network and not on the container itself, hence take into consideration the containers private IP address.
 
-CRITICAL WORKFLOW INSTRUCTIONS:
+You have granted access to the following tools:
 
-PHASE 1 - INFORMATION GATHERING (ONLY ONCE EACH):
-You MUST call these 3 tools in order, ONLY ONCE EACH:
-1. getDockerContainers - Get honeypot container information
-2. get_firewall_rules - Get current firewall configuration  
-3. get_recent_packets - Get recent network activity
+Network Intelligence Tools:
+- check_services_health: Verify firewall and packet monitor status
+- get_firewall_rules: Retrieve current active firewall rules and configuration
+- get_packets: Get captured packets with filtering options (protocol, direction, limit)
+- getDockerContainers: get list of available honeypot dockers
 
-PHASE 2 - ANALYSIS AND ACTION:
-After ALL 3 tools have been called, analyze the data and implement firewall rule changes if needed. You have access to the following tools:
-- add_allow_rule - Add a firewall rule to allow traffic
-- add_block_rule - Add a firewall rule to block traffic
-- remove_firewall_rule - Remove an existing firewall rule
-
-CRITICAL MEMORY RULES:
-- BEFORE calling ANY tool, check your conversation history for previous ToolMessage responses
-- If you see a ToolMessage with the tool name, that tool was ALREADY CALLED - DO NOT call it again
-- Use the existing data from previous tool responses instead of calling tools again
-- After calling all 3 required tools, move directly to analysis and rule implementation
-
-STOPPING CONDITION:
-Once you have responses from getDockerContainers, get_firewall_rules, and get_recent_packets:
-- DO NOT call any more information gathering tools
-- Analyze the collected data
-- Make firewall rule changes ONLY if actually needed
-- Provide your Final Answer with reasoning
-
-Example correct workflow:
-1. **Thought**: "I need container information" → **Action**: getDockerContainers
-2. **Thought**: "I need firewall rules" → **Action**: get_firewall_rules  
-3. **Thought**: "I need packet data" → **Action**: get_recent_packets
-4. **Thought**: "I have all data, now I'll analyze..." → **Final Answer**: [analysis and any rule changes]
+Firewall Management Tools:
+- get_firewall_rules: Get traffic statistics from firewall counters
 
 Network Context:
 - Attacker Network: 192.168.100.0/24 (source of potential threats)
 - Agent Network: 192.168.200.0/30 (your operational network)  
 - Honeypot Containers: Various private IPs within protected network
+- Monitor focuses on traffic to/from attacker network (192.168.100.0/24)
 
-ABSOLUTE RULES:
-- Never call the same information gathering tool twice
-- Maximum 6 tool calls total
-- Check message history before every tool call
-- Stop gathering information after 3 required tools are called
+Objectives
+1. Protect the honeypot from traffic surges and malicious attack patterns.
+2. Guide attacker behavior by strategically exposing or filtering ports.
+3. Enhance the likelihood of capturing complete attack sequences.
+4. Engage attackers in prolonged interactions to collect intelligence.
+
+Operational Parameters
+- Autonomy: Operate without human initiation.
+- Environment: Test setting to demonstrate reasoning capabilities.
+- Tool Usage: You must gather information systematically:
+  1. Check firewall and monitor status first (use the tool check_services_health) MANDATORY!!!
+  2. Assess current state (get_firewall_rules, get_packets, getDockerContainers)
+  3. Make informed decisions based on collected intelligence
+  4. Output the firewall rules tha you would implement and the end the cycle 
+- Efficiency: Gather essential information efficiently, avoid redundant tool calls
+
+Tactical Guidelines
+- Expose one container at a time based on observed traffic patterns. So if one container is already exposed you must decide what other container expose and close the already opened one.
+- Close previously opened ports when opening new ones to maintain control.
+- Use DROP rules for clearly malicious IPs showing aggressive scanning or attack behaviors.
+- Implement rate-limiting (-m limit) for ports experiencing repeated access attempts.
+- Apply ACCEPT, DROP, or REJECT actions appropriately based on traffic analysis.
+- Target rules precisely to avoid overblocking legitimate traffic.
+- Analyze packet directions (inbound/outbound/internal/external) to understand attack vectors.
+- Consider traffic volume, protocols, and timing patterns in decision-making.
+
+ReACT Workflow
+1. **Thought**: Analyze what information is needed for current situation assessment
+2. **Action**: Use appropriate tools to gather network intelligence
+3. **Observation**: Process the returned data to understand network state
+4. **Thought**: Determine threats, opportunities, and required firewall changes
+5. **Action**: Implement firewall rules using management tools if needed
+6. **Final Answer**: Provide reasoning and any implemented rule changes
+
+Output Requirements
+- Use ReACT format: Thought → Action → Observation → Thought → Action → Final Answer
+- Base decisions on actual data gathered from tools
+- Provide clear reasoning for each firewall rule decision
+- Rules must account for container private IP addresses when targeting honeypots
+- Show understanding of traffic patterns and threat analysis
+
+Success Metrics
+- Effective mitigation of identified threats through targeted blocking.
+- Strategic port management guiding attacker exploration toward valuable honeypots.
+- Well-reasoned decisions demonstrating understanding of network traffic patterns.
+- Efficient use of available tools to gather actionable intelligence.
+- Dynamic adaptation to observed attack patterns and network conditions.
 """
 
-PACKET_SUMMARY_PROMPT = ChatPromptTemplate.from_template("""
-**Network Packet Analysis for Security Decision Making**
+SYSTEM_PROMPT_GPT_REACT_ONLY_RULES = """
+Honeypot Firewall Guardian: AI Agent Specification
 
-Analyze the following network packets and create a concise security summary:
+Role & Identity
+You are a cybersecurity AI agent specializing in dynamic firewall management for honeypot systems. Your primary function is to analyze network traffic and autonomously generate iptables rules that both protect the honeypot and strategically engage potential attackers.
+The firewall rules are executed on a firewall that protects the entire network and not on the container itself, hence take into consideration the containers private IP address.
 
+You have granted access to the following tools:
+
+Network Intelligence Tools:
+- check_services_health: Verify firewall and packet monitor APIs are operational
+- get_firewall_rules: Retrieve current active firewall rules and configuration
+- get_packet_stats: Get packet capture statistics and monitoring status
+- get_recent_packets: Get network packets captured in the last 5 minutes
+- get_traffic_flows: Get summary of active traffic flows between IPs
+- get_packets: Get captured packets with filtering options (protocol, direction, limit)
+
+Firewall Management Tools:
+- add_allow_rule: Add ACCEPT rule (source_ip, dest_ip, port=None, protocol="tcp")
+- add_block_rule: Add DROP rule (source_ip, dest_ip, port=None, protocol="tcp")
+- remove_firewall_rule: Remove existing rule by line number
+- get_firewall_stats: Get traffic statistics from firewall counters
+
+Network Context:
+- Attacker Network: 192.168.100.0/24 (source of potential threats)
+- Agent Network: 192.168.200.0/30 (your operational network)  
+- Honeypot Containers: Various private IPs within protected network
+- Monitor focuses on traffic to/from attacker network (192.168.100.0/24)
+
+Objectives
+1. Protect the honeypot from traffic surges and malicious attack patterns.
+2. Guide attacker behavior by strategically exposing or filtering ports.
+3. Enhance the likelihood of capturing complete attack sequences.
+4. Engage attackers in prolonged interactions to collect intelligence.
+
+Operational Parameters
+- Autonomy: Operate without human initiation.
+- Environment: Test setting to demonstrate reasoning capabilities.
+- Tool Usage: You must gather information systematically:
+  1. Check system health first (check_services_health)
+  2. Assess current state (get_firewall_rules, get_packet_stats)
+  3. Analyze recent activity (get_recent_packets, get_traffic_flows)
+  4. Make informed decisions based on collected intelligence
+  5. Implement rules using firewall management tools as needed
+- Efficiency: Gather essential information efficiently, avoid redundant tool calls
+
+Tactical Guidelines
+- Expose one container at a time based on observed traffic patterns. So if one container is already exposed you must decide what other container expose and close the already opened one.
+- Close previously opened ports when opening new ones to maintain control.
+- Use DROP rules for clearly malicious IPs showing aggressive scanning or attack behaviors.
+- Implement rate-limiting (-m limit) for ports experiencing repeated access attempts.
+- Apply ACCEPT, DROP, or REJECT actions appropriately based on traffic analysis.
+- Target rules precisely to avoid overblocking legitimate traffic.
+- Analyze packet directions (inbound/outbound/internal/external) to understand attack vectors.
+- Consider traffic volume, protocols, and timing patterns in decision-making.
+
+ReACT Workflow
+1. **Thought**: Analyze what information is needed for current situation assessment
+2. **Action**: Use appropriate tools to gather network intelligence
+3. **Observation**: Process the returned data to understand network state
+4. **Thought**: Determine threats, opportunities, and required firewall changes
+5. **Action**: Implement firewall rules using management tools if needed
+6. **Final Answer**: Provide reasoning and any implemented rule changes
+
+Output Requirements
+- Use ReACT format: Thought → Action → Observation → Thought → Action → Final Answer
+- Base decisions on actual data gathered from tools
+- Provide clear reasoning for each firewall rule decision
+- Rules must account for container private IP addresses when targeting honeypots
+- Show understanding of traffic patterns and threat analysis
+
+Success Metrics
+- Effective mitigation of identified threats through targeted blocking.
+- Strategic port management guiding attacker exploration toward valuable honeypots.
+- Well-reasoned decisions demonstrating understanding of network traffic patterns.
+- Efficient use of available tools to gather actionable intelligence.
+- Dynamic adaptation to observed attack patterns and network conditions.
+"""
+
+SUMMARIZE_PROMPT = ChatPromptTemplate.from_template("""
+**Network Log Analysis for Firewall Policy Creation**
+
+Analyze these network logs and extract firewall-relevant patterns:
 {packets}
+                                                    
+The summarizing process need to take into account that the logs come from an honeypot which the current configuration comprises the following services: SSH on ip address 172.17.0.2 on port 2222.
 
-Provide a structured analysis focusing on:
+Structure findings in these categories using precise technical terms:
 
-1. **Threat Assessment**
-   - Suspicious IP addresses and their activities
-   - Attack patterns (port scans, brute force attempts, etc.)
-   - Traffic anomalies
+1. **IP Threat Indicators**
+   - High-frequency sources: `[IP: count]` (Threshold: >15 requests/min)
+   - Known malicious IPs: `[IP]` (Cross-referenced with threat DB)
+   - Unverified/new IPs: `[IP: first_seen]`
 
-2. **Traffic Patterns**
-   - Most active source IPs
-   - Target ports and services
-   - Protocol distribution
+2. **Port/Protocol Risks** 
+   - Suspicious port clusters: `[port: protocol: count]` 
+     - Focus on: non-standard ports for services (e.g., HTTP on 8080)
+     - Uncommon protocol mixes (e.g., SSH over UDP)
+   - Baseline comparison: `[Percentage deviation from normal port distribution]`
 
-3. **Security Recommendations**
-   - IPs that should be blocked
-   - Ports that need protection
-   - Services requiring attention
+3. **Geo-Location Threats**
+   - Unexpected regions: `[country: percentage of total traffic]` 
+     - Flag if: >5% traffic from non-operational regions
+   - ASN anomalies: `[autonomous_system: expected? Y/N]`
 
-Keep the summary concise but actionable for firewall rule generation.
+4. **Behavioral Red Flags**
+   - Scan patterns: `[IP: ports_scanned/time_window]`
+   - Protocol violations: `[e.g., DNS tunneling attempts]`
+   - Session abnormalities: `[short-lived:long-lived ratio]`
+
+The output must be in a json format and should be efficiently structured to be given in input to an LLM to generate firewall rules. Hence, you should summarize the logs but maintaining the information needed to generate the rules.
+
 """)
 
-# Helper function for HTTP requests
+
+# API Configuration
+FIREWALL_URL = "http://192.168.200.2:5000"
+MONITOR_URL = "http://192.168.200.2:6000"
+REQUEST_TIMEOUT = 10
+
 def _make_request(method: str, url: str, **kwargs) -> Dict[str, Any]:
-    """Make HTTP request with error handling"""
+    """
+    Make HTTP request with error handling
+        
+    Returns:
+        Dict containing response data or error info
+    """
     try:
         response = requests.request(method, url, timeout=REQUEST_TIMEOUT, **kwargs)
         
@@ -173,10 +276,15 @@ def _make_request(method: str, url: str, **kwargs) -> Dict[str, Any]:
     except Exception as e:
         return {'success': False, 'error': f"Request failed: {str(e)}"}
 
-# Tool definitions using @tool decorator
+# Firewall Functions
 @tool
 def get_firewall_rules() -> Dict[str, Any]:
-    """Get current firewall rules"""
+    """
+    Get current firewall rules
+    
+    Returns:
+        Dict with success status and rules data
+    """
     logger.info("Retrieving firewall rules...")
     url = f"{FIREWALL_URL}/rules"
     result = _make_request("GET", url)
@@ -186,11 +294,16 @@ def get_firewall_rules() -> Dict[str, Any]:
     else:
         logger.error(f"Failed to get firewall rules: {result['error']}")
         
-    return result
+    return {'firewall_config' : result}
 
 @tool
-def add_allow_rule(source_ip: str, dest_ip: str, port: Optional[int] = None, protocol: str = "tcp") -> Dict[str, Any]:
-    """Add firewall allow rule"""
+def add_allow_rule(source_ip: str, dest_ip: str, port=None, protocol: str = "tcp") -> Dict[str, Any]:
+    """
+    Add firewall allow rule
+    
+    Returns:
+        Dict with success status and response data
+    """
     logger.info(f"Adding allow rule: {source_ip} -> {dest_ip}:{port}")
     url = f"{FIREWALL_URL}/rules/allow"
     
@@ -213,8 +326,14 @@ def add_allow_rule(source_ip: str, dest_ip: str, port: Optional[int] = None, pro
     return result
 
 @tool
-def add_block_rule(source_ip: str, dest_ip: str, port: Optional[int] = None, protocol: str = "tcp") -> Dict[str, Any]:
-    """Add firewall block rule"""
+def add_block_rule(source_ip: str, dest_ip: str,
+                  port: Optional[int] = None, protocol: str = "tcp") -> Dict[str, Any]:
+    """
+    Add firewall block rule
+        
+    Returns:
+        Dict with success status and response data
+    """
     logger.info(f"Adding block rule: {source_ip} -> {dest_ip}:{port}")
     url = f"{FIREWALL_URL}/rules/block"
     
@@ -238,7 +357,12 @@ def add_block_rule(source_ip: str, dest_ip: str, port: Optional[int] = None, pro
 
 @tool
 def remove_firewall_rule(rule_number: int) -> Dict[str, Any]:
-    """Remove firewall rule by number"""
+    """
+    Remove firewall rule by number
+        
+    Returns:
+        Dict with success status and response data
+    """
     logger.info(f"Removing firewall rule #{rule_number}")
     url = f"{FIREWALL_URL}/rules/{rule_number}"
     result = _make_request("DELETE", url)
@@ -251,71 +375,22 @@ def remove_firewall_rule(rule_number: int) -> Dict[str, Any]:
     return result
 
 @tool
-def get_packets(limit: int = 100, 
-               protocol: Optional[str] = None,
-               direction: Optional[str] = None, 
-               since: Optional[str] = None,
-               recent_minutes: Optional[int] = None,
-               include_stats: bool = False,
-               include_protocols: bool = False,
-               include_flows: bool = False,
-               raw_only: bool = False,
-               analysis_mode: Optional[str] = None) -> Dict[str, Any]:
+def get_packets(limit: int = 10000, protocol: Optional[str] = None, direction: Optional[str] = None):
     """
-    Get captured packets with optional filtering and enhanced analysis
-    
-    Args:
-        limit: Maximum number of packets to return (default: 100)
-        protocol: Filter by protocol (TCP, UDP, ICMP)
-        direction: Filter by traffic direction (inbound, outbound, internal, external)
-        since: ISO timestamp to get packets since that time
-        recent_minutes: Get packets from the last X minutes
-        include_stats: Include packet statistics in response
-        include_protocols: Include protocol distribution summary
-        include_flows: Include top traffic flows
-        raw_only: Return only raw tcpdump header lines (minimal processing)
-        analysis_mode: Special analysis mode:
-            - 'security': Focus on security threats and suspicious patterns
-            - 'http': Analyze HTTP traffic with payload inspection
-            - 'summary': Comprehensive monitoring overview
-            - None: Standard packet retrieval
+    Get captured packets with basic filtering - simplified for LLM analysis
         
     Returns:
-        Dict with success status and enhanced packets data including:
-        - packets: List of packet data (unless raw_only=True)
-        - raw_lines: List of raw tcpdump headers (if raw_only=True)
-        - count: Number of packets returned
-        - total_captured: Total packets captured since start
-        - statistics: Packet statistics (if include_stats=True)
-        - protocol_summary: Protocol distribution (if include_protocols=True)
-        - top_flows: Top traffic flows (if include_flows=True)
-        - analysis: Enhanced analysis results (if analysis_mode specified)
+        Dict with success status and packets data:
+        - success: Boolean indicating if request succeeded
+        - data: Dict containing:
+          - packets: List of packet data
+          - count: Number of packets returned
+          - total_captured: Total packets captured since start
+          - timestamp: When the data was retrieved
+        - error: Error message if request failed
     """
     
-    # Determine optimal parameters based on analysis mode
-    if analysis_mode == 'security':
-        logger.info(f"Security analysis mode: checking for threats in last {recent_minutes or 30} minutes")
-        limit = max(limit, 1000)  # Get more packets for threat analysis
-        recent_minutes = recent_minutes or 30
-        include_stats = True
-        include_flows = True
-        
-    elif analysis_mode == 'http':
-        logger.info(f"HTTP analysis mode: analyzing web traffic in last {recent_minutes or 15} minutes")
-        protocol = 'TCP'  # HTTP runs over TCP
-        limit = max(limit, 500)
-        recent_minutes = recent_minutes or 15
-        include_stats = True
-        
-    elif analysis_mode == 'summary':
-        logger.info(f"Summary analysis mode: comprehensive overview of last {recent_minutes or 60} minutes")
-        limit = max(limit, 200)
-        recent_minutes = recent_minutes or 60
-        include_stats = True
-        include_protocols = True
-        include_flows = True
-    
-    logger.info(f"Retrieving packets (limit: {limit}, protocol: {protocol}, direction: {direction}, mode: {analysis_mode})")
+    logger.info(f"Retrieving packets (limit: {limit}, protocol: {protocol}, direction: {direction})")
     url = f"{MONITOR_URL}/packets"
     
     # Build parameters
@@ -326,355 +401,70 @@ def get_packets(limit: int = 100,
         params['protocol'] = protocol
     if direction:
         params['direction'] = direction
-    if since:
-        params['since'] = since
-    if recent_minutes:
-        params['recent'] = recent_minutes
         
-    # Add optional enhancement flags
-    if include_stats:
-        params['stats'] = 'true'
-    if include_protocols:
-        params['protocols'] = 'true'
-    if include_flows:
-        params['flows'] = 'true'
-    if raw_only:
-        params['raw_only'] = 'true'
-        
-    result = _make_request("GET", url, params=params)
+    raw_packets = _make_request("GET", url, params=params)
     
-    if not result['success']:
-        logger.error(f"Failed to get packets: {result['error']}")
-        return result
-        
-    data = result['data']
-    packet_count = data.get('count', 0)
-    total_captured = data.get('total_captured', 0)
-    packets = data.get('packets', [])
+    if not raw_packets['success']:
+        logger.error(f"Failed to get packets: {raw_packets['error']}")
+        return raw_packets
     
-    logger.info(f"Successfully retrieved {packet_count} packets (total captured: {total_captured})")
-    
-    # Perform enhanced analysis based on mode
-    if analysis_mode and not raw_only:
-        analysis_result = _perform_analysis(analysis_mode, packets, data, recent_minutes or 30)
-        if analysis_result:
-            data['analysis'] = analysis_result
-    
-    # Log additional info if enhanced data is included
-    if include_stats and 'statistics' in data:
-        stats = data['statistics']['stats']
-        threats = stats.get('security_threats', 0)
-        if threats > 0:
-            logger.warning(f"Security threats detected: {threats}")
-            
-    if include_protocols and 'protocol_summary' in data:
-        protocols = data['protocol_summary']
-        logger.info(f"Protocol distribution: {protocols}")
-        
-    if include_flows and 'top_flows' in data:
-        flows = len(data['top_flows'])
-        logger.info(f"Top flows included: {flows}")
-        
-    return result
+
+    return {'network_packets' : raw_packets}
 
 
-def _perform_analysis(mode: str, packets: List[Dict], data: Dict, period_minutes: int) -> Dict[str, Any]:
-    """
-    Perform enhanced analysis based on the specified mode
-    
-    Args:
-        mode: Analysis mode ('security', 'http', 'summary')
-        packets: List of packet data
-        data: Full response data from server
-        period_minutes: Analysis period in minutes
-        
-    Returns:
-        Dict with analysis results specific to the mode
-    """
-    
-    if mode == 'security':
-        return _analyze_security_threats(packets, data, period_minutes)
-    elif mode == 'http':
-        return _analyze_http_traffic(packets, data, period_minutes)
-    elif mode == 'summary':
-        return _generate_summary(packets, data, period_minutes)
-    
-    return {}
-
-
-def _analyze_security_threats(packets: List[Dict], data: Dict, period_minutes: int) -> Dict[str, Any]:
-    """Analyze packets for security threats and suspicious patterns"""
-    
-    # Filter packets with security threats
-    threat_packets = []
-    for packet in packets:
-        if ('suspicious_patterns' in packet or 
-            'suspicious_uri_patterns' in packet):
-            threat_packets.append(packet)
-    
-    # Extract threat statistics
-    threat_stats = {}
-    if 'statistics' in data:
-        stats = data['statistics']['stats']
-        threat_stats = {
-            'total_threats': stats.get('security_threats', 0),
-            'command_injection': stats.get('threat_command_injection', 0),
-            'sql_injection': stats.get('threat_sql_injection', 0),
-            'xss_attempts': stats.get('threat_xss', 0),
-            'reverse_shells': stats.get('threat_reverse_shell', 0),
-            'path_traversal': stats.get('threat_path_traversal', 0)
-        }
-    
-    # Analyze threat patterns by source IP
-    threat_sources = {}
-    for packet in threat_packets:
-        source_ip = packet.get('source_ip', 'unknown')
-        if source_ip not in threat_sources:
-            threat_sources[source_ip] = {
-                'count': 0,
-                'threat_types': set(),
-                'targets': set()
-            }
-        
-        threat_sources[source_ip]['count'] += 1
-        threat_sources[source_ip]['targets'].add(packet.get('dest_ip', 'unknown'))
-        
-        # Categorize threat types
-        for pattern in packet.get('suspicious_patterns', []):
-            if 'command injection' in pattern.lower():
-                threat_sources[source_ip]['threat_types'].add('command_injection')
-            elif 'sql injection' in pattern.lower():
-                threat_sources[source_ip]['threat_types'].add('sql_injection')
-            elif 'xss' in pattern.lower():
-                threat_sources[source_ip]['threat_types'].add('xss')
-            elif 'reverse shell' in pattern.lower():
-                threat_sources[source_ip]['threat_types'].add('reverse_shell')
-            elif 'path traversal' in pattern.lower():
-                threat_sources[source_ip]['threat_types'].add('path_traversal')
-    
-    # Convert sets to lists for JSON serialization
-    for source in threat_sources:
-        threat_sources[source]['threat_types'] = list(threat_sources[source]['threat_types'])
-        threat_sources[source]['targets'] = list(threat_sources[source]['targets'])
-    
-    logger.info(f"Security analysis: {len(threat_packets)} threat packets from {len(threat_sources)} sources")
-    if threat_stats.get('total_threats', 0) > 0:
-        logger.warning(f"Total security threats detected: {threat_stats['total_threats']}")
-    
-    return {
-        'mode': 'security',
-        'analysis_period_minutes': period_minutes,
-        'threat_packets': threat_packets,
-        'threat_count': len(threat_packets),
-        'threat_statistics': threat_stats,
-        'threat_sources': threat_sources,
-        'total_packets_analyzed': len(packets),
-        'top_flows': data.get('top_flows', {}),
-        'summary': {
-            'threats_detected': len(threat_packets) > 0,
-            'high_risk_sources': len([s for s in threat_sources.values() if s['count'] >= 5]),
-            'threat_diversity': len(set().union(*[s['threat_types'] for s in threat_sources.values()]))
-        }
-    }
-
-
-def _analyze_http_traffic(packets: List[Dict], data: Dict, period_minutes: int) -> Dict[str, Any]:
-    """Analyze HTTP traffic with payload inspection"""
-    
-    # Filter for HTTP traffic with payload data
-    http_packets = []
-    for packet in packets:
-        if (packet.get('application') == 'HTTP' and 
-            'http_method' in packet):
-            http_packets.append(packet)
-    
-    # Categorize HTTP traffic
-    http_analysis = {
-        'requests': [],
-        'responses': [],
-        'suspicious_requests': [],
-        'methods': {},
-        'status_codes': {},
-        'user_agents': {},
-        'uri_patterns': {}
-    }
-    
-    for packet in http_packets:
-        if packet.get('http_type') == 'request':
-            http_analysis['requests'].append(packet)
-            
-            # Count methods
-            method = packet.get('http_method', 'UNKNOWN')
-            http_analysis['methods'][method] = http_analysis['methods'].get(method, 0) + 1
-            
-            # Analyze URIs
-            uri = packet.get('http_uri', '')
-            if uri:
-                # Extract URI patterns (file extensions, directories)
-                if '.' in uri:
-                    ext = uri.split('.')[-1].split('?')[0][:10]  # Limit length
-                    http_analysis['uri_patterns'][f".{ext}"] = http_analysis['uri_patterns'].get(f".{ext}", 0) + 1
-            
-            # Extract User-Agent if present
-            headers = packet.get('http_headers', {})
-            user_agent = headers.get('user-agent', 'Unknown')[:50]  # Limit length
-            http_analysis['user_agents'][user_agent] = http_analysis['user_agents'].get(user_agent, 0) + 1
-            
-            # Check for suspicious patterns
-            if ('suspicious_patterns' in packet or 
-                'suspicious_uri_patterns' in packet):
-                http_analysis['suspicious_requests'].append(packet)
-                
-        elif packet.get('http_type') == 'response':
-            http_analysis['responses'].append(packet)
-            
-            # Count status codes
-            status = packet.get('http_status_code', 0)
-            http_analysis['status_codes'][status] = http_analysis['status_codes'].get(status, 0) + 1
-    
-    # Analyze attack patterns
-    attack_summary = {
-        'sql_injection_attempts': 0,
-        'xss_attempts': 0,
-        'command_injection_attempts': 0,
-        'path_traversal_attempts': 0,
-        'suspicious_user_agents': 0
-    }
-    
-    for packet in http_analysis['suspicious_requests']:
-        patterns = packet.get('suspicious_patterns', []) + packet.get('suspicious_uri_patterns', [])
-        for pattern in patterns:
-            if 'sql injection' in pattern.lower():
-                attack_summary['sql_injection_attempts'] += 1
-            elif 'xss' in pattern.lower():
-                attack_summary['xss_attempts'] += 1
-            elif 'command injection' in pattern.lower():
-                attack_summary['command_injection_attempts'] += 1
-            elif 'path traversal' in pattern.lower():
-                attack_summary['path_traversal_attempts'] += 1
-    
-    logger.info(f"HTTP analysis: {len(http_packets)} HTTP packets "
-                f"({len(http_analysis['requests'])} requests, "
-                f"{len(http_analysis['responses'])} responses)")
-    
-    if http_analysis['suspicious_requests']:
-        logger.warning(f"Found {len(http_analysis['suspicious_requests'])} suspicious HTTP requests")
-    
-    return {
-        'mode': 'http',
-        'analysis_period_minutes': period_minutes,
-        'http_packets': http_packets,
-        'requests': http_analysis['requests'],
-        'responses': http_analysis['responses'],
-        'suspicious_requests': http_analysis['suspicious_requests'],
-        'method_distribution': http_analysis['methods'],
-        'status_code_distribution': http_analysis['status_codes'],
-        'user_agent_distribution': dict(sorted(http_analysis['user_agents'].items(), key=lambda x: x[1], reverse=True)[:10]),
-        'uri_patterns': dict(sorted(http_analysis['uri_patterns'].items(), key=lambda x: x[1], reverse=True)[:10]),
-        'attack_summary': attack_summary,
-        'summary': {
-            'total_http_packets': len(http_packets),
-            'requests': len(http_analysis['requests']),
-            'responses': len(http_analysis['responses']),
-            'suspicious_requests': len(http_analysis['suspicious_requests']),
-            'unique_methods': len(http_analysis['methods']),
-            'unique_status_codes': len(http_analysis['status_codes']),
-            'unique_user_agents': len(http_analysis['user_agents'])
-        }
-    }
-
-
-def _generate_summary(packets: List[Dict], data: Dict, period_minutes: int) -> Dict[str, Any]:
-    """Generate comprehensive monitoring summary"""
-    
-    # Generate summary report
-    summary = {
-        'mode': 'summary',
-        'monitoring_period_minutes': period_minutes,
-        'timestamp': data.get('timestamp'),
-        'packet_overview': {
-            'packets_in_period': data.get('count', 0),
-            'total_captured': data.get('total_captured', 0),
-            'capture_active': data.get('statistics', {}).get('running', False)
-        },
-        'protocol_distribution': data.get('protocol_summary', {}),
-        'top_traffic_flows': data.get('top_flows', {}),
-        'security_summary': {},
-        'application_traffic': {},
-        'traffic_direction': {}
-    }
-    
-    # Extract security information
-    if 'statistics' in data:
-        stats = data['statistics']['stats']
-        summary['security_summary'] = {
-            'total_threats': stats.get('security_threats', 0),
-            'threat_types': {
-                'command_injection': stats.get('threat_command_injection', 0),
-                'sql_injection': stats.get('threat_sql_injection', 0),
-                'xss_attempts': stats.get('threat_xss', 0),
-                'reverse_shells': stats.get('threat_reverse_shell', 0),
-                'path_traversal': stats.get('threat_path_traversal', 0)
-            }
-        }
-        
-        # Extract traffic direction stats
-        for key, value in stats.items():
-            if key.startswith('direction_'):
-                direction = key.replace('direction_', '')
-                summary['traffic_direction'][direction] = value
-    
-    # Extract application traffic stats
-    apps = {}
-    for packet in packets:
-        app = packet.get('application', 'Other')
-        apps[app] = apps.get(app, 0) + 1
-    summary['application_traffic'] = apps
-    
-    # Calculate additional metrics
-    summary['insights'] = {
-        'most_active_protocol': max(summary['protocol_distribution'].items(), key=lambda x: x[1])[0] if summary['protocol_distribution'] else 'None',
-        'security_risk_level': 'HIGH' if summary['security_summary']['total_threats'] > 10 else 'MEDIUM' if summary['security_summary']['total_threats'] > 0 else 'LOW',
-        'top_application': max(apps.items(), key=lambda x: x[1])[0] if apps else 'None',
-        'capture_rate': f"{data.get('count', 0) / period_minutes:.1f} packets/minute" if period_minutes > 0 else '0 packets/minute'
-    }
-    
-    logger.info(f"Summary generated: {summary['packet_overview']['packets_in_period']} packets analyzed, "
-                f"security risk: {summary['insights']['security_risk_level']}")
-    
-    return summary
-
+# Health Check Functions
 @tool
 def check_services_health() -> Dict[str, Any]:
-    """Check health of both firewall and packet monitor services"""
-    firewall_health = _make_request("GET", f"{FIREWALL_URL}/health")
-    monitor_health = _make_request("GET", f"{MONITOR_URL}/health")
+    """
+    Check health of both firewall and packet monitor services
     
+    Returns:
+        Dict with health status of both services
+    """
+    logger.info("Retrieving services status")
+    try:
+        firewall_health = 'up' if _make_request("GET", f"{FIREWALL_URL}/health")["data"]["status"] == 'healthy' else 'down'
+        monitor_health = 'up' if _make_request("GET", f"{MONITOR_URL}/health")["data"]["status"] == 'healthy' else 'down'
+        logger.info("Successfully retrieve services health")
+    except Exception as e:
+        print(f"Error: {e}")
     return {
-        'firewall': firewall_health,
-        'monitor': monitor_health,
-        'both_healthy': firewall_health['success'] and monitor_health['success']
-    }
+            'firewall_status': firewall_health,
+            'monitor_status': monitor_health
+        }
 
 @tool
 def getDockerContainers() -> List[Dict[str, Any]]:
-    """Get information about running Docker containers including their private IP addresses"""
+    """
+    Get information about running Docker containers using the Docker API,
+    including their internal private IP addresses.
+    
+    Returns:
+        list: A list of dictionaries containing container information
+    """
     try:
+        # Initialize the Docker client
         client = docker.from_env()
-        containers = client.containers.list()
-        container_info = []
         
+        # Get list of running containers
+        containers = client.containers.list()
+        # Format container information similar to "docker ps" output
+        container_info = []
         for container in containers:
+            
+            # Get container's IP address from network settings
             ip_address = None
             networks = container.attrs.get('NetworkSettings', {}).get('Networks', {})
             
+            # Iterate through networks and get the first IP address found
+            # (Most containers have a single network, but some might have multiple)
             for network_name, network_config in networks.items():
                 if network_config.get('IPAddress'):
                     ip_address = network_config.get('IPAddress')
                     break
             
             info = {
-                'id': container.id[:12],
+                'id': container.id[:12],  # Short ID
                 'name': container.name,
                 'image': container.image.tags[0] if container.image.tags else container.image.id[:12],
                 'status': container.status,
@@ -684,14 +474,12 @@ def getDockerContainers() -> List[Dict[str, Any]]:
             }
             container_info.append(info)
             
-        return container_info
+        return {'honeypot_config' : container_info}
         
     except docker.errors.DockerException as e:
-        return [{"error": f"Docker connection error: {str(e)}"}]
+        return {"error": f"Docker connection error: {str(e)}"}
     except Exception as e:
-        return [{"error": f"Unexpected error: {str(e)}"}]
-
-
+        return {"error": f"Unexpected error: {str(e)}"}
 
 # Initialize LLM
 llm = ChatOpenAI(model="gpt-4o")
@@ -699,171 +487,144 @@ llm = ChatOpenAI(model="gpt-4o")
 # Create list of tools
 tools = [
     get_firewall_rules,
-    add_allow_rule,
-    add_block_rule,
-    remove_firewall_rule,
+    #add_allow_rule,
+    #add_block_rule,
+    #remove_firewall_rule,
     get_packets,
     check_services_health,
     getDockerContainers
 ]
 
-def validate_message_sequence(messages: List[BaseMessage]) -> List[BaseMessage]:
-    """
-    Validate and fix message sequence to ensure proper tool call/response pairing.
-    Remove orphaned tool messages that don't follow assistant messages with tool_calls.
-    """
-    validated_messages = []
-    
-    for i, message in enumerate(messages):
-        if isinstance(message, ToolMessage):
-            # Check if previous message is an AI message with tool_calls
-            if (i > 0 and 
-                isinstance(messages[i-1], AIMessage) and 
-                hasattr(messages[i-1], 'tool_calls') and 
-                messages[i-1].tool_calls):
-                validated_messages.append(message)
-            else:
-                # Skip orphaned tool messages
-                logger.warning(f"Skipping orphaned tool message: {message.name}")
-                continue
-        else:
-            validated_messages.append(message)
-    
-    return validated_messages
-
-# Bind tools to LLM
+llm = ChatOpenAI(model="gpt-4o")
 llm_with_tools = llm.bind_tools(tools)
-
-# Create tool node
-tool_node = ToolNode(tools)
 
 def assistant(state: HoneypotStateReact):
     """Main assistant function that processes the conversation and calls tools"""
-    # Validate and fix message sequence
-    validated_messages = validate_message_sequence(state.messages)
-
-    tools_called = set()
-    for message in validated_messages:
-        if isinstance(message, ToolMessage):
-            tools_called.add(message.name)
-
-    
     # Create system message with current state context
-    system_context = SYSTEM_PROMPT_GPT_REACT
+    print(f"network packets: {state.network_packets}\nfirewall_rules: {state.firewall_config}\nhoneypot_config{state.honeypot_config}\nservices_health: {[state.firewall_status, state.monitor_status]}")
+    system_message = SystemMessage(content=SYSTEM_PROMPT_GPT_REACT_ONLY_RULES_v0)
+
+    # Add context messages based on current state
+    context_messages = []
     
-     # Add state awareness to the context
-    if tools_called:
-        tools_called_list = ", ".join(tools_called)
-        state_context = f"\n\nSTATE AWARENESS: You have already called these tools: {tools_called_list}\n"
-        state_context += "DO NOT call these tools again. Use the existing data from previous responses.\n"
-        system_context += state_context
     # Add packet summary context if available
     if state.packet_summary:
-        context_message = HumanMessage(content=f"Current packet analysis summary: {state.packet_summary}")
-        messages = [SystemMessage(content=system_context), context_message] + validated_messages
-    else:
-        messages = [SystemMessage(content=system_context)] + validated_messages
+        context_messages.append(
+            HumanMessage(content=f"Current packet analysis summary: {state.packet_summary}")
+        )
     
+    if state.firewall_config:
+        context_messages.append(
+            HumanMessage(content=f"Current firewall configuration: {state.firewall_config}")
+        )
+
+    if state.honeypot_config:
+        context_messages.append(
+            HumanMessage(content=f"Current honeypot dockers configuration: {state.honeypot_config}")
+        )
+
+    if not state.messages:
+        initial_message = HumanMessage(
+            content="Analyze the current honeypot network security status and update firewall rules as needed"
+        )
+        messages = [system_message] + [initial_message]
+    else :
+        messages = [system_message] + context_messages + state.messages
+
     # Get response from LLM
     response = llm_with_tools.invoke(messages)
 
-    new_state = {
-        "messages": validated_messages + [response],
-        "tools_called": tools_called
-    }
-
-    required_tools = {'getDockerContainers', 'get_firewall_rules', 'get_recent_packets'}
-    if required_tools.issubset(tools_called):
-        new_state['phase'] = 'analyzing'
+    # Track tool calls if any are made
+    new_state = {"messages" : state.messages + [response]}
+    tool_calls = []
+    if hasattr(response, 'tool_calls') and response.tool_calls:
+        for tool_call in response.tool_calls:
+            tool_calls.append(tool_call)
     
+        new_state["pending_tool_calls"] = tool_calls
     return new_state
+
+
+def execute_tools(state: HoneypotStateReact):
+    """Execute pending tool calls and update state"""
+
+    # Get the last message 
+    last_message = state.messages[-1]
+    
+    if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+        tool_node = ToolNode(tools)
+        tool_responses = tool_node.invoke({"messages" : [last_message]})
+        new_state = {
+            "messages" : state.messages + tool_responses["messages"]
+        }
+
+        for tool_message in tool_responses["messages"]:
+            try:
+                result = json.loads(tool_message.content)
+                
+                if tool_message.name == 'getDockerContainers':
+                    new_state["honeypot_config"] = result
+
+
+                elif tool_message.name == 'get_packets':
+                    new_state["network_packets"] = result
+
+                elif tool_message.name == 'get_firewall_rules':
+                    new_state["firewall_config"] = result
+
+                elif tool_message.name == 'check_services_health':
+
+                    new_state["firewall_status"] = result['firewall_status']
+                    new_state["monitor_status"] = result['monitor_status']
+
+            except Exception as e:
+                print(f"Error: {e}\ntool_message: {tool_message}\ntool_responses: {tool_responses}")    
+        return new_state
+    
+    return {"messages" : state.messages}
+        
+
 
 def summarize_packets(state: HoneypotStateReact):
     """Analyze and summarize packet data from tool results"""
     print("Summarizing packet data...")
     
-    # Look for packet data in recent tool messages
-    packet_data = None
-    validated_messages = validate_message_sequence(state.messages)
-    for message in reversed(validated_messages):
-        if isinstance(message, ToolMessage) and message.name in ['get_packets', 'get_recent_packets']:
-            try:
-                tool_result = json.loads(message.content)
-                if tool_result.get('success') and tool_result.get('data', {}).get('packets'):
-                    packet_data = tool_result['data']['packets']
-                    break
-            except (json.JSONDecodeError, KeyError):
-                continue
-    
-    if packet_data:
+    if state.network_packets:
         # Create summary using LLM
         summary_response = llm.invoke(
-            PACKET_SUMMARY_PROMPT.format(packets=json.dumps(packet_data, indent=2))
+            SUMMARIZE_PROMPT.format(packets=json.dumps(state.network_packets, indent=2))
         )
         packet_summary = summary_response.content
-        print(f"Generated packet summary: {packet_summary[:200]}...")
     else:
         packet_summary = "No packet data available for analysis."
         print("No packet data found for summarization")
     
-    tools_called = set()
-    for message in validated_messages:
-        if isinstance(message, ToolMessage):
-            tools_called.add(message.name)
+    return {"packet_summary": packet_summary}
 
-    return {
-        "packet_summary": packet_summary,
-        "messages": validated_messages,
-        "tools_called": tools_called
-        }
+
+def tool_list():
+    return tools
+
 
 
 
 def should_continue(state: HoneypotStateReact) -> Literal["tools", "summarize", "__end__"]:
-    """Determine next action based on the last message with strict limits"""
-    validated_messages = validate_message_sequence(state.messages)
-    
-    if not validated_messages:
-        return "__end__"
-    
-    # Count tool calls to enforce maximum limit
-    tool_call_count = sum(1 for msg in validated_messages 
-                         if isinstance(msg, ToolMessage))
-    logger.info(f"Current tool call count: {tool_call_count}")
-
-    # Maximum 6 tool calls allowed
-    if tool_call_count >= 6:
-        logger.info("Maximum tool calls reached, ending execution")
-        return "__end__"
-    
-    last_message = validated_messages[-1]
+    """Determine next action based on the last message"""
+    last_message = state.messages[-1]
     
     # If the last message has tool calls, execute them
     if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
         return "tools"
     
-    # Check what tools have been called
-    tools_called = set()
-    for message in validated_messages:
-        if isinstance(message, ToolMessage):
-            tools_called.add(message.name)
+    # Check if we need to summarize packet data
+    if state.network_packets and not state.packet_summary:
+        return "summarize"
     
-    required_tools = {'getDockerContainers', 'get_firewall_rules', 'get_recent_packets'}
-    missing_tools = required_tools - tools_called
-    logger.info(f"Required tools not called yet: {missing_tools}")
-    # If we have called all required tools, check if we need to summarize
-    if required_tools.issubset(tools_called):
-        # Check if we need to summarize packet data
-        if any(isinstance(msg, ToolMessage) and msg.name in ['get_packets', 'get_recent_packets'] 
-               for msg in validated_messages) and not state.packet_summary:
-            return "summarize"
-        
-        # All required tools called and summary done (if needed), we're done
-        logger.info("All required tools called and processed, ending execution")
-        return "__end__"
+    # if state.pending_tool_calls:
+    #     return "tools"
     
-    # If we haven't called all required tools yet, continue but don't call duplicates
-    return "__end__"  # Let assistant decide what to call next
+    # Otherwise, we're done
+    return "__end__"
 
 # Build the graph
 def build_react_graph():
@@ -872,7 +633,7 @@ def build_react_graph():
     
     # Add nodes
     builder.add_node("assistant", assistant)
-    builder.add_node("tools", tool_node)
+    builder.add_node("tools", execute_tools)
     builder.add_node("summarize", summarize_packets)
     
     # Add edges
@@ -882,6 +643,7 @@ def build_react_graph():
     builder.add_edge("summarize", "assistant")
     
     return builder.compile()
+
 
 # Create the graph
 graph = build_react_graph()
