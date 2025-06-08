@@ -201,9 +201,6 @@ def execute_tools(state: state.HoneypotStateReact):
     
     return {"messages": state.messages}
 
-
-# Fix for extract_threat_data_for_verification function:
-
 def extract_threat_data_for_verification(state: state.HoneypotStateReact) -> List[Dict[str, Any]]:
     """
     Extract relevant threat data from state for LLM verification.
@@ -341,8 +338,6 @@ def extract_threat_data_for_verification(state: state.HoneypotStateReact) -> Lis
     
     logger.info(f"Extracted {len(threat_incidents_with_payload)} threat incidents with payload for verification")
     return threat_incidents_with_payload
-
-# Also fix the datetime formatting issue in format_threat_data_for_llm:
 
 def format_threat_data_for_llm(threat_incidents: List[Dict[str, Any]]) -> str:
     """
