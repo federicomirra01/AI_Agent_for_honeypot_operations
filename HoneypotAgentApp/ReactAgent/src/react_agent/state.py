@@ -5,8 +5,11 @@ from dataclasses import dataclass, field
 @dataclass
 class HoneypotStateReact:
     messages: List[BaseMessage] = field(default_factory=list)
-    packet_summary: str = ""
+    packet_summary: Dict[str, Any] = field(default_factory=dict)
     network_packets : List[Dict[str, Any]] = field(default_factory=list)
+    network_flows: Dict[str, Any] = field(default_factory=dict)
+    security_events: Dict[str, Any] = field(default_factory=dict)
+    compressed_packets: Dict[str, Any] = field(default_factory=dict)
     firewall_config: List[Dict[str, Any]] = field(default_factory=list)
     honeypot_config: List[Dict[str, Any]] = field(default_factory=list)
     firewall_status: str = ""
@@ -21,7 +24,10 @@ class HoneypotStateReact:
             self.messages = []
         
         self.network_packets = kwargs.get('network_packets', [])
-        self.packet_summary = kwargs.get('packet_summary', "")
+        self.network_flows = kwargs.get('network_flows', {})
+        self.security_events = kwargs.get('security_events', {})
+        self.compressed_packets = kwargs.get('compressed_packets', {})
+        self.packet_summary = kwargs.get('packet_summary', {})
         self.firewall_config = kwargs.get('firewall_config', [])
         self.honeypot_config = kwargs.get('honeypot_config', [])
         self.firewall_status = kwargs.get('firewall_status', "")
