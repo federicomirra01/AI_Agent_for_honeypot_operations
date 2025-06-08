@@ -22,9 +22,9 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 # Create list of tools
 tools = [
     tools.get_firewall_rules,
-    #add_allow_rule,
-    #add_block_rule,
-    #remove_firewall_rule,
+    tools.add_allow_rule,
+    tools.add_block_rule,
+    tools.remove_firewall_rule,
     tools.get_packets,
     tools.get_compressed_packets,
     tools.get_network_flows,
@@ -418,11 +418,9 @@ def chunk_threat_data(threat_incidents: List[Dict[str, Any]], max_chunk_size: in
     return chunks
 
 def create_threat_verification_prompt(formatted_incidents: str, chunk_info: str = "") -> str:
-    """
-    Create a comprehensive prompt for threat verification using state-of-the-art techniques.
-    """
     
-    prompt = f"""You are a cybersecurity expert analyzing network traffic for potential security threats. Your task is to verify whether the automated threat detection system correctly identified real security incidents by examining the actual network payload content.
+    prompt = f"""You are a cybersecurity expert analyzing network traffic for potential security threats. Your task is to verify whether the automated threat detection system correctly identified real security incidents by examining the actual network payload content. Take into account that you're in a honeypot context, so it is intended that the containers are vulnerable.
+    It is desirable to estimate the level of compromise that the attacker gained on the containers (user or root access).
 
 {chunk_info}
 
@@ -481,7 +479,7 @@ For each incident, provide:
 - **Total Verified Threats:** [Count]
 - **Detection Accuracy:** [Percentage or qualitative assessment]
 - **Most Critical Findings:** [Top 2-3 most concerning verified threats]
-- **Recommendations:** [Immediate actions needed based on verified threats]
+- **Attack graph exploration:** Try to evaluate if the vulnerable honeypot container has been fully compromised or not
 
 ## IMPORTANT GUIDELINES:
 
@@ -562,8 +560,7 @@ Provide a consolidated summary covering:
 1. **Total Verified Threats:** Overall count and breakdown
 2. **Highest Priority Threats:** Most critical findings across all chunks  
 3. **Attack Patterns:** Common techniques or coordinated activities observed
-4. **Overall Risk Assessment:** Aggregate risk level for the entire analysis period
-5. **Key Recommendations:** Priority actions based on all verified threats
+4. **Honeypot evaluation:** Evaluate the probability of the attack graph explored by the attacker
 
 Format as a clear executive summary for security decision-making."""
 
