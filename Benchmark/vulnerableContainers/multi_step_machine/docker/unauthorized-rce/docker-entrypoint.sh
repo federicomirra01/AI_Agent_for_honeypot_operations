@@ -15,13 +15,12 @@ if [ "$1" = 'dockerd' ]; then
 	# (and we'll run dind explicitly with "sh" since its shebang is /bin/bash)
 	set -- sh "$(which dind)" "$@"
 fi
-
+echo "Setting up gateway..."
+echo "Running setup_gateway.sh..."
+/setup_gateway.sh
 # Start crond process
 crond -b -L /var/log/crond.log
 
-echo "Setting up gateway..."
-sleep 3
-echo "Running setup_gateway.sh..."
-/setup_gateway.sh
+
 
 exec "$@"
