@@ -25,7 +25,6 @@ tools = [
     tools.add_allow_rule,
     tools.add_block_rule,
     tools.remove_firewall_rule,
-    tools.get_packets,
     tools.get_compressed_packets,
     tools.get_network_flows,
     tools.get_security_events,
@@ -114,12 +113,6 @@ def assistant(state: state.HoneypotStateReact):
     # Track tool calls if any are made
     new_state = {"messages": state.messages + [response]}
     
-    if hasattr(response, 'tool_calls') and response.tool_calls:
-        tool_calls = []
-        for tool_call in response.tool_calls:
-            tool_calls.append(tool_call)
-        new_state["pending_tool_calls"] = tool_calls
-    
     return new_state
 
 def execute_tools(state: state.HoneypotStateReact):
@@ -176,16 +169,6 @@ def execute_tools(state: state.HoneypotStateReact):
                 # Handle existing tools
                 elif tool_message.name == 'getDockerContainers':
                     new_state["honeypot_config"] = result.get('honeypot_config', [])
-
-                elif tool_message.name == 'get_packets':
-                    # Legacy support - extract and log threat information
-                    packets_data = result.get('network_packets', {})
-                    new_state["network_packets"] = packets_data
-                    if packets_data.get('success') and packets_data.get('data'):
-                        packets = packets_data['data'].get('packets', [])
-                        threat_count = sum(1 for p in packets if p.get('suspicious_patterns') or p.get('suspicious_uri_patterns'))
-                        if threat_count > 0:
-                            logger.warning(f"Legacy packets: Found {threat_count}/{len(packets)} packets with suspicious patterns")
 
                 elif tool_message.name == 'get_firewall_rules':
                     new_state["firewall_config"] = result.get('firewall_config', [])

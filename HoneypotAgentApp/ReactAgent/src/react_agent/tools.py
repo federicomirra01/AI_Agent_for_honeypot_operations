@@ -207,7 +207,7 @@ def get_security_events(time_window: int = 5) -> Dict[str, Any]:
         
     return {'security_events': result}
 
-def get_compressed_packets(limit: int = 100, time_window: int = 5, 
+def get_compressed_packets(limit: int = 500, time_window: int = 5, 
                          protocol: Optional[str] = None, 
                          direction: Optional[str] = None) -> Dict[str, Any]:
     """
@@ -265,42 +265,6 @@ def get_compressed_packets(limit: int = 100, time_window: int = 5,
         logger.error(f"Failed to get compressed packets: {result['error']}")
         
     return {'compressed_packets': result}
-
-def get_packets(limit: int = 50, protocol: Optional[str] = None, direction: Optional[str] = None):
-    """
-    Get recent packets with threat detection. 
-    Enhanced to include HTTP payload analysis and command injection detection.
-    Limited to prevent context overflow - use other tools for detailed analysis.
-    """
-    logger.info(f"Retrieving packets (limit: {limit}, protocol: {protocol}, direction: {direction})")
-    url = f"{MONITOR_URL}/packets"
-    
-    # Force smaller limit and recent time window to prevent context overflow
-    safe_limit = min(limit, 50)
-    params = {'limit': safe_limit, 'recent': 5}  # Only recent 5 minutes
-    
-    if protocol:
-        params['protocol'] = protocol
-    if direction:
-        params['direction'] = direction
-        
-    raw_packets = _make_request("GET", url, params=params)
-    
-    if not raw_packets['success']:
-        logger.error(f"Failed to get packets: {raw_packets['error']}")
-        return raw_packets
-    
-    # Count threats in the response for logging
-    if raw_packets.get('data') and raw_packets['data'].get('packets'):
-        threat_count = 0
-        for packet in raw_packets['data']['packets']:
-            if packet.get('suspicious_patterns') or packet.get('suspicious_uri_patterns'):
-                threat_count += 1
-        
-        if threat_count > 0:
-            logger.warning(f"Found {threat_count} packets with suspicious patterns in raw packet data")
-    
-    return {'network_packets': raw_packets}
 
 # Health Check Functions
 def check_services_health() -> Dict[str, Any]:
