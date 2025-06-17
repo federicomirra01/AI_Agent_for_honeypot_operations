@@ -1256,8 +1256,28 @@ Format as a clear executive summary for security decision-making."""
         analysis_result = analyze_threats_with_llm(llm, threat_incidents)
         packet_summary = f"## THREAT VERIFICATION ANALYSIS\n\n{analysis_result}"
     return {"packet_summary": packet_summary}
+# Add this new function after the should_continue function:
 
-def should_continue(state: HoneypotStateReact) -> Literal["tools", "threat_verification", END]:
+def cleanup_messages(state: HoneypotStateReact):
+    """Clean up messages to keep only the final evaluation, preventing context overflow"""
+    if state.messages:
+        # Find the last assistant message (final evaluation)
+        final_message = None
+        for msg in reversed(state.messages):
+            if hasattr(msg, 'content') and not hasattr(msg, 'tool_calls'):
+                # This is likely the final assistant response without tool calls
+                final_message = msg
+                break
+        
+        if final_message:
+            # Keep only the final evaluation message
+            return {"messages": [final_message]}
+    
+    return {"messages": state.messages}
+
+# Modify the should_continue function to include cleanup logic:
+
+def should_continue(state: HoneypotStateReact) -> Literal["tools", "threat_verification", "cleanup", "end"]:
     """Determine next action based on the last message"""
     last_message = state.messages[-1]
     
@@ -1268,11 +1288,16 @@ def should_continue(state: HoneypotStateReact) -> Literal["tools", "threat_verif
     # Check if we need to summarize packet data
     if state.network_flows and state.security_events and state.compressed_packets and not state.packet_summary:
         return "threat_verification"
+    
+    # If we have a final message without tool calls and packet summary exists, cleanup
+    if (not hasattr(last_message, 'tool_calls') and state.packet_summary and len(state.messages) > 1):  # Only cleanup if we have multiple messages
+        return "cleanup"
 
     # Otherwise, we're done
     return END
 
 # Build the graph
+
 def build_react_graph():
     builder = StateGraph(HoneypotStateReact)
     
@@ -1280,15 +1305,17 @@ def build_react_graph():
     builder.add_node("assistant", assistant)
     builder.add_node("tools", execute_tools)
     builder.add_node("threat_verification", summarize_packets)
+    builder.add_node("cleanup", cleanup_messages)  # Add cleanup node
     
     # Add edges
     builder.add_edge(START, "assistant")
     builder.add_conditional_edges("assistant", should_continue)
     builder.add_edge("tools", "assistant")
     builder.add_edge("threat_verification", "assistant")
+    builder.add_edge("assistant", "cleanup")
+    builder.add_edge("cleanup", END)  # Cleanup goes directly to END
     
     return builder.compile()
-
 
 # Create the graph
 graph = build_react_graph()

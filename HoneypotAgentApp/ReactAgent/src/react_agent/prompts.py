@@ -268,10 +268,11 @@ add_allow_rule(source_ip=<container_ip>, dest_ip=<attacker_ip>, port=None, proto
 
 **Correct Response:**
 ```
-Thought: Attacker is performing reconnaissance on container. I should expose the most contacted port to encourage deeper engagement.
+Thought: Attacker is performing reconnaissance on container. I should expose the most contacted port to encourage deeper engagement remembering to not specify the port for the reverse connection.
 
 Action: add_allow_rule(source_ip=192.168.100.50, dest_ip=172.20.0.10, port=22, protocol='tcp')
 Action: add_allow_rule(source_ip=172.20.0.10, dest_ip=192.168.100.50, port=None, protocol='tcp')
+
 
 Observation: SSH service now accessible for attack progression.
 ```

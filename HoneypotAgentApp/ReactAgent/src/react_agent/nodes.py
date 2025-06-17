@@ -40,7 +40,7 @@ def assistant(state: state.HoneypotStateReact):
     """Main assistant function that processes the conversation and calls tools"""
     
     # Create system message with current state context
-    system_message = SystemMessage(content=prompts.SYSTEM_PROMPT_GPT_REACT_ONLY_RULES_v0)
+    system_message = SystemMessage(content=prompts.ASSISTANT_PROMPT)
     
     # Add context messages based on current state
     context_messages = []
@@ -78,7 +78,7 @@ def assistant(state: state.HoneypotStateReact):
                 if packet.get('threats') or (packet.get('http') and packet['http'].get('threats')):
                     threat_packets += 1
         context_messages.append(
-            HumanMessage(content=f"PACKET ANALYSIS: {packet_count} packets analyzed, {threat_packets} contain threats. Full data: {state.compressed_packets}")
+            HumanMessage(content=f"PACKET ANALYSIS: {packet_count} packets analyzed, {threat_packets} contain threats.") #  Full data: {state.compressed_packets}
         )
     
     # Add configuration context
@@ -109,10 +109,8 @@ def assistant(state: state.HoneypotStateReact):
     
     # Get response from LLM
     response = llm_with_tools.invoke(messages)
-    
     # Track tool calls if any are made
     new_state = {"messages": state.messages + [response]}
-    
     return new_state
 
 def execute_tools(state: state.HoneypotStateReact):
