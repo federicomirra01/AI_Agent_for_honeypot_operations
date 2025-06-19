@@ -10,6 +10,7 @@ import datetime
 import prompts
 import tools
 import state
+import memory
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,17 +35,71 @@ tools = [
 
 
 llm = ChatOpenAI(model="gpt-4o")
+episodic_memory = memory.EpisodicMemory()
+
+def load_memory_context(state: state.HoneypotStateReact):
+    """Load memory context from episodic memory and update state"""
+    
+    if state.memory_context:
+        return state.memory_context
+    
+    recent_iterations = episodic_memory.get_recent_iterations(limit=5)
+    if not recent_iterations:
+        logger.info("No recent iterations found in episodic memory.")
+        return []
+    
+    print(f"Loaded {len(recent_iterations)} recent iterations from episodic memory.")
+    return recent_iterations
+
+def save_memory_context(state: state.HoneypotStateReact) -> Dict[str, Any]:
+    """Save the last message from current iteration"""
+
+    if not state.messages:
+        logger.error("No messages to save in memory context.")
+        return {}
+    
+    last_message = state.messages[-1]
+
+    if hasattr(last_message, 'content'):
+        message_content = last_message.content
+    else:
+        message_content = str(last_message)
+
+    # Save to memory
+    iteration_id = episodic_memory.save_iteration(message_content)
+    total_iterations = episodic_memory.get_iteration_count()
+
+    return {
+        "message" : f"Iteration saved with ID {iteration_id}. Total iterations: {total_iterations}",
+        "memory_context": message_content
+    }
+
+
+
 llm_with_tools = llm.bind_tools(tools)
 
 def assistant(state: state.HoneypotStateReact):
     """Main assistant function that processes the conversation and calls tools"""
     
+    if not state.memory_context:
+        previous_iterations = load_memory_context(state)
     # Create system message with current state context
     system_message = SystemMessage(content=prompts.ASSISTANT_PROMPT)
     
     # Add context messages based on current state
     context_messages = []
     
+    # Add previous iterations context
+    memory_context = state.memory_context or previous_iterations if state.memory_context or previous_iterations else []
+    if memory_context:
+        iterations_context = "PREVIOUS ITERATIONS CONTEXT:\n"
+        for i, iteration in enumerate(memory_context, 1):
+            iteration = iteration.value if hasattr(iteration, 'value') else iteration
+            iterations_context += f"\n--- ITERATION {iteration.get('iteration_number', i)} ({iteration.get('datetime', 'Unknown time')}) ---\n"
+            iterations_context += iteration.get('last_message', 'No message content')
+            iterations_context += "\n"
+        
+        context_messages.append(HumanMessage(content=iterations_context))
     # Add packet summary context if available (this contains threat verification analysis)
     if state.packet_summary:
         context_messages.append(
@@ -110,7 +165,7 @@ def assistant(state: state.HoneypotStateReact):
     # Get response from LLM
     response = llm_with_tools.invoke(messages)
     # Track tool calls if any are made
-    new_state = {"messages": state.messages + [response]}
+    new_state = {"messages": state.messages + [response], "memory_context": memory_context}
     return new_state
 
 def execute_tools(state: state.HoneypotStateReact):
@@ -564,6 +619,12 @@ Format as a clear executive summary for security decision-making."""
         analysis_result = analyze_threats_with_llm(llm, threat_incidents)
         packet_summary = f"## THREAT VERIFICATION ANALYSIS\n\n{analysis_result}"
     return {"packet_summary": packet_summary}
+
+def save_iteration_node(state: state.HoneypotStateReact):
+    """Save the last message from current iteration to episodic memory"""
+    result = save_memory_context(state)
+    print(f"Memory: {result.get('message', 'Iteration save failed')}")
+    return {"memory_context": result.get("memory_context", "")}
 
 
 def tool_list():

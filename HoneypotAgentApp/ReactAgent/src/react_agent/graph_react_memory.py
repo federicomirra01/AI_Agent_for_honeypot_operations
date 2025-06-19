@@ -6,6 +6,7 @@ from typing import List, Dict, Any, Optional, Annotated
 from langgraph.graph.message import add_messages
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from dataclasses import dataclass, field
+from langgraph.store.memory import InMemoryStore
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
 import docker
@@ -15,6 +16,7 @@ import openai
 import json
 import os
 import datetime
+import time
 
 # Load environment variables
 load_dotenv()
@@ -40,6 +42,7 @@ class HoneypotStateReact:
     firewall_status: str = ""
     monitor_status: str = ""
     cleanup_flag: bool = False
+    memory_context: Dict[str, Any] = field(default_factory=dict)
 
     def __init__(self, **kwargs):
         """Custom initializer that can handle both direct field assignment and dictionary unpacking."""
@@ -59,8 +62,266 @@ class HoneypotStateReact:
         self.firewall_status = kwargs.get('firewall_status', "")
         self.monitor_status = kwargs.get('monitor_status', "")
         self.cleanup_flag = kwargs.get('cleanup_flag', False)
+        self.memory_context = kwargs.get('memory_context', {})
+
+class EpisodicMemory:
+
+    def __init__(self):
+        self.store = InMemoryStore()
+        self.namespace = ("honeypot", "episodes")
+        self.meta_namespace = ("honeypot", "meta")
+        self.iteration_counter = 0
+
+    def save_iteration(self, last_message_content: str) -> str:
+        """Save the last message from current iteration"""
+        self.iteration_counter += 1
+        iteration_id = f"iteration_{self.iteration_counter }"
+        
+        iteration_data = {
+            "id": iteration_id,
+            "iteration_number": self.iteration_counter,
+            "timestamp": int(time.time()),
+            "datetime": datetime.datetime.now().isoformat(),
+            "last_message": last_message_content
+        }
+
+        self.store.put(self.namespace, iteration_id, iteration_data)
+
+        self.store.put(self.meta_namespace, "latest_iteration", self.iteration_counter)
+
+        return iteration_id
+    
+    def get_recent_iterations(self, limit: int = 5) -> List[Dict[str, Any]]:
+        """Retrieve the most recent iterations"""
+        iterations = []
+
+        try:
+            latest = self.store.get(self.meta_namespace, "latest_iteration")
+            if not latest:
+                return []
+            
+            latest = latest.value if hasattr(latest, 'value') else latest
+            start_iteration = max(1, latest - limit + 1)
+
+            for i in range(start_iteration, latest + 1):
+                iteration_id = f"iteration_{i}"
+                iteration_data = self.store.get(self.namespace, iteration_id)
+                if iteration_data:
+                    iterations.append(iteration_data)
+        except Exception as e:
+            print(f"Error retrieving iterations: {e}")
+        
+        return iterations.values() if hasattr(iterations, 'values') else iterations
+    
+    def get_iteration_count(self) -> int:
+        """Get the total number of iterations"""
+        try:
+            latest = self.store.get(self.meta_namespace, "latest_iteration")
+            if latest: 
+                latest = latest.value if hasattr(latest, 'value') else latest
+            else:
+                latest = 0
+
+
+            return latest 
+        except Exception as e:
+            print(f"Error retrieving iteration count: {e}")
+            return 0
+        
+    def clear_memory(self):
+        """Clear all stored iterations"""
+        try:
+            # Reset counter
+            self.iteration_counter = 0
+            self.store.put(self.meta_namespace, "latest_iteration", 0)
+
+            print("Memory counter reset")
+        except Exception as e:
+            print(f"Error clearing memory: {e}")
 
 # System prompts
+SYSTEM_PROMPT_GPT_REACT_ONLY_RULES_v0 = """
+Honeypot Firewall Guardian: AI Agent Specification
+
+Role & Identity
+You are a cybersecurity AI agent specializing in dynamic firewall management for honeypot systems. Your primary function is to analyze network traffic and autonomously generate iptables rules that both protect the honeypot and strategically engage potential attackers.
+You will be assessed by a benchmark, hence you will be respond to a single attacker that targets the honeypot. Your goal is to make it explore the attack graph (you don't know the graph) and engage the attacker cover the full attack surface. BLOCKING ALL TRAFFIC FROM THE ATTACKER IS NOT A SOLUTION (if it has not compromised all the containers)
+The firewall rules are executed on a firewall that protects the entire network and not on the container itself, hence take into consideration the containers private IP address.
+The firewall is initialized as the following, but take into account you can manage only the FORWARD chain rule:
+
+#!/bin/bash
+
+# Initialize Firewall Rules
+# Sets up basic iptables configuration
+
+echo "Initializing firewall rules..."
+
+# Clear existing rules
+iptables -F
+iptables -X
+iptables -t nat -F
+iptables -t nat -X
+iptables -t mangle -F
+iptables -t mangle -X
+
+# Set default policies
+iptables -P INPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables -P OUTPUT ACCEPT
+
+# Allow loopback traffic
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
+
+# Allow established and related connections
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Allow HTTP access to management API
+iptables -A INPUT -p tcp --dport 5000 -j ACCEPT
+iptables -A INPUT -p tcp --dport 6000 -j ACCEPT
+
+#xiptables -A INPUT -p tcp --dport 8080 -j ACCEPT
+
+# Allow ICMP (ping)
+iptables -A INPUT -p icmp -j ACCEPT
+iptables -A FORWARD -p icmp -j ACCEPT
+iptables -A OUTPUT -p icmp -j ACCEPT
+
+# Enable NAT for outbound internet access from honeypot
+iptables -t nat -A POSTROUTING -s 172.20.0.0/24 -o eth0 -j MASQUERADE
+
+
+# Allow honeypot containers to reach the internet
+iptables -A FORWARD -s 172.20.0.0/24 -o eth0 -j ACCEPT
+iptables -A FORWARD -i eth0 -d 172.20.0.0/24 -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Basic forwarding rules (will be modified by AI agent)
+# Initially drop all forwarding from attacker to honeypot
+iptables -A FORWARD -s 192.168.100.0/24 -d 172.20.0.0/24 -j DROP
+iptables -A INPUT -s 192.168.100.0/24 -d 172.20.0.0/24 -j ACCEPT
+iptables -A OUTPUT -s 192.168.100.0/24 -d 172.20.0.0/24 -j ACCEPT
+
+iptables -A FORWARD -s 172.20.0.0/24 -d 192.168.100.0/24 -j DROP
+iptables -A INPUT -s 172.20.0.0/24 -d 192.168.100.0/24 -j ACCEPT
+iptables -A OUTPUT -s 172.20.0.0/24 -d 192.168.100.0/24 -j ACCEPT
+# Log dropped packets for analysis
+iptables -A FORWARD -j LOG --log-prefix "FIREWALL-DROP: " --log-level 4
+# Only masquerade non-local traffic
+# iptables -t nat -A POSTROUTING -s 172.20.0.0/24 ! -d 192.168.100.0/24 -o eth0 -j MASQUERADE
+# Save rules
+iptables-save > /firewall/rules/current_rules.txt
+
+echo "Basic firewall rules initialized"
+echo "All traffic from attacker network (192.168.100.0/24) to honeypot (172.20.0.0/24) is currently ACCEPTED"
+echo "Use the API or AI agent to modify rules dynamically"
+
+
+You have granted access to the following tools:
+
+Network Intelligence Tools:
+- check_services_health: Verify firewall and packet monitor status
+- get_firewall_rules: Retrieve current active firewall rules and configuration
+- add_allow_rule: add allow rule on the FORWARD chain of the firewall 
+- add_block_rule: add block rule on the FORWARD chain of the firewall
+- remove_firewall_rule: remove a number specified rule from the FORWARD chain of the firewall
+- get_packets: Get captured packets with filtering options (protocol, direction, limit) - legacy tool for raw packet data
+- get_network_flows: Get aggregated network flow analysis with threat detection and IP-based activity summary
+- get_security_events: Get security-focused analysis including verified threat detection, command execution attempts, and malicious IP identification  
+- get_compressed_packets: Get essential packet data with HTTP payload analysis and threat indicators for efficient processing
+- getDockerContainers: Get list of available honeypot containers
+
+Example usage add_allow_rule:
+for each pair source_ip, dest_ip allow the flow to the container exposed port and to any attacker port
+add_allow_rule(source_ip=<attacker_ip>, dest_ip=<vulnerable_container_ip>, port=<targeted_port>, protocol='tcp')
+add_allow_rule(source_ip=<vulnerable_container_ip>, dest_ip=<attacker_ip>, port=None, protocol='tcp')
+port must be None for the attacker ip to ensure to get a connection (IMPORTANT!!!)
+
+Enhanced Threat Detection Capabilities:
+The monitoring system now provides advanced threat detection including:
+- HTTP payload analysis for command injection detection
+- Automatic identification of reverse shell attempts, privilege escalation, and system reconnaissance
+- Real-time threat verification with actual payload content analysis
+- Specific detection of command execution patterns like /bin/bash, find commands, file access attempts
+- Threat correlation across network flows and individual packets
+
+Tool Usage Strategy:
+- Use get_security_events for high-level threat assessment and command execution detection
+- Use get_network_flows for understanding traffic patterns and identifying threat IPs
+- Use get_compressed_packets for detailed packet-level threat analysis when needed
+- Always start with check_services_health to ensure monitoring systems are operational
+- After reasoning on the network information apply the proper firewall rule with add_allow_rule, add_block_rule and remove_firewall_rule tools
+- When adding allow rule ensure the connection is enable from src to dst and from dst to src, hence there are two rules for each traffic flow
+
+Network Context:
+- Attacker Network: 192.168.100.0/24 (source of potential threats)
+- Agent Network: 192.168.200.0/30 (your operational network)  
+- Honeypot Containers: Various private IPs within protected network
+- Monitor focuses on traffic to/from attacker network (192.168.100.0/24)
+- Attack will come from the same IP since you're gonna be assessed by a benchmark (IMPORTANT!!!)
+
+Objectives
+1. Protect the honeypot from traffic surges and malicious attack patterns.
+2. Guide attacker behavior by strategically exposing or filtering ports.
+3. Enhance the likelihood of capturing complete attack sequences (scanning without engagement is not interesting, expose the contacted port to engage).
+4. Engage attackers in prolonged interactions to collect intelligence.
+5. React dynamically to verified threats detected in network traffic.
+
+Operational Parameters
+- Autonomy: Operate without human initiation.
+- Environment: Test setting to demonstrate reasoning capabilities.
+- Tool Usage: You must gather information systematically:
+  1. Check firewall and monitor status first (use check_services_health) MANDATORY!!!
+  2. Assess current security posture (get_security_events for threat overview) MANDATORY!!!
+  3. Analyze network patterns (get_network_flows for traffic analysis) MANDATORY !!!
+  4. Get detailed threat data (get_compressed_packets for packet-level analysis) MANDATORY !!!
+  5. Review current configuration (get_firewall_rules, getDockerContainers) MANDATORY !!!
+  6. Don't call the add_allow_rule, add_block_rule, remove_firewall_rule just after the network data retrieval, wai for the packet_summary state to be filled.
+  6. Update firewall rules based on collected intelligence ONLY after you retrieve the PACKET SUMMARY form the summarization node (MANDATORY!!!)
+  7. Output the firewall rules that you would implement and then end the cycle 
+- Efficiency: Gather essential information efficiently, avoid redundant tool calls
+- Threat Priority: Focus on verified threats with actual command execution evidence
+
+Tactical Guidelines
+- REMEMBER that if you want to gather information from attackers attacking the honeypot, traffic must be allowed in both directions (IMPORTANT!!!)
+- REMEMBER to check the initial firewall configuration provided in the system prompt and the firewall rules on the FORWARD chain obtained with get_firewall_rule tool to produce effective firewall rules. (IMPORTANT!)
+- Prioritize blocking IPs with verified command execution attempts or reverse shell activity
+- If you already seen an attack in previous iterations, block that traffic because it is not interesting anymore (attack graph already covered)
+- Expose ONE container at a time based on observed traffic patterns 
+- Close previously opened ports when opening new ones to maintain control
+- Use DROP rules for clearly malicious IPs showing aggressive scanning or verified attack behaviors
+- Implement rate-limiting (-m limit) for ports experiencing repeated access attempts from non-threatening sources
+- Apply ACCEPT, DROP, or REJECT actions appropriately based on threat verification analysis
+- Target rules precisely to avoid overblocking legitimate traffic
+- Consider verified threats from packet payload analysis as higher priority than statistical anomalies
+- React to specific attack techniques detected (command injection, reverse shells, privilege escalation)
+
+ReACT Workflow
+1. **Thought**: Analyze what information is needed for current situation assessment
+2. **Action**: Use appropriate tools to gather network intelligence (start with security events for threat overview)
+3. **Observation**: Process the returned data to understand network state and verified threats
+4. **Thought**: Determine verified threats, attack patterns, and required firewall changes
+5. **Action**: Implement firewall rules using management tools if needed
+6. **Final Answer**: Provide reasoning and any implemented rule changes based on threat verification
+
+Output Requirements
+- Use ReACT format: Thought → Action → Observation → Thought → Action → Final Answer
+- Base decisions on actual verified threats from payload analysis, not just traffic volume
+- Follow STRICTLY operational parameters and Tactical guidelines (MANDATORY!!!)
+- Provide clear reasoning for each firewall rule decision with specific threat justification
+- Rules must account for container private IP addresses when targeting honeypots
+- Show understanding of verified attack techniques and payload content analysis
+- Prioritize responses to confirmed malicious activity over statistical anomalies
+
+Success Metrics
+- Effective mitigation of verified threats through targeted blocking of malicious IPs
+- Strategic port management guiding attacker exploration toward valuable honeypots
+- Well-reasoned decisions demonstrating understanding of actual attack techniques and payloads
+- Efficient use of enhanced threat detection tools to identify real security incidents
+- Dynamic adaptation to confirmed attack patterns with evidence-based firewall rules
+- Accurate distinction between verified threats and false positives
+"""
+
 ASSISTANT_PROMPT = """# HONEYPOT FIREWALL GUARDIAN: AI AGENT SPECIFICATION v2.0
 
 ## Core Identity & Mission
@@ -544,17 +805,73 @@ tools = [
 
 # Initialize LLM
 llm = ChatOpenAI(model="gpt-4o")
+episodic_memory = EpisodicMemory()
 llm_with_tools = llm.bind_tools(tools)
+
+def load_memory_context(state: HoneypotStateReact):
+    """Load memory context from episodic memory and update state"""
+    try:
+        if state.memory_context:
+            return state.memory_context
+        
+        recent_iterations = episodic_memory.get_recent_iterations(limit=5)
+        if not recent_iterations:
+            logger.info("No recent iterations found in episodic memory.")
+            return []
+        
+        print(f"Loaded {len(recent_iterations)} recent iterations from episodic memory.")
+        return recent_iterations
+    except Exception as e:
+        logger.error(f"Error loading memory context: {e}")
+        return []
+
+def save_memory_context(state: HoneypotStateReact) -> Dict[str, Any]:
+    """Save the last message from current iteration"""
+
+    if not state.messages:
+        logger.error("No messages to save in memory context.")
+        return {}
+    
+    last_message = state.messages[-1]
+
+    if hasattr(last_message, 'content'):
+        message_content = last_message.content
+    else:
+        message_content = str(last_message)
+
+    # Save to memory
+    iteration_id = episodic_memory.save_iteration(message_content)
+    total_iterations = episodic_memory.get_iteration_count()
+
+    return {
+        "message" : f"Iteration saved with ID {iteration_id}. Total iterations: {total_iterations}",
+        "memory_context": message_content
+    }
+
 
 def assistant(state: HoneypotStateReact):
     """Main assistant function that processes the conversation and calls tools"""
     
+    if not state.memory_context:
+        previous_iterations = load_memory_context(state)
     # Create system message with current state context
     system_message = SystemMessage(content=ASSISTANT_PROMPT)
     
     # Add context messages based on current state
     context_messages = []
     
+    # Add previous iterations context
+    memory_context = state.memory_context or previous_iterations if state.memory_context or previous_iterations else []
+    if memory_context:
+        iterations_context = "PREVIOUS ITERATIONS CONTEXT:\n"
+        for i, iteration in enumerate(memory_context, 1):
+            iteration = iteration.value if hasattr(iteration, 'value') else iteration
+            print(iteration)
+            iterations_context += f"\n--- ITERATION {iteration.get('iteration_number', i)} ({iteration.get('datetime', 'Unknown time')}) ---\n"
+            iterations_context += iteration.get('last_message', 'No message content')
+            iterations_context += "\n"
+        
+        context_messages.append(HumanMessage(content=iterations_context))
     # Add packet summary context if available (this contains threat verification analysis)
     if state.packet_summary:
         context_messages.append(
@@ -588,7 +905,7 @@ def assistant(state: HoneypotStateReact):
                 if packet.get('threats') or (packet.get('http') and packet['http'].get('threats')):
                     threat_packets += 1
         context_messages.append(
-            HumanMessage(content=f"PACKET ANALYSIS: {packet_count} packets analyzed, {threat_packets} contain threats. Full data: {state.compressed_packets}")
+            HumanMessage(content=f"PACKET ANALYSIS: {packet_count} packets analyzed, {threat_packets} contain threats.") #  Full data: {state.compressed_packets}
         )
     
     # Add configuration context
@@ -619,11 +936,10 @@ def assistant(state: HoneypotStateReact):
     
     # Get response from LLM
     response = llm_with_tools.invoke(messages)
-    
     # Track tool calls if any are made
-    new_state = {"messages": state.messages + [response]}
-    
+    new_state = {"messages": state.messages + [response], "memory_context": memory_context}
     return new_state
+
 
 def execute_tools(state: HoneypotStateReact):
     """Execute pending tool calls and update state with enhanced threat data handling"""
@@ -1077,35 +1393,34 @@ Format as a clear executive summary for security decision-making."""
         packet_summary = f"## THREAT VERIFICATION ANALYSIS\n\n{analysis_result}"
     return {"packet_summary": packet_summary}
 
+def save_iteration_node(state: HoneypotStateReact):
+    """Save the last message from current iteration to episodic memory"""
+    result = save_memory_context(state)
+    print(f"Memory: {result.get('message', 'Iteration save failed')}")
+    return {}
+
 def cleanup_messages(state: HoneypotStateReact):
-    """Clean up messages to keep only the final evaluation, preventing context overflow"""
-    print("Cleaning up messages to keep only the final evaluation...")
-    if state.messages:
-        # Find the last assistant message (final evaluation)
-        last_message = state.messages[-1]
-        final_message = None
-        cleanup_flag = state.cleanup_flag
-        if cleanup_flag:
-            print("Cleaning up postponed")
-            return {}
-
-        if hasattr(last_message, 'content') and (hasattr(last_message, 'tool_calls') or last_message.tool_calls == []) and len(state.packet_summary) > 1 and len(state.messages) > 1:
-            # This is likely the final assistant response without tool calls
-            print("Cleaning up messages...")
-            final_message = last_message.content
+    """Clean up ALL messages and data, keeping only essential state for next iteration"""
+    print("Performing complete cleanup before ending iteration...")
     
-            if final_message:
-                return {
-                    "messages": [AIMessage(content=final_message)], 
-                    "cleanup_flag": True
-                    }
-        else: 
-            print("Cleaning up condition not met, returning empty state")
-            return {}
+    if state.messages:
+        print("Flushing all messages and resetting state for next iteration")
+        
+        return {
+            "messages": [],  # Flush all messages
+            "packet_summary": {},  # Clear packet summary
+            "network_flows": {},  # Clear network flows
+            "security_events": {},  # Clear security events
+            "compressed_packets": {},  # Clear compressed packets
+            "firewall_config": [],  # Will be reloaded in next iteration
+            "previous_iterations": [],  # Will be reloaded in next iteration
+            "cleanup_flag": True
+        }
+    else:
+        print("No messages to cleanup")
+        return {}
 
-# Modify the should_continue function to include cleanup logic:
-
-def should_continue(state: HoneypotStateReact) -> Literal["tools", "threat_verification", "cleanup", "__end__"]:
+def should_continue(state: HoneypotStateReact) -> Literal["tools", "threat_verification", "save_iteration", "cleanup", "__end__"]:
     """Determine next action based on the last message"""
     last_message = state.messages[-1]
     
@@ -1117,9 +1432,15 @@ def should_continue(state: HoneypotStateReact) -> Literal["tools", "threat_verif
     if state.network_flows and state.security_events and state.compressed_packets and not state.packet_summary:
         return "threat_verification"
 
-    if not state.cleanup_flag and len(state.packet_summary) > 1 and len(state.messages) > 1:
-        return "cleanup"
+    # NEW: Before cleanup, save the iteration if we have analyzed data and final response
+    if (len(state.packet_summary) > 1 and len(state.messages) > 1 and 
+        not state.cleanup_flag and hasattr(last_message, 'tool_calls') and last_message.tool_calls == []):
+        return "save_iteration"
     
+    # After saving iteration, do cleanup
+    if not state.cleanup_flag and len(state.messages) > 1:
+        return "cleanup"
+
     return END
 
 # Build the graph
@@ -1131,17 +1452,18 @@ def build_react_graph():
     builder.add_node("assistant", assistant)
     builder.add_node("tools", execute_tools)
     builder.add_node("threat_verification", summarize_packets)
-    builder.add_node("cleanup", cleanup_messages)  # Add cleanup node
+    builder.add_node("save_iteration", save_iteration_node)  # NEW: Save iteration node
+    builder.add_node("cleanup", cleanup_messages)  # Modified cleanup
     
     # Add edges
     builder.add_edge(START, "assistant")
     builder.add_conditional_edges("assistant", should_continue)
     builder.add_edge("tools", "assistant")
     builder.add_edge("threat_verification", "assistant")
-    builder.add_edge("cleanup", "assistant")
-    builder.add_edge("assistant", END)  # Cleanup goes directly to END
+    builder.add_edge("save_iteration", "cleanup")  # NEW: Save iteration then cleanup
+    builder.add_edge("cleanup", "__end__")  # Cleanup then end
         
-    return builder.compile()
+    return builder.compile(store=episodic_memory)
 
 # Create the graph
 graph = build_react_graph()

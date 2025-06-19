@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 # API Configuration
 FIREWALL_URL = "http://192.168.200.2:5000"
 MONITOR_URL = "http://192.168.200.2:6000"
-REQUEST_TIMEOUT = 10
+REQUEST_TIMEOUT = 3
 
 def _make_request(method: str, url: str, **kwargs) -> Dict[str, Any]:
     """
@@ -24,6 +24,12 @@ def _make_request(method: str, url: str, **kwargs) -> Dict[str, Any]:
         response = requests.request(method, url, timeout=REQUEST_TIMEOUT, **kwargs)
         
         if response.status_code == 200:
+            return {
+                'success': True,
+                'data': response.json(),
+                'status_code': response.status_code
+            }
+        elif response.status_code == 207:
             return {
                 'success': True,
                 'data': response.json(),
@@ -119,24 +125,53 @@ def add_block_rule(source_ip: str, dest_ip: str,
         
     return result
 
-def remove_firewall_rule(rule_number: int) -> Dict[str, Any]:
+def remove_firewall_rule(rule_numbers: List[int]) -> Dict[str, Any]:
     """
-    Remove firewall rule by number
-        
+    Remove firewall rule(s) by number(s)
+
+    Args:
+        rule_number: List of rule numbers to remove (single rule = list with one element)
+
     Returns:
         Dict with success status and response data
     """
-    logger.info(f"Removing firewall rule #{rule_number}")
-    url = f"{FIREWALL_URL}/rules/{rule_number}"
-    result = _make_request("DELETE", url)
+    if not isinstance(rule_numbers, list):
+        error_msg = f"Invalid rule_numbers type: {type(rule_numbers)}. Expected List[int]"
+        logger.error(error_msg)
+        return {
+            'success': False,
+            'error': error_msg,
+            'status_code': 400
+        }
     
-    if result['success']:
-        logger.info(f"Successfully removed rule #{rule_number}")
+    # Validate list contains only integers
+    if not all(isinstance(num, int) for num in rule_numbers):
+        error_msg = "rule_numbers must be a list of integers"
+        logger.error(error_msg)
+        return {
+            'success': False,
+            'error': error_msg,
+            'status_code': 400
+        }
+    
+    if len(rule_numbers) == 1:
+        logger.info(f"Removing firewall rule #{rule_numbers[0]}")
     else:
-        logger.error(f"Failed to remove rule: {result['error']}")
-        
-    return result
+        logger.info(f"Removing firewall rules: {rule_numbers}")
 
+    url = f"{FIREWALL_URL}/rules"
+    payload = {"rule_numbers": rule_numbers}
+    result = _make_request("DELETE", url, json=payload)
+
+    if result['success']:
+        if len(rule_numbers) == 1:
+            logger.info(f"Successfully removed firewall rule #{rule_numbers[0]}")
+        else:
+            logger.info(f"Successfully removed firewall rules: {rule_numbers}")
+    else:
+        logger.error(f"Failed to remove rules: {result['error']}")
+    
+    return result
 # Replace/add these tools in your graph_react.py
 
 def get_network_flows(time_window: int = 5) -> Dict[str, Any]:

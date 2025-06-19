@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional, Annotated
+from typing import List, Dict, Any, Annotated
 from langgraph.graph.message import add_messages
 from langchain_core.messages import BaseMessage, HumanMessage
 from dataclasses import field
@@ -15,6 +15,7 @@ class HoneypotStateReact:
     firewall_status: str = ""
     monitor_status: str = ""
     cleanup_flag: bool = False
+    memory_context: Dict[str, Any] = field(default_factory=dict)
 
     def __init__(self, **kwargs):
         """Custom initializer that can handle both direct field assignment and dictionary unpacking."""
@@ -34,4 +35,5 @@ class HoneypotStateReact:
         self.firewall_status = kwargs.get('firewall_status', "")
         self.monitor_status = kwargs.get('monitor_status', "")
         self.cleanup_flag = kwargs.get('cleanup_flag', False)
+        self.memory_context = kwargs.get('memory_context', {})
 
