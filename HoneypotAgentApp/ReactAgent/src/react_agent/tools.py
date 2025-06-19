@@ -16,6 +16,11 @@ REQUEST_TIMEOUT = 3
 def _make_request(method: str, url: str, **kwargs) -> Dict[str, Any]:
     """
     Make HTTP request with error handling
+
+    Args:
+        method: HTTP method (GET, POST, DELETE, etc.)
+        url: URL to send the request to
+        **kwargs: Additional parameters for requests.request()
         
     Returns:
         Dict containing response data or error info
@@ -130,7 +135,7 @@ def remove_firewall_rule(rule_numbers: List[int]) -> Dict[str, Any]:
     Remove firewall rule(s) by number(s)
 
     Args:
-        rule_number: List of rule numbers to remove (single rule = list with one element)
+        rule_numbers: List of rule numbers to remove (single rule = list with one element)
 
     Returns:
         Dict with success status and response data
@@ -351,14 +356,16 @@ def getDockerContainers() -> List[Dict[str, Any]]:
                 if network_config.get('IPAddress'):
                     ip_address = network_config.get('IPAddress')
                     break
-            
+            if ip_address in ['192.168.100.2', '192.168.200.2'] or container.name in ['cve-2021-22205-redis-1', 'cve-2021-22205-postgresql-1']:
+                continue # Skip the firewall and attacker containers and backend containers
+
             info = {
                 'id': container.id[:12],  # Short ID
                 'name': container.name,
                 'image': container.image.tags[0] if container.image.tags else container.image.id[:12],
                 'status': container.status,
                 'created': container.attrs['Created'],
-                'ports': container.ports,
+                'ports': list(container.ports.keys()),
                 'ip_address': ip_address
             }
             container_info.append(info)
