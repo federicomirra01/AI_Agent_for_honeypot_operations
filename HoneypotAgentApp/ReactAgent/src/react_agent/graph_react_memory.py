@@ -1,12 +1,11 @@
 from langgraph.graph import START, END, StateGraph
 from langgraph.prebuilt import ToolNode
-from typing import Literal
 from dotenv import load_dotenv
-from typing import List, Dict, Any, Optional, Annotated
-from langgraph.graph.message import add_messages
-from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
+from typing import List, Dict, Any, Optional, Annotated, Literal, Union
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, AIMessage
 from dataclasses import dataclass, field
 from langgraph.store.memory import InMemoryStore
+from langgraph.graph.message import add_messages
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
 import docker
@@ -29,9 +28,27 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# reducer funcction to properly manage messages in the workflow
+def messages_reducer(current: List[BaseMessage], update: Union[List[BaseMessage], str]) -> List[BaseMessage]:
+    """Safe custom reducer that preserves tool call integrity"""
+    if update == "CLEAR_ALL":
+        # Only clear if no pending tool calls
+        if current:
+            last_msg = current[-1]
+            if isinstance(last_msg, AIMessage) and hasattr(last_msg, 'tool_calls') and last_msg.tool_calls:
+                print("Cannot clear: pending tool calls exist")
+                return current
+        return []
+    
+    else:
+        # Normal append operation
+        return add_messages(current, update)
+    
+    
+
 @dataclass
 class HoneypotStateReact:
-    messages: Annotated[List[BaseMessage], add_messages] = field(default_factory=list)
+    messages: Annotated[List[BaseMessage], messages_reducer] = field(default_factory=list)
     packet_summary: Dict[str, Any] = field(default_factory=dict)
     network_packets : List[Dict[str, Any]] = field(default_factory=list)
     network_flows: Dict[str, Any] = field(default_factory=dict)
@@ -139,190 +156,7 @@ class EpisodicMemory:
         except Exception as e:
             print(f"Error clearing memory: {e}")
 
-# System prompts
-SYSTEM_PROMPT_GPT_REACT_ONLY_RULES_v0 = """
-Honeypot Firewall Guardian: AI Agent Specification
-
-Role & Identity
-You are a cybersecurity AI agent specializing in dynamic firewall management for honeypot systems. Your primary function is to analyze network traffic and autonomously generate iptables rules that both protect the honeypot and strategically engage potential attackers.
-You will be assessed by a benchmark, hence you will be respond to a single attacker that targets the honeypot. Your goal is to make it explore the attack graph (you don't know the graph) and engage the attacker cover the full attack surface. BLOCKING ALL TRAFFIC FROM THE ATTACKER IS NOT A SOLUTION (if it has not compromised all the containers)
-The firewall rules are executed on a firewall that protects the entire network and not on the container itself, hence take into consideration the containers private IP address.
-The firewall is initialized as the following, but take into account you can manage only the FORWARD chain rule:
-
-#!/bin/bash
-
-# Initialize Firewall Rules
-# Sets up basic iptables configuration
-
-echo "Initializing firewall rules..."
-
-# Clear existing rules
-iptables -F
-iptables -X
-iptables -t nat -F
-iptables -t nat -X
-iptables -t mangle -F
-iptables -t mangle -X
-
-# Set default policies
-iptables -P INPUT ACCEPT
-iptables -P FORWARD ACCEPT
-iptables -P OUTPUT ACCEPT
-
-# Allow loopback traffic
-iptables -A INPUT -i lo -j ACCEPT
-iptables -A OUTPUT -o lo -j ACCEPT
-
-# Allow established and related connections
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
-
-# Allow HTTP access to management API
-iptables -A INPUT -p tcp --dport 5000 -j ACCEPT
-iptables -A INPUT -p tcp --dport 6000 -j ACCEPT
-
-#xiptables -A INPUT -p tcp --dport 8080 -j ACCEPT
-
-# Allow ICMP (ping)
-iptables -A INPUT -p icmp -j ACCEPT
-iptables -A FORWARD -p icmp -j ACCEPT
-iptables -A OUTPUT -p icmp -j ACCEPT
-
-# Enable NAT for outbound internet access from honeypot
-iptables -t nat -A POSTROUTING -s 172.20.0.0/24 -o eth0 -j MASQUERADE
-
-
-# Allow honeypot containers to reach the internet
-iptables -A FORWARD -s 172.20.0.0/24 -o eth0 -j ACCEPT
-iptables -A FORWARD -i eth0 -d 172.20.0.0/24 -m state --state ESTABLISHED,RELATED -j ACCEPT
-
-# Basic forwarding rules (will be modified by AI agent)
-# Initially drop all forwarding from attacker to honeypot
-iptables -A FORWARD -s 192.168.100.0/24 -d 172.20.0.0/24 -j DROP
-iptables -A INPUT -s 192.168.100.0/24 -d 172.20.0.0/24 -j ACCEPT
-iptables -A OUTPUT -s 192.168.100.0/24 -d 172.20.0.0/24 -j ACCEPT
-
-iptables -A FORWARD -s 172.20.0.0/24 -d 192.168.100.0/24 -j DROP
-iptables -A INPUT -s 172.20.0.0/24 -d 192.168.100.0/24 -j ACCEPT
-iptables -A OUTPUT -s 172.20.0.0/24 -d 192.168.100.0/24 -j ACCEPT
-# Log dropped packets for analysis
-iptables -A FORWARD -j LOG --log-prefix "FIREWALL-DROP: " --log-level 4
-# Only masquerade non-local traffic
-# iptables -t nat -A POSTROUTING -s 172.20.0.0/24 ! -d 192.168.100.0/24 -o eth0 -j MASQUERADE
-# Save rules
-iptables-save > /firewall/rules/current_rules.txt
-
-echo "Basic firewall rules initialized"
-echo "All traffic from attacker network (192.168.100.0/24) to honeypot (172.20.0.0/24) is currently ACCEPTED"
-echo "Use the API or AI agent to modify rules dynamically"
-
-
-You have granted access to the following tools:
-
-Network Intelligence Tools:
-- check_services_health: Verify firewall and packet monitor status
-- get_firewall_rules: Retrieve current active firewall rules and configuration
-- add_allow_rule: add allow rule on the FORWARD chain of the firewall 
-- add_block_rule: add block rule on the FORWARD chain of the firewall
-- remove_firewall_rule: remove a number specified rule from the FORWARD chain of the firewall
-- get_packets: Get captured packets with filtering options (protocol, direction, limit) - legacy tool for raw packet data
-- get_network_flows: Get aggregated network flow analysis with threat detection and IP-based activity summary
-- get_security_events: Get security-focused analysis including verified threat detection, command execution attempts, and malicious IP identification  
-- get_compressed_packets: Get essential packet data with HTTP payload analysis and threat indicators for efficient processing
-- getDockerContainers: Get list of available honeypot containers
-
-Example usage add_allow_rule:
-for each pair source_ip, dest_ip allow the flow to the container exposed port and to any attacker port
-add_allow_rule(source_ip=<attacker_ip>, dest_ip=<vulnerable_container_ip>, port=<targeted_port>, protocol='tcp')
-add_allow_rule(source_ip=<vulnerable_container_ip>, dest_ip=<attacker_ip>, port=None, protocol='tcp')
-port must be None for the attacker ip to ensure to get a connection (IMPORTANT!!!)
-
-Enhanced Threat Detection Capabilities:
-The monitoring system now provides advanced threat detection including:
-- HTTP payload analysis for command injection detection
-- Automatic identification of reverse shell attempts, privilege escalation, and system reconnaissance
-- Real-time threat verification with actual payload content analysis
-- Specific detection of command execution patterns like /bin/bash, find commands, file access attempts
-- Threat correlation across network flows and individual packets
-
-Tool Usage Strategy:
-- Use get_security_events for high-level threat assessment and command execution detection
-- Use get_network_flows for understanding traffic patterns and identifying threat IPs
-- Use get_compressed_packets for detailed packet-level threat analysis when needed
-- Always start with check_services_health to ensure monitoring systems are operational
-- After reasoning on the network information apply the proper firewall rule with add_allow_rule, add_block_rule and remove_firewall_rule tools
-- When adding allow rule ensure the connection is enable from src to dst and from dst to src, hence there are two rules for each traffic flow
-
-Network Context:
-- Attacker Network: 192.168.100.0/24 (source of potential threats)
-- Agent Network: 192.168.200.0/30 (your operational network)  
-- Honeypot Containers: Various private IPs within protected network
-- Monitor focuses on traffic to/from attacker network (192.168.100.0/24)
-- Attack will come from the same IP since you're gonna be assessed by a benchmark (IMPORTANT!!!)
-
-Objectives
-1. Protect the honeypot from traffic surges and malicious attack patterns.
-2. Guide attacker behavior by strategically exposing or filtering ports.
-3. Enhance the likelihood of capturing complete attack sequences (scanning without engagement is not interesting, expose the contacted port to engage).
-4. Engage attackers in prolonged interactions to collect intelligence.
-5. React dynamically to verified threats detected in network traffic.
-
-Operational Parameters
-- Autonomy: Operate without human initiation.
-- Environment: Test setting to demonstrate reasoning capabilities.
-- Tool Usage: You must gather information systematically:
-  1. Check firewall and monitor status first (use check_services_health) MANDATORY!!!
-  2. Assess current security posture (get_security_events for threat overview) MANDATORY!!!
-  3. Analyze network patterns (get_network_flows for traffic analysis) MANDATORY !!!
-  4. Get detailed threat data (get_compressed_packets for packet-level analysis) MANDATORY !!!
-  5. Review current configuration (get_firewall_rules, getDockerContainers) MANDATORY !!!
-  6. Don't call the add_allow_rule, add_block_rule, remove_firewall_rule just after the network data retrieval, wai for the packet_summary state to be filled.
-  6. Update firewall rules based on collected intelligence ONLY after you retrieve the PACKET SUMMARY form the summarization node (MANDATORY!!!)
-  7. Output the firewall rules that you would implement and then end the cycle 
-- Efficiency: Gather essential information efficiently, avoid redundant tool calls
-- Threat Priority: Focus on verified threats with actual command execution evidence
-
-Tactical Guidelines
-- REMEMBER that if you want to gather information from attackers attacking the honeypot, traffic must be allowed in both directions (IMPORTANT!!!)
-- REMEMBER to check the initial firewall configuration provided in the system prompt and the firewall rules on the FORWARD chain obtained with get_firewall_rule tool to produce effective firewall rules. (IMPORTANT!)
-- Prioritize blocking IPs with verified command execution attempts or reverse shell activity
-- If you already seen an attack in previous iterations, block that traffic because it is not interesting anymore (attack graph already covered)
-- Expose ONE container at a time based on observed traffic patterns 
-- Close previously opened ports when opening new ones to maintain control
-- Use DROP rules for clearly malicious IPs showing aggressive scanning or verified attack behaviors
-- Implement rate-limiting (-m limit) for ports experiencing repeated access attempts from non-threatening sources
-- Apply ACCEPT, DROP, or REJECT actions appropriately based on threat verification analysis
-- Target rules precisely to avoid overblocking legitimate traffic
-- Consider verified threats from packet payload analysis as higher priority than statistical anomalies
-- React to specific attack techniques detected (command injection, reverse shells, privilege escalation)
-
-ReACT Workflow
-1. **Thought**: Analyze what information is needed for current situation assessment
-2. **Action**: Use appropriate tools to gather network intelligence (start with security events for threat overview)
-3. **Observation**: Process the returned data to understand network state and verified threats
-4. **Thought**: Determine verified threats, attack patterns, and required firewall changes
-5. **Action**: Implement firewall rules using management tools if needed
-6. **Final Answer**: Provide reasoning and any implemented rule changes based on threat verification
-
-Output Requirements
-- Use ReACT format: Thought → Action → Observation → Thought → Action → Final Answer
-- Base decisions on actual verified threats from payload analysis, not just traffic volume
-- Follow STRICTLY operational parameters and Tactical guidelines (MANDATORY!!!)
-- Provide clear reasoning for each firewall rule decision with specific threat justification
-- Rules must account for container private IP addresses when targeting honeypots
-- Show understanding of verified attack techniques and payload content analysis
-- Prioritize responses to confirmed malicious activity over statistical anomalies
-
-Success Metrics
-- Effective mitigation of verified threats through targeted blocking of malicious IPs
-- Strategic port management guiding attacker exploration toward valuable honeypots
-- Well-reasoned decisions demonstrating understanding of actual attack techniques and payloads
-- Efficient use of enhanced threat detection tools to identify real security incidents
-- Dynamic adaptation to confirmed attack patterns with evidence-based firewall rules
-- Accurate distinction between verified threats and false positives
-"""
-
-ASSISTANT_PROMPT = """# HONEYPOT FIREWALL GUARDIAN: AI AGENT SPECIFICATION v2.0
+ASSISTANT_PROMPT = """# HONEYPOT FIREWALL GUARDIAN: AI AGENT SPECIFICATION
 
 ## Core Identity & Mission
 You are an elite cybersecurity AI agent specializing in dynamic firewall management for honeypot systems. Your mission is critical: analyze network traffic patterns and autonomously generate precise iptables rules that protect honeypots while strategically engaging attackers. Think step by step through each decision.
@@ -410,10 +244,11 @@ add_allow_rule(source_ip=<container_ip>, dest_ip=<attacker_ip>, port=None, proto
 
 **Correct Response:**
 ```
-Thought: Attacker is performing reconnaissance on container. I should expose the most contacted port to encourage deeper engagement.
+Thought: Attacker is performing reconnaissance on container. I should expose the most contacted port to encourage deeper engagement remembering to not specify the port for the reverse connection.
 
 Action: add_allow_rule(source_ip=192.168.100.50, dest_ip=172.20.0.10, port=22, protocol='tcp')
 Action: add_allow_rule(source_ip=172.20.0.10, dest_ip=192.168.100.50, port=None, protocol='tcp')
+
 
 Observation: SSH service now accessible for attack progression.
 ```
@@ -449,18 +284,232 @@ You will be evaluated on:
 Begin each response with:
 "Executing Honeypot Firewall Guardian Protocol..."
 
-End each response with specific firewall rules implemented and security rationale.
+The last message, after you executed all the tools and applied the firewall rules, should be a summary of the rules you applied, the reasoning behind them, and the honeypot involved in the engagement to take track of the attack graph.
+
+**You MUST think step by step and ensure your answer is unbiased and does not rely on stereotypes.**"""
+
+
+ASSISTANT_PROMPT_V2 = """# HONEYPOT FIREWALL GUARDIAN: AI AGENT SPECIFICATION
+
+## Core Identity & Mission
+You are an elite cybersecurity AI agent specializing in dynamic firewall management for honeypot systems. Your mission is critical: analyze network traffic patterns and autonomously generate precise iptables rules that protect honeypots while strategically engaging attackers. Think step by step through each decision.
+
+**This is extremely important to cybersecurity operations - you MUST follow all protocols exactly.**
+
+---
+
+## ###INSTRUCTION###
+
+Your task is to operate as an autonomous firewall guardian that:
+1. Protects honeypot infrastructure from destructive attacks
+2. Strategically guides attacker behavior through targeted port exposure
+3. Maximizes attack surface exploration for intelligence gathering
+4. Responds dynamically to verified threats with evidence-based decisions
+5. **TRACKS ATTACK GRAPH PROGRESSION** across all honeypots and iterations
+6. **BLOCKS ALL TRAFFIC** when attack graph exploration is complete across all honeypots
+
+You will be penalized if you block all traffic without allowing adequate exploration of the attack graph.
+
+---
+
+## ###NETWORK_CONTEXT###
+
+**Critical Network Information:**
+- **Attacker Network:** 192.168.100.0/24 (primary threat source)
+- **Agent Network:** 192.168.200.0/30 (your operational network)  
+- **Honeypot Network:** 172.20.0.0/24 (protected container network)
+- **Assessment Mode:** Single attacker benchmark - ensure complete attack graph coverage
+
+**Initial Firewall State:**
+```bash
+# FORWARD chain rules you can modify:
+iptables -A FORWARD -s 192.168.100.0/24 -d 172.20.0.0/24 -j DROP
+iptables -A FORWARD -s 172.20.0.0/24 -d 192.168.100.0/24 -j DROP
+```
+
+---
+
+## ###ATTACK_GRAPH_TRACKING###
+
+**CRITICAL: You must track and evaluate attack graph progression for each honeypot:**
+
+**Attack Graph Completion Levels:**
+- **0% - UNEXPOSED:** Honeypot never exposed to attacker traffic
+- **33% - EXPOSED:** Honeypot accessible but no successful exploitation detected
+- **66% - INITIAL_COMPROMISE:** Basic exploitation confirmed (e.g., web shell, basic command execution)
+- **100% - PRIVILEGE_ESCALATION:** Advanced exploitation confirmed (e.g., root access, system enumeration)
+
+**Decision Logic:**
+1. **CONTINUE EXPOSURE:** If any honeypot is <100% exploited, continue strategic exposure
+2. **SWITCH TARGETS:** If current honeypot reaches 100%, expose next unexploited honeypot
+3. **LOCKDOWN MODE:** If ALL honeypots reach 100% exploration, implement complete network lockdown
+
+**Honeypot Rotation Strategy:**
+- Expose ONE honeypot at a time for focused attack progression
+- Allow attacker to fully explore current target before switching
+- Prioritize honeypots with different service types for diverse attack vectors
+
+---
+
+## ###TOOLS_AVAILABLE###
+
+**Network Intelligence Tools:**
+- `check_services_health`: Verify firewall and monitoring status
+- `get_firewall_rules`: Retrieve current iptables configuration
+- `get_security_events`: Analyze verified threats and command execution attempts
+- `get_network_flows`: Examine traffic patterns and threat IP identification
+- `get_compressed_packets`: Detailed packet analysis with payload inspection
+- `getDockerContainers`: List available honeypot containers
+
+**Firewall Management Tools:**
+- `add_allow_rule(source_ip, dest_ip, port, protocol)`: Enable traffic flow
+- `add_block_rule(source_ip, dest_ip, port, protocol)`: Block malicious traffic  
+- `remove_firewall_rule(rule_numbers)`: Remove specific FORWARD chain rules (List of integers even if only one rule)
+
+**Rule Application Pattern:**
+```
+# For each allowed flow, create bidirectional rules:
+add_allow_rule(source_ip=<attacker_ip>, dest_ip=<container_ip>, port=<service_port>, protocol='tcp')
+add_allow_rule(source_ip=<container_ip>, dest_ip=<attacker_ip>, port=None, protocol='tcp')
+```
+
+---
+
+## ###TACTICAL_GUIDELINES###
+
+**Priority Actions (Execute in Order):**
+1. **MANDATORY:** Check system health first using `check_services_health`
+2. **MANDATORY:** Assess current threats using `get_security_events`  
+3. **MANDATORY:** Analyze traffic patterns using `get_network_flows`
+4. **MANDATORY:** Review packet details using `get_compressed_packets`
+5. **MANDATORY:** Check current rules using `get_firewall_rules` and `getDockerContainers`
+6. **EVALUATE:** Review previous iteration memory to understand current attack graph state
+7. **MANDATORY WAIT:** Do not implement firewall changes until THREAT SUMMARY is not provided
+8. **DECIDE:** Determine if lockdown mode should be activated (all honeypots 100% exploited)
+9. **ACT:** Apply firewall rules based on THREAT SUMMARY and attack graph progression
+10. **OUTPUT:** Final ITERATION SUMMARY only once you applied the firewall rules after the getting the THREAT SUMMARY.
+
+**Strategic Decision Framework:**
+- **PRIORITIZE MEMORY:** Use previous iteration data to understand attack progression
+- **TRACK EXPLOITATION:** Evaluate current compromise level of active honeypot
+- **BLOCK CONFIRMED THREATS:** IPs showing verified command execution or reverse shell attempts
+- **ROTATE TARGETS:** Switch to new honeypot when current one reaches 100% exploitation
+- **LOCKDOWN DECISION:** Block all traffic if all available honeypots are fully exploited
+- **EVIDENCE-BASED:** All decisions must be justified by payload analysis and threat verification
+
+---
+
+## ###EXAMPLE###
+
+**Scenario:** Attacker 192.168.100.50 scanning multiple ports on honeypot 172.20.0.10
+
+**Correct Response:**
+```
+Thought: Attacker is performing reconnaissance on container. Based on memory, this honeypot has 0% exploitation. I should expose the most contacted port to encourage deeper engagement.
+
+Action: add_allow_rule(source_ip=192.168.100.50, dest_ip=172.20.0.10, port=22, protocol='tcp')
+Action: add_allow_rule(source_ip=172.20.0.10, dest_ip=192.168.100.50, port=None, protocol='tcp')
+
+Observation: SSH service now accessible for attack progression.
+```
+
+---
+
+## ###REACT_WORKFLOW###
+
+Execute this exact sequence for each operation cycle:
+
+**1. Thought:** Analyze current situation, review memory context, and determine required intelligence
+**2. Action:** Gather network data using monitoring tools (start with security events)  
+**3. Observation:** Process gathered data to identify verified threats and patterns
+**4. Thought:** Evaluate attack graph progression and determine if lockdown mode is needed
+**5. Action:** Implement targeted firewall rules OR execute complete lockdown if all honeypots exploited
+**6. Final Answer:** **MANDATORY FORMAT** - Provide structured summary for memory tracking
+
+---
+
+## ###FINAL_ANSWER_FORMAT###
+
+**CRITICAL: Your final message MUST follow this exact format for proper memory tracking:**
+
+```
+## ITERATION SUMMARY
+
+**HONEYPOT STATUS:**
+- **Currently Exposed:** [IP:PORT or "NONE" if lockdown]
+- **Exploitation Level:** [0%/33%/66%/100%]
+- **Evidence Summary:** [Brief description of compromise evidence]
+
+**FIREWALL ACTIONS:**
+- **Rules Applied:** [List of specific rules added/removed]
+- **Justification:** [Why these rules were necessary based on threat analysis]
+
+**ATTACK GRAPH PROGRESSION:**
+- **Honeypot 1 (IP):** [0%/33%/66%/100%] - [Service Type] - [Status]
+- **Honeypot 2 (IP):** [0%/33%/66%/100%] - [Service Type] - [Status]
+- **[Continue for all honeypots]**
+
+**DECISION RATIONALE:**
+[Explain the strategic decision made and why]
+
+**NEXT ITERATION GUIDANCE:**
+[What should be monitored or acted upon in the next cycle]
+
+**LOCKDOWN STATUS:** [ACTIVE/INACTIVE - if all honeypots 100% exploited]
+```
+
+---
+
+## ###SUCCESS_METRICS###
+
+You will be evaluated on:
+- **Attack Graph Coverage:** Systematic progression through all available honeypots
+- **Threat Mitigation:** Effective blocking of verified malicious IPs with evidence
+- **Strategic Progression:** Proper honeypot rotation and exploitation level tracking
+- **Intelligence Gathering:** Prolonged attacker engagement for comprehensive data collection
+- **Evidence-Based Decisions:** Rules justified by actual payload analysis and verified threats
+- **Memory Utilization:** Effective use of previous iteration data for decision making
+- **Lockdown Accuracy:** Correct identification of when all honeypots are fully exploited
+
+---
+
+## ###LOCKDOWN_PROTOCOL###
+
+**When ALL honeypots reach 100% exploitation:**
+
+1. **Verify Completion:** Confirm all available honeypots have been fully compromised
+2. **Implement Total Lockdown:** 
+   ```
+   # Block all attacker traffic
+   add_block_rule(source_ip="192.168.100.0/24", dest_ip="172.20.0.0/24", port=None, protocol="all")
+   remove_firewall_rule([all_existing_allow_rules])
+   ```
+3. **Document Achievement:** Record complete attack graph exploration in final summary
+
+---
+
+## ###OUTPUT_FORMAT###
+
+Begin each response with:
+"Executing Honeypot Firewall Guardian Protocol..."
+
+**The final message MUST use the ITERATION SUMMARY format above for proper memory tracking and attack graph progression monitoring.**
 
 **You MUST think step by step and ensure your answer is unbiased and does not rely on stereotypes.**"""
 
 # API Configuration
 FIREWALL_URL = "http://192.168.200.2:5000"
 MONITOR_URL = "http://192.168.200.2:6000"
-REQUEST_TIMEOUT = 10
+REQUEST_TIMEOUT = 3
 
 def _make_request(method: str, url: str, **kwargs) -> Dict[str, Any]:
     """
     Make HTTP request with error handling
+
+    Args:
+        method: HTTP method (GET, POST, DELETE, etc.)
+        url: URL to send the request to
+        **kwargs: Additional parameters for requests.request()
         
     Returns:
         Dict containing response data or error info
@@ -469,6 +518,12 @@ def _make_request(method: str, url: str, **kwargs) -> Dict[str, Any]:
         response = requests.request(method, url, timeout=REQUEST_TIMEOUT, **kwargs)
         
         if response.status_code == 200:
+            return {
+                'success': True,
+                'data': response.json(),
+                'status_code': response.status_code
+            }
+        elif response.status_code == 207:
             return {
                 'success': True,
                 'data': response.json(),
@@ -568,22 +623,52 @@ def add_block_rule(source_ip: str, dest_ip: str,
     return result
 
 @tool
-def remove_firewall_rule(rule_number: int) -> Dict[str, Any]:
+def remove_firewall_rule(rule_numbers: List[int]) -> Dict[str, Any]:
     """
-    Remove firewall rule by number
-        
+    Remove firewall rule(s) by number(s)
+
+    Args:
+        rule_numbers: List of rule numbers to remove (single rule = list with one element)
+
     Returns:
         Dict with success status and response data
     """
-    logger.info(f"Removing firewall rule #{rule_number}")
-    url = f"{FIREWALL_URL}/rules/{rule_number}"
-    result = _make_request("DELETE", url)
+    if not isinstance(rule_numbers, list):
+        error_msg = f"Invalid rule_numbers type: {type(rule_numbers)}. Expected List[int]"
+        logger.error(error_msg)
+        return {
+            'success': False,
+            'error': error_msg,
+            'status_code': 400
+        }
     
-    if result['success']:
-        logger.info(f"Successfully removed rule #{rule_number}")
+    # Validate list contains only integers
+    if not all(isinstance(num, int) for num in rule_numbers):
+        error_msg = "rule_numbers must be a list of integers"
+        logger.error(error_msg)
+        return {
+            'success': False,
+            'error': error_msg,
+            'status_code': 400
+        }
+    
+    if len(rule_numbers) == 1:
+        logger.info(f"Removing firewall rule #{rule_numbers[0]}")
     else:
-        logger.error(f"Failed to remove rule: {result['error']}")
-        
+        logger.info(f"Removing firewall rules: {rule_numbers}")
+
+    url = f"{FIREWALL_URL}/rules"
+    payload = {"rule_numbers": rule_numbers}
+    result = _make_request("DELETE", url, json=payload)
+
+    if result['success']:
+        if len(rule_numbers) == 1:
+            logger.info(f"Successfully removed firewall rule #{rule_numbers[0]}")
+        else:
+            logger.info(f"Successfully removed firewall rules: {rule_numbers}")
+    else:
+        logger.error(f"Failed to remove rules: {result['error']}")
+    
     return result
 
 @tool
@@ -734,8 +819,6 @@ def check_services_health() -> Dict[str, Any]:
         logger.info("Successfully retrieve services health")
     except Exception as e:
         print(f"Error: {e}")
-        firewall_health = 'down'
-        monitor_health = 'down'
     return {
             'firewall_status': firewall_health,
             'monitor_status': monitor_health
@@ -770,14 +853,16 @@ def getDockerContainers() -> List[Dict[str, Any]]:
                 if network_config.get('IPAddress'):
                     ip_address = network_config.get('IPAddress')
                     break
-            
+            if ip_address in ['192.168.100.2', '192.168.200.2'] or container.name in ['cve-2021-22205-redis-1', 'cve-2021-22205-postgresql-1']:
+                continue # Skip the firewall and attacker containers and backend containers
+
             info = {
                 'id': container.id[:12],  # Short ID
                 'name': container.name,
                 'image': container.image.tags[0] if container.image.tags else container.image.id[:12],
                 'status': container.status,
                 'created': container.attrs['Created'],
-                'ports': container.ports,
+                'ports': list(container.ports.keys()),
                 'ip_address': ip_address
             }
             container_info.append(info)
@@ -788,7 +873,6 @@ def getDockerContainers() -> List[Dict[str, Any]]:
         return {"error": f"Docker connection error: {str(e)}"}
     except Exception as e:
         return {"error": f"Unexpected error: {str(e)}"}
-
 
 # Create list of tools
 tools = [
@@ -803,27 +887,22 @@ tools = [
     getDockerContainers
 ]
 
-# Initialize LLM
 llm = ChatOpenAI(model="gpt-4o")
 episodic_memory = EpisodicMemory()
-llm_with_tools = llm.bind_tools(tools)
 
 def load_memory_context(state: HoneypotStateReact):
     """Load memory context from episodic memory and update state"""
-    try:
-        if state.memory_context:
-            return state.memory_context
-        
-        recent_iterations = episodic_memory.get_recent_iterations(limit=5)
-        if not recent_iterations:
-            logger.info("No recent iterations found in episodic memory.")
-            return []
-        
-        print(f"Loaded {len(recent_iterations)} recent iterations from episodic memory.")
-        return recent_iterations
-    except Exception as e:
-        logger.error(f"Error loading memory context: {e}")
+    
+    if state.memory_context:
+        return state.memory_context
+    
+    recent_iterations = episodic_memory.get_recent_iterations(limit=5)
+    if not recent_iterations:
+        logger.info("No recent iterations found in episodic memory.")
         return []
+    
+    print(f"Loaded {len(recent_iterations)} recent iterations from episodic memory.")
+    return recent_iterations
 
 def save_memory_context(state: HoneypotStateReact) -> Dict[str, Any]:
     """Save the last message from current iteration"""
@@ -848,6 +927,7 @@ def save_memory_context(state: HoneypotStateReact) -> Dict[str, Any]:
         "memory_context": message_content
     }
 
+llm_with_tools = llm.bind_tools(tools)
 
 def assistant(state: HoneypotStateReact):
     """Main assistant function that processes the conversation and calls tools"""
@@ -855,7 +935,7 @@ def assistant(state: HoneypotStateReact):
     if not state.memory_context:
         previous_iterations = load_memory_context(state)
     # Create system message with current state context
-    system_message = SystemMessage(content=ASSISTANT_PROMPT)
+    system_message = SystemMessage(content=ASSISTANT_PROMPT_V2)
     
     # Add context messages based on current state
     context_messages = []
@@ -866,18 +946,20 @@ def assistant(state: HoneypotStateReact):
         iterations_context = "PREVIOUS ITERATIONS CONTEXT:\n"
         for i, iteration in enumerate(memory_context, 1):
             iteration = iteration.value if hasattr(iteration, 'value') else iteration
-            print(iteration)
             iterations_context += f"\n--- ITERATION {iteration.get('iteration_number', i)} ({iteration.get('datetime', 'Unknown time')}) ---\n"
             iterations_context += iteration.get('last_message', 'No message content')
             iterations_context += "\n"
         
         context_messages.append(HumanMessage(content=iterations_context))
     # Add packet summary context if available (this contains threat verification analysis)
-    if state.packet_summary:
+    if len(state.packet_summary) > 1:
         context_messages.append(
             HumanMessage(content=f"THREAT ANALYSIS RESULTS:\n{state.packet_summary}")
         )
-    
+    else:
+        context_messages.append(
+            HumanMessage(content=f"THREAT ANALYSIS from PACKET SUMMARY not available yet, DO NOT PRODUCE ITERATION SUMMARY\n")
+        )
     # Add enhanced network intelligence context
     if state.security_events and state.security_events.get('success'):
         events_data = state.security_events.get('data', {})
@@ -895,18 +977,18 @@ def assistant(state: HoneypotStateReact):
             HumanMessage(content=f"NETWORK FLOWS: {total_flows} flows analyzed, {threat_ips} threat IPs identified. Full data: {state.network_flows}")
         )
     
-    if state.compressed_packets and state.compressed_packets.get('success'):
-        packets_data = state.compressed_packets.get('data', {})
-        packet_count = packets_data.get('count', 0)
-        # Count threat packets
-        threat_packets = 0
-        if 'packets' in packets_data:
-            for packet in packets_data['packets']:
-                if packet.get('threats') or (packet.get('http') and packet['http'].get('threats')):
-                    threat_packets += 1
-        context_messages.append(
-            HumanMessage(content=f"PACKET ANALYSIS: {packet_count} packets analyzed, {threat_packets} contain threats.") #  Full data: {state.compressed_packets}
-        )
+    # if state.compressed_packets and state.compressed_packets.get('success'):
+    #     packets_data = state.compressed_packets.get('data', {})
+    #     packet_count = packets_data.get('count', 0)
+    #     # Count threat packets
+    #     threat_packets = 0
+    #     if 'packets' in packets_data:
+    #         for packet in packets_data['packets']:
+    #             if packet.get('threats') or (packet.get('http') and packet['http'].get('threats')):
+    #                 threat_packets += 1
+    #     context_messages.append(
+    #         HumanMessage(content=f"PACKET ANALYSIS: {packet_count} packets analyzed, {threat_packets} contain threats.") #  Full data: {state.compressed_packets}
+    #     )
     
     # Add configuration context
     if state.firewall_config:
@@ -939,7 +1021,6 @@ def assistant(state: HoneypotStateReact):
     # Track tool calls if any are made
     new_state = {"messages": state.messages + [response], "memory_context": memory_context}
     return new_state
-
 
 def execute_tools(state: HoneypotStateReact):
     """Execute pending tool calls and update state with enhanced threat data handling"""
@@ -1005,10 +1086,10 @@ def execute_tools(state: HoneypotStateReact):
 
             except Exception as e:
                 logger.error(f"Error processing tool response: {e}\nTool: {tool_message.name}\nContent: {tool_message.content[:200]}...")
-                
+        new_state["cleanup_flag"] = False
         return new_state
     
-    return {"messages": state.messages}
+    return {"messages": state.messages, "cleanup_flag": False}
 
 def extract_threat_data_for_verification(state: HoneypotStateReact) -> List[Dict[str, Any]]:
     """
@@ -1397,7 +1478,7 @@ def save_iteration_node(state: HoneypotStateReact):
     """Save the last message from current iteration to episodic memory"""
     result = save_memory_context(state)
     print(f"Memory: {result.get('message', 'Iteration save failed')}")
-    return {}
+    return {"memory_context": result.get("memory_context", "")}
 
 def cleanup_messages(state: HoneypotStateReact):
     """Clean up ALL messages and data, keeping only essential state for next iteration"""
@@ -1407,13 +1488,16 @@ def cleanup_messages(state: HoneypotStateReact):
         print("Flushing all messages and resetting state for next iteration")
         
         return {
-            "messages": [],  # Flush all messages
+            "messages": "CLEAR_ALL",  # Flush all messages
             "packet_summary": {},  # Clear packet summary
             "network_flows": {},  # Clear network flows
             "security_events": {},  # Clear security events
             "compressed_packets": {},  # Clear compressed packets
-            "firewall_config": [],  # Will be reloaded in next iteration
-            "previous_iterations": [],  # Will be reloaded in next iteration
+            "firewall_config": "",  # Will be reloaded in next iteration
+            "honeypot_config": "",  # Will be reloaded in next iteration
+            "firewall_status": "",  # Will be reloaded in next iteration
+            "monitor_status": "",  # Will be reloaded in next iteration
+            "memory_context": [],  # Will be reloaded in next iteration
             "cleanup_flag": True
         }
     else:
@@ -1423,7 +1507,8 @@ def cleanup_messages(state: HoneypotStateReact):
 def should_continue(state: HoneypotStateReact) -> Literal["tools", "threat_verification", "save_iteration", "cleanup", "__end__"]:
     """Determine next action based on the last message"""
     last_message = state.messages[-1]
-    
+    print(last_message)
+    print("\n" * 5)
     # If the last message has tool calls, execute them
     if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
         return "tools"
@@ -1431,20 +1516,18 @@ def should_continue(state: HoneypotStateReact) -> Literal["tools", "threat_verif
     # Check if we need to summarize packet data
     if state.network_flows and state.security_events and state.compressed_packets and not state.packet_summary:
         return "threat_verification"
-
-    # NEW: Before cleanup, save the iteration if we have analyzed data and final response
+    
+    # Before cleanup, save the iteration if we have analyzed data and final response
     if (len(state.packet_summary) > 1 and len(state.messages) > 1 and 
-        not state.cleanup_flag and hasattr(last_message, 'tool_calls') and last_message.tool_calls == []):
+        not state.cleanup_flag and (not hasattr(last_message, 'tool_calls') or not last_message.tool_calls)) and "ITERATION SUMMARY" in last_message.content:
         return "save_iteration"
     
     # After saving iteration, do cleanup
-    if not state.cleanup_flag and len(state.messages) > 1:
+    if not state.cleanup_flag and len(state.messages) > 1 and len(state.packet_summary) > 1:
         return "cleanup"
 
-    return END
-
+    return "__end__"
 # Build the graph
-
 def build_react_graph():
     builder = StateGraph(HoneypotStateReact)
     
@@ -1463,7 +1546,6 @@ def build_react_graph():
     builder.add_edge("save_iteration", "cleanup")  # NEW: Save iteration then cleanup
     builder.add_edge("cleanup", "__end__")  # Cleanup then end
         
-    return builder.compile(store=episodic_memory)
-
+    return builder.compile()
 # Create the graph
 graph = build_react_graph()

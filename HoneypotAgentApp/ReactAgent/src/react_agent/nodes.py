@@ -74,8 +74,6 @@ def save_memory_context(state: state.HoneypotStateReact) -> Dict[str, Any]:
         "memory_context": message_content
     }
 
-
-
 llm_with_tools = llm.bind_tools(tools)
 
 def assistant(state: state.HoneypotStateReact):
