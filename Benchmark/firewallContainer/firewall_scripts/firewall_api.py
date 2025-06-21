@@ -28,7 +28,7 @@ class FirewallManager:
     def __init__(self):
         self.rules_file = '/firewall/rules/current_rules.txt'
         self.log_file = '/firewall/logs/firewall.log'
-        
+
     def execute_command(self, command):
         """Execute shell command and return result"""
         try:
@@ -37,51 +37,77 @@ class FirewallManager:
         except Exception as e:
             logger.error(f"Command execution failed: {e}")
             return False, "", str(e)
-    
+
     def add_allow_rule(self, source_ip, dest_ip, port=None, protocol='tcp'):
         """Add rule to allow traffic"""
         if port:
             rule = f"iptables -I FORWARD -s {source_ip} -d {dest_ip} -p {protocol} --dport {port} -j ACCEPT"
         else:
-            rule = f"iptables -I FORWARD -s {source_ip} -d {dest_ip} -j ACCEPT"
-        
+            rule = f"iptables -I FORWARD -s {source_ip} -d {dest_ip} -p {protocol} -j ACCEPT"
+
         success, stdout, stderr = self.execute_command(rule)
         if success:
             logger.info(f"Added ALLOW rule: {source_ip} -> {dest_ip}:{port}")
             self.save_rules()
         else:
             logger.error(f"Failed to add ALLOW rule: {stderr}")
-        
+
         return success
-    
+
     def add_block_rule(self, source_ip, dest_ip, port=None, protocol='tcp'):
         """Add rule to block traffic"""
         if port:
             rule = f"iptables -I FORWARD -s {source_ip} -d {dest_ip} -p {protocol} --dport {port} -j DROP"
         else:
-            rule = f"iptables -I FORWARD -s {source_ip} -d {dest_ip} -j DROP"
-        
+            rule = f"iptables -I FORWARD -s {source_ip} -d {dest_ip} -p {protocol} -j DROP"
+
         success, stdout, stderr = self.execute_command(rule)
         if success:
             logger.info(f"Added BLOCK rule: {source_ip} -> {dest_ip}:{port}")
             self.save_rules()
         else:
             logger.error(f"Failed to add BLOCK rule: {stderr}")
-        
+
         return success
-    
-    def remove_rule(self, rule_number):
-        """Remove rule by number"""
-        rule = f"iptables -D FORWARD {rule_number}"
-        success, stdout, stderr = self.execute_command(rule)
-        if success:
-            logger.info(f"Removed rule number: {rule_number}")
+
+    def remove_rules(self, rule_numbers):
+        """ Remove multiple rules by their numbers
+
+        Args:
+            rule_number: List of rule numbers to remove
+
+        Returns:
+            Tuple: (overall_success, removed_rules, failed_rules)
+        """
+
+        # Remove duplicates and sort in descending order to avoid index shifting
+        unique_rules = sorted(set(rule_numbers), reverse=True)
+        removed_rules = []
+        failed_rules = []
+
+        logger.info(f"Removing rules in descending order: {unique_rules}")
+
+        # Remove rules from highest to lowest index to prevent index shifting issues
+        for rule_number in unique_rules:
+            rule = f"iptables -D FORWARD {rule_number}"
+            success, stdout, stderr = self.execute_command(rule)
+
+            if success:
+                logger.info(f"Successfully removed rule number: {rule_number}")
+                removed_rules.append(rule_number)
+            else:
+                logger.error(f"Failed to remove rule {rule_number} : {stderr}")
+                failed_rules.append(rule_number)
+
+        # Save rules after all removals
+        if removed_rules:
             self.save_rules()
-        else:
-            logger.error(f"Failed to remove rule: {stderr}")
-        
-        return success
-    
+            logger.info("Saved firewall rules after removal")
+
+        overall_success = len(failed_rules) == 0
+
+        return overall_success, removed_rules, failed_rules
+
     def list_rules(self):
         """List current iptables rules"""
         success, stdout, stderr = self.execute_command("iptables -L FORWARD -n --line-numbers")
@@ -90,13 +116,13 @@ class FirewallManager:
         else:
             logger.error(f"Failed to list rules: {stderr}")
             return ""
-    
+
     def save_rules(self):
         """Save current rules to file"""
         success, stdout, stderr = self.execute_command(f"iptables-save > {self.rules_file}")
         if not success:
             logger.error(f"Failed to save rules: {stderr}")
-    
+
     def get_traffic_stats(self):
         """Get traffic statistics"""
         success, stdout, stderr = self.execute_command("iptables -L FORWARD -n -v")
@@ -130,18 +156,18 @@ def get_rules():
 def add_allow_rule():
     """Add allow rule"""
     data = request.get_json()
-    
+
     required_fields = ['source_ip', 'dest_ip']
     if not all(field in data for field in required_fields):
         return jsonify({'error': 'Missing required fields'}), 400
-    
+
     source_ip = data['source_ip']
     dest_ip = data['dest_ip']
     port = data.get('port')
     protocol = data.get('protocol', 'tcp')
-    
+
     success = firewall.add_allow_rule(source_ip, dest_ip, port, protocol)
-    
+
     if success:
         return jsonify({
             'status': 'success',
@@ -158,18 +184,18 @@ def add_allow_rule():
 def add_block_rule():
     """Add block rule"""
     data = request.get_json()
-    
+
     required_fields = ['source_ip', 'dest_ip']
     if not all(field in data for field in required_fields):
         return jsonify({'error': 'Missing required fields'}), 400
-    
+
     source_ip = data['source_ip']
     dest_ip = data['dest_ip']
     port = data.get('port')
     protocol = data.get('protocol', 'tcp')
-    
+
     success = firewall.add_block_rule(source_ip, dest_ip, port, protocol)
-    
+
     if success:
         return jsonify({
             'status': 'success',
@@ -182,22 +208,47 @@ def add_block_rule():
             'message': 'Failed to add block rule'
         }), 500
 
-@app.route('/rules/<int:rule_number>', methods=['DELETE'])
-def remove_rule(rule_number):
-    """Remove rule by number"""
-    success = firewall.remove_rule(rule_number)
-    
-    if success:
-        return jsonify({
-            'status': 'success',
-            'message': f'Rule {rule_number} removed',
-            'timestamp': datetime.now().isoformat()
-        })
-    else:
+@app.route('/rules', methods=['DELETE'])
+def remove_rules():
+    """Remove multiple rules by their number"""
+    try:
+        data = request.get_json()
+        if not data or 'rule_numbers' not in data:
+            return jsonify({
+                'status': 'error',
+                'message': 'Missing rule_numbers in request body'
+            }), 400
+
+        rule_numbers = data['rule_numbers']
+        if not isinstance(rule_numbers, list) or not rule_numbers:
+            return jsonify({
+                'status': 'error',
+                'message': 'rule_numbers must be a non-empty list'
+            }), 400
+
+        success, removed_rules, failed_rules = firewall.remove_rules(rule_numbers)
+        if success:
+            return jsonify({
+                'status': 'success',
+                'message': f'Successfully removed {len(removed_rules)} rules',
+                'removed_rules': removed_rules,
+                'failed_rules': failed_rules,
+                'timestamp': datetime.now().isoformat()
+            }), 200
+        else:
+            return jsonify({
+                'status': 'partial_success',
+                'message': f'Removed {len(removed_rules)} rules, {len(failed_rules)} failed',
+                'removed_rules': removed_rules,
+                'failed_rules': failed_rules,
+                'timestamp': datetime.now().isoformat()
+            }), 207
+    except Exception as e:
         return jsonify({
             'status': 'error',
-            'message': f'Failed to remove rule {rule_number}'
-        }), 500
+            'message': f'Invalid request: {str(e)}'
+        }), 400
+
 
 @app.route('/stats', methods=['GET'])
 def get_stats():
@@ -213,7 +264,7 @@ def reset_firewall():
     """Reset firewall to initial state"""
     # Re-initialize firewall rules
     success, stdout, stderr = firewall.execute_command('/firewall/scripts/init_firewall.sh')
-    
+
     if success:
         return jsonify({
             'status': 'success',

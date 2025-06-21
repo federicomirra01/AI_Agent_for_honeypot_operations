@@ -3,13 +3,15 @@
 Packet Monitor API Service - Enhanced with HTTP Payload Analysis
 Captures packets from attacker network and provides REST API for AI agent access
 Listens on agent_net (192.168.200.0/30) and monitors attacker_net (192.168.100.0/24)
-
 Enhanced Features:
 - HTTP payload capture and parsing for security analysis
 - Automatic detection of command injection, SQL injection, XSS, reverse shells
 - Deep packet inspection for HTTP traffic from attacker network
+- Fixed protocol detection - no port-based assumptions
+- Bidirectional traffic monitoring (attacker <-> honeypot)
+- Enhanced application protocol detection with fallback to port inference
+- Clear indication of detection method for LLM context
 """
-
 import json
 import subprocess
 import threading
@@ -40,35 +42,60 @@ class PacketMonitorAPI:
         self.packet_count = 0
         self.stats = defaultdict(int)
         self.tcpdump_process = None
-
+        
         # In-memory packet storage (circular buffer)
         self.packets = deque(maxlen=max_packets_memory)
         self.packets_lock = threading.Lock()
-
+        
         # Output files
         self.json_file = '/firewall/logs/packets.json'
         self.stats_file = '/firewall/logs/packet_stats.json'
-
+        
         # Network configuration
-        self.attacker_network = "192.168.100.0/24"
-        self.agent_api_host = "192.168.200.2"  # Listen on agent network
+        self.attacker_network = "192.168.100.0/30"
+        self.honeypot_network = "172.20.0.0/24"  # Added honeypot network definition
+        self.agent_api_host = "192.168.200.2"  # Listen on agent net
         self.agent_api_port = 6000
+        
+        # Port to application mapping for fallback inference
+        self.port_to_app = {
+            80: 'HTTP',
+            443: 'HTTPS',
+            22: 'SSH',
+            21: 'FTP',
+            23: 'TELNET',
+            25: 'SMTP',
+            53: 'DNS',
+            110: 'POP3',
+            143: 'IMAP',
+            993: 'IMAPS',
+            995: 'POP3S',
+            3389: 'RDP',
+            5432: 'PostgreSQL',
+            3306: 'MySQL',
+            1433: 'MSSQL',
+            6379: 'Redis',
+            27017: 'MongoDB',
+            8080: 'HTTP-ALT',
+            8443: 'HTTPS-ALT',
+            9090: 'HTTP-ALT'
+        }
 
     def build_tcpdump_command(self):
-        """Build tcpdump command to capture attacker network traffic with payload"""
-        # Focus on attacker network traffic (192.168.100.0/24)
-        # Capture TCP, UDP, ICMP, and HTTP protocols with full payload
+        """Build tcpdump command to capture bidirectional traffic with payload"""
+        # FIXED: Removed port-based assumptions, capture ALL traffic between attacker and honeypot networks
         filter_parts = [
-            # Traffic from attacker network
-            f"(src net {self.attacker_network} and (tcp or udp or icmp))",
-            # Traffic to attacker network
-            f"(dst net {self.attacker_network} and (tcp or udp or icmp))",
-            # HTTP/HTTPS traffic involving attacker network
-            f"(net {self.attacker_network} and (port 80 or port 443 or port 8080))"
+            # Traffic from attacker network to anywhere
+            f"(src net {self.attacker_network})",
+            # Traffic to attacker network from anywhere  
+            f"(dst net {self.attacker_network})",
+            # Traffic from honeypot network (bidirectional monitoring)
+            f"(src net {self.honeypot_network})",
+            # Traffic to honeypot network
+            f"(dst net {self.honeypot_network})"
         ]
-
         filter_expr = " or ".join(filter_parts)
-
+        
         cmd = [
             'tcpdump',
             '-i', 'any',              # Capture on all interfaces
@@ -78,7 +105,6 @@ class PacketMonitorAPI:
             '-l',                     # Line buffered output
             filter_expr
         ]
-
         return cmd
 
     def is_packet_header(self, line):
@@ -90,24 +116,23 @@ class PacketMonitorAPI:
 
     def process_tcpdump_output(self):
         """Process tcpdump output and store packets with payload analysis"""
-        logger.info("Starting packet capture processing with HTTP payload analysis...")
-
+        logger.info("Starting bidirectional packet capture processing with HTTP payload analysis...")
         try:
             packet_buffer = []
             current_packet_header = None
-
+            
             while self.running and self.tcpdump_process:
                 line = self.tcpdump_process.stdout.readline()
                 if not line:
                     if self.tcpdump_process.poll() is not None:
                         break
                     continue
-
+                
                 try:
                     line_str = line.decode('utf-8', errors='ignore').strip()
                     if not line_str:
                         continue
-
+                    
                     # Check if this is a new packet header (contains timestamp and IP addresses)
                     if self.is_packet_header(line_str):
                         # Process previous packet if exists
@@ -115,24 +140,24 @@ class PacketMonitorAPI:
                             packet_info = self.parse_complete_packet(current_packet_header, packet_buffer)
                             if packet_info:
                                 self.store_packet(packet_info)
-
+                        
                         # Start new packet
                         current_packet_header = line_str
                         packet_buffer = []
                     else:
                         # This is packet payload data
                         packet_buffer.append(line_str)
-
+                        
                 except Exception as e:
                     logger.error(f"Error processing packet line: {e}")
                     continue
-
+            
             # Process final packet if exists
             if current_packet_header and packet_buffer:
                 packet_info = self.parse_complete_packet(current_packet_header, packet_buffer)
                 if packet_info:
                     self.store_packet(packet_info)
-
+                    
         except Exception as e:
             logger.error(f"Error in packet processing: {e}")
         finally:
@@ -143,20 +168,20 @@ class PacketMonitorAPI:
         # Store packet in memory
         with self.packets_lock:
             self.packets.append(packet_info)
-
+        
         # Update statistics
         self.update_stats(packet_info)
-
+        
         # Write to file
         self.write_packet_to_file(packet_info)
-
+        
         # Log progress and security alerts
         if self.packet_count % 100 == 0:
             logger.info(f"Captured {self.packet_count} packets")
-
+        
         # Log security alerts for suspicious HTTP traffic
         if 'suspicious_patterns' in packet_info or 'suspicious_uri_patterns' in packet_info:
-            logger.warning(f"SECURITY ALERT: Suspicious HTTP traffic detected from {packet_info.get('source_ip')} to {packet_info.get('dest_ip')}")
+            logger.warning(f"SECURITY ALERT: Suspicious traffic detected from {packet_info.get('source_ip')} to {packet_info.get('dest_ip')}")
             logger.warning(f"  Method: {packet_info.get('http_method', 'N/A')} URI: {packet_info.get('http_uri', 'N/A')}")
             if 'suspicious_patterns' in packet_info:
                 logger.warning(f"  Body Threats: {packet_info['suspicious_patterns']}")
@@ -168,31 +193,40 @@ class PacketMonitorAPI:
         try:
             self.packet_count += 1
             timestamp = datetime.now()
-
             packet_info = {
                 'timestamp': timestamp.isoformat(),
                 'packet_id': self.packet_count,
                 'raw_header': header_line.strip(),
                 'capture_time': timestamp.timestamp()
             }
-
+            
             # Parse the header line for basic packet info
             basic_info = self.parse_packet_header(header_line)
             if not basic_info:
                 return None
-
+            
             packet_info.update(basic_info)
-
+            
             # Add raw payload if present
             if payload_lines:
                 packet_info['raw_payload'] = '\n'.join(payload_lines)
-
-                # Parse HTTP payload if this is HTTP traffic from attacker network
-                if self.should_parse_http_payload(packet_info):
+                
+                # ENHANCED: Detect actual application protocol from payload content, with fallback
+                detected_app, detection_method = self.detect_application_protocol_enhanced(payload_lines, packet_info)
+                if detected_app:
+                    if detection_method == 'payload':
+                        packet_info['application'] = detected_app
+                        packet_info['detection_method'] = 'payload_analysis'
+                    elif detection_method == 'port':
+                        packet_info['application'] = f"{detected_app} (inferred from port {packet_info.get('dest_port', 'unknown')})"
+                        packet_info['detection_method'] = 'port_inference'
+                
+                # Parse HTTP payload if this is actual HTTP traffic
+                if detected_app and detected_app.startswith('HTTP'):
                     http_info = self.parse_http_payload(payload_lines)
                     if http_info:
                         packet_info.update(http_info)
-
+                
                 # Also check for threats in all TCP traffic, not just HTTP
                 elif packet_info.get('protocol') == 'TCP':
                     # Look for command patterns in any TCP payload
@@ -200,18 +234,23 @@ class PacketMonitorAPI:
                     threats = self.detect_suspicious_patterns(payload_text)
                     if threats:
                         packet_info['suspicious_patterns'] = threats
-
+            else:
+                # No payload, try port-based inference only
+                inferred_app = self.infer_application_from_port(packet_info)
+                if inferred_app:
+                    packet_info['application'] = f"{inferred_app} (inferred from port {packet_info.get('dest_port', 'unknown')}, no payload)"
+                    packet_info['detection_method'] = 'port_inference_no_payload'
+            
             return packet_info
-
+            
         except Exception as e:
             logger.debug(f"Error parsing complete packet: {header_line[:50]}... Error: {e}")
             return None
 
     def parse_packet_header(self, header_line):
-        """Parse tcpdump packet header line into structured data"""
         try:
             # Example: 10:30:45.123456 IP 192.168.100.10.54321 > 172.20.0.2.80: Flags [P.]
-
+            
             # Parse TCP packets
             tcp_match = re.search(r'(\d+\.\d+\.\d+\.\d+)\.(\d+) > (\d+\.\d+\.\d+\.\d+)\.(\d+): (.+)', header_line)
             if tcp_match:
@@ -220,7 +259,7 @@ class PacketMonitorAPI:
                 dest_ip = tcp_match.group(3)
                 dest_port = int(tcp_match.group(4))
                 flags_info = tcp_match.group(5).strip()
-
+                
                 packet_info = {
                     'protocol': 'TCP',
                     'source_ip': source_ip,
@@ -230,29 +269,13 @@ class PacketMonitorAPI:
                     'flags_info': flags_info,
                     'direction': self.get_traffic_direction(source_ip, dest_ip)
                 }
-
-                # Classify application protocols
-                if dest_port in [80, 8080] or source_port in [80, 8080]:
-                    packet_info['application'] = 'HTTP'
-                elif dest_port == 443 or source_port == 443:
-                    packet_info['application'] = 'HTTPS'
-                elif dest_port == 22 or source_port == 22:
-                    packet_info['application'] = 'SSH'
-                elif dest_port == 21 or source_port == 21:
-                    packet_info['application'] = 'FTP'
-                elif dest_port == 23 or source_port == 23:
-                    packet_info['application'] = 'TELNET'
-                elif dest_port == 25 or source_port == 25:
-                    packet_info['application'] = 'SMTP'
-
                 return packet_info
-
+            
             # Parse UDP packets
             udp_match = re.search(r'(\d+\.\d+\.\d+\.\d+)\.(\d+) > (\d+\.\d+\.\d+\.\d+)\.(\d+): UDP', header_line)
             if udp_match:
                 source_ip = udp_match.group(1)
                 dest_ip = udp_match.group(3)
-
                 packet_info = {
                     'protocol': 'UDP',
                     'source_ip': source_ip,
@@ -261,24 +284,14 @@ class PacketMonitorAPI:
                     'dest_port': int(udp_match.group(4)),
                     'direction': self.get_traffic_direction(source_ip, dest_ip)
                 }
-
-                # Classify UDP applications
-                dest_port = int(udp_match.group(4))
-                if dest_port == 53:
-                    packet_info['application'] = 'DNS'
-                elif dest_port in [67, 68]:
-                    packet_info['application'] = 'DHCP'
-                elif dest_port == 123:
-                    packet_info['application'] = 'NTP'
-
+                
                 return packet_info
-
+            
             # Parse ICMP packets
             icmp_match = re.search(r'(\d+\.\d+\.\d+\.\d+) > (\d+\.\d+\.\d+\.\d+): ICMP (.+)', header_line)
             if icmp_match:
                 source_ip = icmp_match.group(1)
                 dest_ip = icmp_match.group(2)
-
                 packet_info = {
                     'protocol': 'ICMP',
                     'source_ip': source_ip,
@@ -287,35 +300,129 @@ class PacketMonitorAPI:
                     'direction': self.get_traffic_direction(source_ip, dest_ip)
                 }
                 return packet_info
-
+            
             return None
-
+            
         except Exception as e:
             logger.debug(f"Error parsing header: {header_line[:50]}... Error: {e}")
             return None
 
+    def detect_application_protocol_enhanced(self, payload_lines, packet_info):
+        """Detect actual application protocol from payload content with fallback to port inference"""
+        try:
+            if not payload_lines:
+                # No payload, try port-based inference
+                inferred_app = self.infer_application_from_port(packet_info)
+                if inferred_app:
+                    return inferred_app, 'port'
+                return None, None
+            
+            # Extract ASCII content from tcpdump -A output
+            payload_text = self.extract_ascii_from_tcpdump(payload_lines)
+            if not payload_text:
+                # Failed to extract payload, try port-based inference
+                inferred_app = self.infer_application_from_port(packet_info)
+                if inferred_app:
+                    return inferred_app, 'port'
+                return None, None
+            
+            payload_lower = payload_text.lower()
+            
+            # Detect HTTP by looking for HTTP request/response patterns
+            if (re.search(r'^(get|post|put|delete|head|options|patch)\s+.*\s+http/[0-9.]+', payload_text, re.MULTILINE | re.IGNORECASE) or
+                re.search(r'^http/[0-9.]+\s+\d+', payload_text, re.MULTILINE | re.IGNORECASE)):
+                return 'HTTP', 'payload'
+            
+            # Detect HTTPS (will show encrypted content, but we can identify handshake)
+            if (packet_info.get('dest_port') == 443 or packet_info.get('source_port') == 443) and ('client hello' in payload_lower or 'server hello' in payload_lower):
+                return 'HTTPS', 'payload'
+            
+            # Detect SSH by protocol banner
+            if re.search(r'ssh-[0-9.]+', payload_lower) and ('openssh' in payload_lower or 'protocol' in payload_lower):
+                return 'SSH', 'payload'
+            
+            # Detect FTP by FTP response codes
+            if re.search(r'^(220|221|230|331|425|426|450|451|452|500|501|502|503|504|530|550|551|552|553)\s+', payload_text, re.MULTILINE):
+                return 'FTP', 'payload'
+            
+            # Detect SMTP by SMTP commands/responses
+            if re.search(r'^(helo|ehlo|mail from|rcpt to|data|quit|250|354|451|550)\s+', payload_text, re.MULTILINE | re.IGNORECASE):
+                return 'SMTP', 'payload'
+            
+            # Detect DNS (for UDP packets) - look for DNS query structure
+            if packet_info.get('protocol') == 'UDP' and (packet_info.get('dest_port') == 53 or packet_info.get('source_port') == 53):
+                # Basic DNS detection by looking for domain-like patterns
+                if re.search(r'[a-zA-Z0-9-]+\.[a-zA-Z]{2,}', payload_text):
+                    return 'DNS', 'payload'
+            
+            # Detect Telnet by common telnet negotiation
+            if re.search(r'[\xff][\xfb-\xfe]', payload_text):
+                return 'TELNET', 'payload'
+            
+            # Detect MySQL by protocol patterns
+            if re.search(r'(mysql|select.*from|show databases)', payload_lower):
+                return 'MySQL', 'payload'
+            
+            # Detect PostgreSQL by protocol patterns
+            if re.search(r'(postgresql|postgres)', payload_lower):
+                return 'PostgreSQL', 'payload'
+            
+            # Detect RDP by RDP protocol patterns
+            if 'remote desktop' in payload_lower or 'rdp' in payload_lower:
+                return 'RDP', 'payload'
+            
+            # No protocol detected from payload, try port-based inference
+            inferred_app = self.infer_application_from_port(packet_info)
+            if inferred_app:
+                return inferred_app, 'port'
+            
+            return None, None
+            
+        except Exception as e:
+            logger.debug(f"Error detecting application protocol: {e}")
+            # On error, try port-based inference as fallback
+            inferred_app = self.infer_application_from_port(packet_info)
+            if inferred_app:
+                return inferred_app, 'port'
+            return None, None
+
+    def infer_application_from_port(self, packet_info):
+        """Infer application protocol from destination port"""
+        dest_port = packet_info.get('dest_port')
+        source_port = packet_info.get('source_port')
+        
+        # Check destination port first (more likely to be the service port)
+        if dest_port in self.port_to_app:
+            return self.port_to_app[dest_port]
+        
+        # Check source port as fallback (for response traffic)
+        if source_port in self.port_to_app:
+            return self.port_to_app[source_port]
+        
+        return None
+
     def should_parse_http_payload(self, packet_info):
-        """Determine if we should parse HTTP payload for this packet"""
-        # Parse HTTP payload for HTTP traffic from attacker network
+        """Determine if we should parse HTTP payload based on actual protocol detection"""
+        # Parse HTTP payload for actual HTTP traffic (not port-based assumption)
+        app = packet_info.get('application', '')
         return (packet_info.get('protocol') == 'TCP' and
-                packet_info.get('application') == 'HTTP' and
-                packet_info.get('source_ip', '').startswith('192.168.100'))
+                ('HTTP' in app if app else False))
 
     def parse_http_payload(self, payload_lines):
         """Parse HTTP request/response from payload lines with enhanced threat detection"""
         try:
             if not payload_lines:
                 return None
-
+            
             # Extract ASCII content from tcpdump -A output
             payload_text = self.extract_ascii_from_tcpdump(payload_lines)
             
             if not payload_text:
                 return None
-
+            
             # Look for HTTP request patterns
             http_info = {}
-
+            
             # Parse HTTP request line (GET, POST, etc.)
             request_match = re.search(r'^(GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH)\s+([^\s]+)\s+HTTP/([0-9.]+)', payload_text, re.MULTILINE)
             if request_match:
@@ -325,28 +432,28 @@ class PacketMonitorAPI:
                     'http_uri': request_match.group(2),
                     'http_version': request_match.group(3)
                 })
-
+                
                 # Parse HTTP headers
                 headers = self.extract_http_headers(payload_text)
                 if headers:
                     http_info['http_headers'] = headers
-
+                
                 # Parse POST data if present
                 if request_match.group(1) == 'POST':
                     post_data = self.extract_http_body(payload_text)
                     if post_data:
                         http_info['http_body'] = post_data[:2000]  # Limit size but keep more data
-
+                        
                         # Look for suspicious patterns in POST data
                         suspicious_patterns = self.detect_suspicious_patterns(post_data)
                         if suspicious_patterns:
                             http_info['suspicious_patterns'] = suspicious_patterns
-
+                
                 # Look for suspicious patterns in URI
                 uri_patterns = self.detect_suspicious_patterns(request_match.group(2))
                 if uri_patterns:
                     http_info['suspicious_uri_patterns'] = uri_patterns
-
+                
                 # Also check the entire payload for threats
                 payload_threats = self.detect_suspicious_patterns(payload_text)
                 if payload_threats:
@@ -354,7 +461,7 @@ class PacketMonitorAPI:
                         http_info['suspicious_patterns'].extend(payload_threats)
                     else:
                         http_info['suspicious_patterns'] = payload_threats
-
+            
             # Parse HTTP response
             response_match = re.search(r'^HTTP/([0-9.]+)\s+(\d+)\s+([^\r\n]+)', payload_text, re.MULTILINE)
             if response_match:
@@ -364,19 +471,19 @@ class PacketMonitorAPI:
                     'http_status_code': int(response_match.group(2)),
                     'http_status_message': response_match.group(3).strip()
                 })
-
+                
                 # Parse response headers
                 headers = self.extract_http_headers(payload_text)
                 if headers:
                     http_info['http_headers'] = headers
-
+                
                 # Parse response body
                 response_body = self.extract_http_body(payload_text)
                 if response_body:
                     http_info['http_body'] = response_body[:1000]  # Limit size
-
+            
             return http_info if http_info else None
-
+            
         except Exception as e:
             logger.debug(f"Error parsing HTTP payload: {e}")
             return None
@@ -420,27 +527,27 @@ class PacketMonitorAPI:
         try:
             headers = {}
             lines = payload_text.split('\n')
-
+            
             # Find header section (after request/response line, before empty line)
             in_headers = False
             for line in lines:
                 line = line.strip()
                 if not line:
                     break
-
+                
                 # Skip request/response line
                 if (line.startswith(('GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'PATCH')) or
                     line.startswith('HTTP/')):
                     in_headers = True
                     continue
-
+                
                 if in_headers and ':' in line:
                     try:
                         key, value = line.split(':', 1)
                         headers[key.strip().lower()] = value.strip()
                     except:
                         continue
-
+            
             return headers if headers else None
         except:
             return None
@@ -451,17 +558,17 @@ class PacketMonitorAPI:
             # Find empty line that separates headers from body
             lines = payload_text.split('\n')
             body_start = -1
-
+            
             for i, line in enumerate(lines):
                 if not line.strip():
                     body_start = i + 1
                     break
-
+            
             if body_start >= 0 and body_start < len(lines):
                 body_lines = lines[body_start:]
                 body = '\n'.join(body_lines).strip()
                 return body if body else None
-
+            
             return None
         except:
             return None
@@ -470,10 +577,10 @@ class PacketMonitorAPI:
         """Enhanced suspicious pattern detection for security analysis"""
         if not text:
             return None
-
+        
         text_lower = text.lower()
         suspicious = []
-
+        
         # Enhanced command injection patterns - more specific for reverse shell commands
         cmd_patterns = [
             # Specific reverse shell commands mentioned by user
@@ -510,11 +617,11 @@ class PacketMonitorAPI:
             (r'ping\s+-c\s+\d+', 'Network ping reconnaissance'),
             (r'(arp|route|ifconfig|ip\s+addr)', 'Network interface enumeration'),
         ]
-
+        
         for pattern, description in cmd_patterns:
             if re.search(pattern, text_lower):
                 suspicious.append(description)
-
+        
         # SQL injection patterns
         sql_patterns = [
             (r"(union|select|insert|update|delete|drop|create|alter)\s+.*\s+(from|into|table|database)", 'SQL injection: database manipulation'),
@@ -522,11 +629,11 @@ class PacketMonitorAPI:
             (r"(or|and)\s+\d+\s*=\s*\d+", 'SQL injection: numeric comparison'),
             (r";\s*(select|insert|update|delete|drop)", 'SQL injection: statement chaining'),
         ]
-
+        
         for pattern, description in sql_patterns:
             if re.search(pattern, text_lower):
                 suspicious.append(description)
-
+        
         # XSS patterns
         xss_patterns = [
             (r"<script[^>]*>.*</script>", 'XSS: script tag injection'),
@@ -534,15 +641,15 @@ class PacketMonitorAPI:
             (r"on(load|click|error|focus|blur)\s*=", 'XSS: event handler injection'),
             (r"(alert|confirm|prompt)\s*\(", 'XSS: popup function call'),
         ]
-
+        
         for pattern, description in xss_patterns:
             if re.search(pattern, text_lower):
                 suspicious.append(description)
-
+        
         # Path traversal
         if '../' in text or '..\\' in text:
             suspicious.append("Path traversal: directory traversal attempt")
-
+        
         # Reverse shell indicators
         reverse_shell_patterns = [
             (r"(nc|netcat|bash|sh)\s+.*\s+\d+\s*-e", 'Reverse shell: netcat with execute flag'),
@@ -550,44 +657,58 @@ class PacketMonitorAPI:
             (r"/dev/tcp/.*:\d+", 'Reverse shell: bash TCP redirection'),
             (r"exec\s*\(.*socket", 'Reverse shell: exec with socket'),
         ]
-
+        
         for pattern, description in reverse_shell_patterns:
             if re.search(pattern, text_lower):
                 suspicious.append(description)
-
+        
         return suspicious if suspicious else None
 
     def get_traffic_direction(self, source_ip, dest_ip):
-        """Determine traffic direction relative to attacker network"""
         attacker_prefix = "192.168.100"
-
+        honeypot_prefix = "172.20.0"  # Added honeypot network identification
+        
         source_is_attacker = source_ip.startswith(attacker_prefix)
         dest_is_attacker = dest_ip.startswith(attacker_prefix)
-
-        if source_is_attacker and not dest_is_attacker:
-            return "outbound"  # From attacker to external
-        elif not source_is_attacker and dest_is_attacker:
-            return "inbound"   # From external to attacker
+        source_is_honeypot = source_ip.startswith(honeypot_prefix)
+        dest_is_honeypot = dest_ip.startswith(honeypot_prefix)
+        
+        # Enhanced direction classification for bidirectional monitoring
+        if source_is_attacker and dest_is_honeypot:
+            return "attacker_to_honeypot"  # Attack traffic
+        elif source_is_honeypot and dest_is_attacker:
+            return "honeypot_to_attacker"  # Response traffic
+        elif source_is_attacker and not dest_is_attacker and not dest_is_honeypot:
+            return "attacker_to_external"  # Attacker to external
+        elif source_is_honeypot and not dest_is_attacker and not dest_is_honeypot:
+            return "honeypot_to_external"  # Honeypot to external
         elif source_is_attacker and dest_is_attacker:
-            return "internal"  # Within attacker network
+            return "attacker_internal"  # Within attacker network
+        elif source_is_honeypot and dest_is_honeypot:
+            return "honeypot_internal"  # Within honeypot network
         else:
-            return "external"  # Neither source nor dest is attacker
+            return "external"  # External traffic
 
     def update_stats(self, packet_info):
         """Update packet statistics"""
         if 'protocol' in packet_info:
             self.stats[f"protocol_{packet_info['protocol']}"] += 1
-
+        
         if 'direction' in packet_info:
             self.stats[f"direction_{packet_info['direction']}"] += 1
-
+        
         if 'application' in packet_info:
-            self.stats[f"app_{packet_info['application']}"] += 1
-
+            # Clean application name for stats (remove inference notes)
+            app_clean = packet_info['application'].split(' (')[0]
+            self.stats[f"app_{app_clean}"] += 1
+        
+        if 'detection_method' in packet_info:
+            self.stats[f"detection_method_{packet_info['detection_method']}"] += 1
+        
         if 'source_ip' in packet_info and 'dest_ip' in packet_info:
             flow = f"{packet_info['source_ip']} -> {packet_info['dest_ip']}"
             self.stats[f"flow_{flow}"] += 1
-
+        
         # Track security threats with more granular counting
         if 'suspicious_patterns' in packet_info or 'suspicious_uri_patterns' in packet_info:
             self.stats['security_threats'] += 1
@@ -625,28 +746,28 @@ class PacketMonitorAPI:
         try:
             # Check if tcpdump is available
             subprocess.run(['which', 'tcpdump'], check=True, capture_output=True)
-
+            
             # Build and start tcpdump command
             cmd = self.build_tcpdump_command()
-            logger.info(f"Starting tcpdump with HTTP payload analysis: {' '.join(cmd)}")
-
+            logger.info(f"Starting bidirectional tcpdump with HTTP payload analysis: {' '.join(cmd)}")
+            
             self.tcpdump_process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 bufsize=1
             )
-
+            
             self.running = True
-
+            
             # Start processing thread
             process_thread = threading.Thread(target=self.process_tcpdump_output)
             process_thread.daemon = True
             process_thread.start()
-
-            logger.info("Packet capture with HTTP analysis started successfully")
+            
+            logger.info("Bidirectional packet capture with HTTP analysis started successfully")
             return True
-
+            
         except subprocess.CalledProcessError:
             logger.error("tcpdump not found - install tcpdump package")
             return False
@@ -658,7 +779,7 @@ class PacketMonitorAPI:
         """Stop packet capture"""
         logger.info("Stopping packet capture...")
         self.running = False
-
+        
         if self.tcpdump_process:
             try:
                 self.tcpdump_process.terminate()
@@ -669,29 +790,29 @@ class PacketMonitorAPI:
                 self.tcpdump_process.wait()
             except Exception as e:
                 logger.error(f"Error stopping tcpdump: {e}")
-
+        
         logger.info("Packet capture stopped")
 
     def get_packets(self, limit=100, since_timestamp=None, protocol_filter=None, direction_filter=None, recent_minutes=None):
         """Get packets with optional filtering"""
         with self.packets_lock:
             packets = list(self.packets)
-
+        
         # Apply recent filter first if specified
         if recent_minutes:
             recent_timestamp = (datetime.now() - timedelta(minutes=recent_minutes)).timestamp()
             packets = [p for p in packets if p['capture_time'] >= recent_timestamp]
-
+        
         # Apply other filters
         if since_timestamp:
             packets = [p for p in packets if p['capture_time'] >= since_timestamp]
-
+        
         if protocol_filter:
             packets = [p for p in packets if p.get('protocol', '').upper() == protocol_filter.upper()]
-
+        
         if direction_filter:
             packets = [p for p in packets if p.get('direction') == direction_filter]
-
+        
         # Return most recent packets first, limited to specified count
         return packets[-limit:] if limit else packets
 
@@ -721,7 +842,7 @@ class PacketMonitorAPI:
                 if 'source_ip' in packet and 'dest_ip' in packet:
                     flow = f"{packet['source_ip']} -> {packet['dest_ip']}"
                     flows[flow] += 1
-
+        
         # Return top flows sorted by count
         sorted_flows = sorted(flows.items(), key=lambda x: x[1], reverse=True)
         return dict(sorted_flows[:limit])
@@ -735,12 +856,29 @@ class PacketMonitorAPI:
             'src_port': packet_info.get('source_port'),
             'dst_port': packet_info.get('dest_port'),
             'protocol': packet_info.get('protocol'),
-            'direction': packet_info.get('direction'),
-            'application': packet_info.get('application')
+            'direction': packet_info.get('direction')
         }
         
+        # Include application with detection method context for LLM
+        if packet_info.get('application'):
+            compressed['application'] = packet_info['application']
+            
+            # Add detection method context for LLM understanding
+            detection_method = packet_info.get('detection_method', 'unknown')
+            compressed['application_detection'] = detection_method
+            
+            # If inferred from port, ensure LLM knows this is less reliable
+            if 'inferred' in packet_info['application'].lower():
+                compressed['application_confidence'] = 'low'
+            else:
+                compressed['application_confidence'] = 'high'
+        else:
+            compressed['application'] = None
+            compressed['application_detection'] = 'none'
+            compressed['application_confidence'] = 'none'
+        
         # Add HTTP-specific data if available and relevant
-        if packet_info.get('application') == 'HTTP':
+        if packet_info.get('application') and 'HTTP' in packet_info['application']:
             http_data = {}
             if packet_info.get('http_method'):
                 http_data['method'] = packet_info['http_method']
@@ -780,6 +918,7 @@ class PacketMonitorAPI:
                     compressed['raw_payload'] = raw_payload[:1000] + "... [TRUNCATED]"
                 else:
                     compressed['raw_payload'] = raw_payload
+        
         return compressed
 
     def get_flow_summary(self, time_window_minutes=5):
@@ -792,6 +931,7 @@ class PacketMonitorAPI:
         protocol_stats = {}
         port_stats = {}
         threat_details = {}  # Track specific threats per IP
+        detection_methods = {}  # Track detection method distribution
         
         with self.packets_lock:
             for packet in self.packets:
@@ -818,7 +958,8 @@ class PacketMonitorAPI:
                         'last_seen': packet.get('capture_time', 0),
                         'has_threats': False,
                         'applications': set(),
-                        'threat_types': set()
+                        'threat_types': set(),
+                        'detection_methods': set()  # Track how applications were detected
                     }
                 
                 # Update flow statistics
@@ -835,7 +976,12 @@ class PacketMonitorAPI:
                     port_stats[packet['dest_port']] = port_stats.get(packet['dest_port'], 0) + 1
                     
                 if packet.get('application'):
-                    flow['applications'].add(packet['application'])
+                    app_clean = packet['application'].split(' (')[0]  # Remove inference notation for grouping
+                    flow['applications'].add(app_clean)
+                    
+                if packet.get('detection_method'):
+                    flow['detection_methods'].add(packet['detection_method'])
+                    detection_methods[packet['detection_method']] = detection_methods.get(packet['detection_method'], 0) + 1
                     
                 # Track threats
                 has_threats = False
@@ -875,6 +1021,7 @@ class PacketMonitorAPI:
             flow['ports_accessed'] = list(flow['ports_accessed'])
             flow['applications'] = list(flow['applications'])
             flow['threat_types'] = list(flow['threat_types'])
+            flow['detection_methods'] = list(flow['detection_methods'])
             flow['duration'] = flow['last_seen'] - flow['first_seen']
         
         return {
@@ -885,6 +1032,7 @@ class PacketMonitorAPI:
             'threat_details': threat_details,  # Specific threats per IP
             'protocol_distribution': protocol_stats,
             'port_distribution': port_stats,
+            'detection_method_distribution': detection_methods,  # How applications were detected
             'analysis_timestamp': current_time
         }
 
@@ -917,7 +1065,8 @@ class PacketMonitorAPI:
                         'threat_count': 0,
                         'first_seen': packet.get('capture_time', 0),
                         'last_seen': packet.get('capture_time', 0),
-                        'threat_types': set()
+                        'threat_types': set(),
+                        'application_detection_reliability': set()  # Track detection confidence
                     }
                 
                 activity = ip_activity[src_ip]
@@ -928,6 +1077,13 @@ class PacketMonitorAPI:
                     activity['unique_ports'].add(packet['dest_port'])
                 if packet.get('protocol'):
                     activity['protocols'].add(packet['protocol'])
+                
+                # Track application detection reliability
+                if packet.get('detection_method'):
+                    if packet['detection_method'] == 'payload_analysis':
+                        activity['application_detection_reliability'].add('high')
+                    elif 'port_inference' in packet['detection_method']:
+                        activity['application_detection_reliability'].add('low')
                 
                 # Track security events with more detail
                 all_threats = []
@@ -950,7 +1106,9 @@ class PacketMonitorAPI:
                                 'timestamp': packet.get('capture_time', 0),
                                 'command_pattern': pattern,
                                 'http_method': packet.get('http_method'),
-                                'http_uri': packet.get('http_uri')
+                                'http_uri': packet.get('http_uri'),
+                                'application': packet.get('application'),
+                                'detection_confidence': 'high' if packet.get('detection_method') == 'payload_analysis' else 'low'
                             })
                         elif 'reverse shell' in pattern.lower():
                             activity['threat_types'].add('reverse_shell')
@@ -964,7 +1122,8 @@ class PacketMonitorAPI:
                             'dst_ip': packet.get('dest_ip'),
                             'timestamp': packet.get('capture_time', 0),
                             'application': packet.get('application'),
-                            'port': packet.get('dest_port')
+                            'port': packet.get('dest_port'),
+                            'detection_confidence': 'high' if packet.get('detection_method') == 'payload_analysis' else 'low'
                         })
         
         # Convert to analysis format
@@ -976,6 +1135,7 @@ class PacketMonitorAPI:
             activity['unique_ports'] = list(activity['unique_ports'])
             activity['protocols'] = list(activity['protocols'])
             activity['threat_types'] = list(activity['threat_types'])
+            activity['application_detection_reliability'] = list(activity['application_detection_reliability'])
             
             # Identify high activity (potential threats)
             if activity['packet_count'] > 50:  # Threshold for high activity
@@ -985,7 +1145,8 @@ class PacketMonitorAPI:
                     'unique_ports_count': len(activity['unique_ports']),
                     'has_threats': activity['has_threats'],
                     'threat_count': activity['threat_count'],
-                    'threat_types': activity['threat_types']
+                    'threat_types': activity['threat_types'],
+                    'detection_reliability': activity['application_detection_reliability']
                 })
             
             # Identify scanning behavior
@@ -995,7 +1156,8 @@ class PacketMonitorAPI:
                     'ports_scanned': len(activity['unique_ports']),
                     'packet_count': activity['packet_count'],
                     'scan_duration': activity['last_seen'] - activity['first_seen'],
-                    'has_threats': activity['has_threats']
+                    'has_threats': activity['has_threats'],
+                    'detection_reliability': activity['application_detection_reliability']
                 })
             
             # Identify IPs with threats
@@ -1004,7 +1166,8 @@ class PacketMonitorAPI:
                     'ip': ip,
                     'threat_count': activity['threat_count'],
                     'threat_types': activity['threat_types'],
-                    'packet_count': activity['packet_count']
+                    'packet_count': activity['packet_count'],
+                    'detection_reliability': activity['application_detection_reliability']
                 })
         
         return {
@@ -1012,7 +1175,7 @@ class PacketMonitorAPI:
             'high_activity_ips': high_activity_ips,
             'scanning_ips': scanning_ips,
             'threat_ips': threat_ips,  # New: IPs with actual threats
-            'command_executions': command_executions,  # New: Specific command execution attempts
+            'command_executions': command_executions,  # New: Specific command execution attempts with detection confidence
             'threat_patterns': suspicious_patterns,
             'total_unique_ips': len(ip_activity),
             'total_threats_detected': len(command_executions),
@@ -1046,13 +1209,13 @@ def get_packets():
         protocol = request.args.get('protocol')
         direction = request.args.get('direction')
         recent = request.args.get('recent', type=int)  # Recent X minutes
-
+        
         # New optional parameters
         include_stats = request.args.get('stats', 'false').lower() == 'true'
         include_protocols = request.args.get('protocols', 'false').lower() == 'true'
         include_flows = request.args.get('flows', 'false').lower() == 'true'
         raw_only = request.args.get('raw_only', 'false').lower() == 'true'
-
+        
         # Convert since timestamp if provided
         since_timestamp = None
         if since:
@@ -1061,7 +1224,7 @@ def get_packets():
                 since_timestamp = since_dt.timestamp()
             except ValueError:
                 return jsonify({'error': 'Invalid timestamp format'}), 400
-
+        
         # Get filtered packets
         packets = packet_monitor.get_packets(
             limit=limit,
@@ -1070,14 +1233,14 @@ def get_packets():
             direction_filter=direction,
             recent_minutes=recent
         )
-
+        
         # Build response
         response = {
             'timestamp': datetime.now().isoformat(),
             'count': len(packets),
             'total_captured': packet_monitor.packet_count,
         }
-
+        
         # Add packets data
         if raw_only:
             # Return only raw tcpdump header lines for minimal processing
@@ -1085,21 +1248,21 @@ def get_packets():
         else:
             # Return full structured packet data
             response['packets'] = packets
-
+        
         # Optionally include statistics
         if include_stats:
             response['statistics'] = packet_monitor.get_stats()
-
+        
         # Optionally include protocol summary
         if include_protocols:
             response['protocol_summary'] = packet_monitor.get_protocol_summary()
-
+        
         # Optionally include top flows
         if include_flows:
             response['top_flows'] = packet_monitor.get_top_flows()
-
+        
         return jsonify(response)
-
+        
     except Exception as e:
         logger.error(f"Error getting packets: {e}")
         return jsonify({'error': f'Internal server error\n{e}'}), 500
@@ -1110,12 +1273,12 @@ def start_monitoring():
     try:
         if packet_monitor.running:
             return jsonify({'message': 'Monitoring already running'}), 200
-
+        
         if packet_monitor.start_capture():
             return jsonify({'message': 'Monitoring started successfully'})
         else:
             return jsonify({'error': 'Failed to start monitoring'}), 500
-
+            
     except Exception as e:
         logger.error(f"Error starting monitoring: {e}")
         return jsonify({'error': 'Internal server error'}), 500
@@ -1126,13 +1289,14 @@ def stop_monitoring():
     try:
         packet_monitor.stop_capture()
         return jsonify({'message': 'Monitoring stopped'})
+        
     except Exception as e:
         logger.error(f"Error stopping monitoring: {e}")
         return jsonify({'error': 'Internal server error'}), 500
     
 @app.route('/packets/compressed', methods=['GET'])
 def get_compressed_packets():
-    """Get compressed packets with essential data only"""
+    """Get compressed packets with essential data only - ENHANCED with detection context"""
     try:
         limit = request.args.get('limit', 100, type=int)
         limit = min(limit, 500)  # Cap at 500 to prevent context overflow
@@ -1149,7 +1313,7 @@ def get_compressed_packets():
             recent_minutes=recent
         )
         
-        # Compress packets
+        # Compress packets with enhanced context
         compressed_packets = []
         for packet in packets:
             compressed = packet_monitor.create_compressed_packet(packet)
@@ -1159,7 +1323,12 @@ def get_compressed_packets():
             'timestamp': datetime.now().isoformat(),
             'count': len(compressed_packets),
             'packets': compressed_packets,
-            'time_window_minutes': recent
+            'time_window_minutes': recent,
+            'detection_context': {
+                'payload_analysis': 'High confidence - protocol detected from packet content',
+                'port_inference': 'Low confidence - protocol assumed from port number',
+                'note': 'Applications marked as "inferred" should be treated as assumptions'
+            }
         })
         
     except Exception as e:
@@ -1194,29 +1363,28 @@ def get_security_analysis():
         logger.error(f"Error getting security analysis: {e}")
         return jsonify({'error': f'Internal server error\n{e}' }), 500
 
-
 def main():
     """Main function"""
     logger.info("=== Enhanced Packet Monitor API Service Starting ===")
     logger.info("Features: HTTP payload analysis, threat detection, security monitoring")
-
+    logger.info("ENHANCED: Application protocol detection with fallback and detection context for LLM")
+    
     # Create output directory
     os.makedirs('/firewall/logs', exist_ok=True)
-
+    
     def signal_handler(signum, frame):
         logger.info(f"Received signal {signum}")
         packet_monitor.stop_capture()
         sys.exit(0)
-
+    
     # Set up signal handlers
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-
+    
     try:
         # Start packet capture
         if packet_monitor.start_capture():
             logger.info("Starting API server...")
-
             # Start Flask API server
             app.run(
                 host=packet_monitor.agent_api_host,
@@ -1227,7 +1395,7 @@ def main():
         else:
             logger.error("Failed to start packet capture")
             sys.exit(1)
-
+            
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
     finally:
