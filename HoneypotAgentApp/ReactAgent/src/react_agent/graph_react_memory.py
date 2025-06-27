@@ -887,7 +887,7 @@ tools = [
     getDockerContainers
 ]
 
-llm = ChatOpenAI(model="gpt-4o")
+llm = ChatOpenAI(model="gpt-4.1")
 episodic_memory = EpisodicMemory()
 
 def load_memory_context(state: HoneypotStateReact):
@@ -977,6 +977,7 @@ def assistant(state: HoneypotStateReact):
             HumanMessage(content=f"NETWORK FLOWS: {total_flows} flows analyzed, {threat_ips} threat IPs identified. Full data: {state.network_flows}")
         )
     
+    # COMMENTED OUT: Large packet data to prevent ccontext overflow
     # if state.compressed_packets and state.compressed_packets.get('success'):
     #     packets_data = state.compressed_packets.get('data', {})
     #     packet_count = packets_data.get('count', 0)
@@ -1519,7 +1520,8 @@ def should_continue(state: HoneypotStateReact) -> Literal["tools", "threat_verif
     
     # Before cleanup, save the iteration if we have analyzed data and final response
     if (len(state.packet_summary) > 1 and len(state.messages) > 1 and 
-        not state.cleanup_flag and (not hasattr(last_message, 'tool_calls') or not last_message.tool_calls)) and "ITERATION SUMMARY" in last_message.content:
+        not state.cleanup_flag and (not hasattr(last_message, 'tool_calls') or not last_message.tool_calls)) \
+            and "ITERATION SUMMARY" in last_message.content:
         return "save_iteration"
     
     # After saving iteration, do cleanup

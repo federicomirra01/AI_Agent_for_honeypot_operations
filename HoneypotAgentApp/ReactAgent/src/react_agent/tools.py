@@ -54,7 +54,6 @@ def _make_request(method: str, url: str, **kwargs) -> Dict[str, Any]:
     except Exception as e:
         return {'success': False, 'error': f"Request failed: {str(e)}"}
 
-# Firewall Functions
 def get_firewall_rules() -> Dict[str, Any]:
     """
     Get current firewall rules
@@ -62,12 +61,13 @@ def get_firewall_rules() -> Dict[str, Any]:
     Returns:
         Dict with success status and rules data
     """
-    logger.info("Retrieving firewall rules...")
+    #logger.info("Retrieving firewall rules...")
     url = f"{FIREWALL_URL}/rules"
     result = _make_request("GET", url)
     
     if result['success']:
-        logger.info("Successfully retrieved firewall rules")
+        #logger.info("Successfully retrieved firewall rules")
+        success = True # just to keep logger.info commented
     else:
         logger.error(f"Failed to get firewall rules: {result['error']}")
         
@@ -80,7 +80,7 @@ def add_allow_rule(source_ip: str, dest_ip: str, port=None, protocol: str = "tcp
     Returns:
         Dict with success status and response data
     """
-    logger.info(f"Adding allow rule: {source_ip} -> {dest_ip}:{port}")
+    #logger.info(f"Adding allow rule: {source_ip} -> {dest_ip}:{port}")
     url = f"{FIREWALL_URL}/rules/allow"
     
     payload = {
@@ -95,7 +95,8 @@ def add_allow_rule(source_ip: str, dest_ip: str, port=None, protocol: str = "tcp
     result = _make_request("POST", url, json=payload)
     
     if result['success']:
-        logger.info("Successfully added allow rule")
+        #logger.info("Successfully added allow rule")
+        success = True
     else:
         logger.error(f"Failed to add allow rule: {result['error']}")
         
@@ -109,7 +110,7 @@ def add_block_rule(source_ip: str, dest_ip: str,
     Returns:
         Dict with success status and response data
     """
-    logger.info(f"Adding block rule: {source_ip} -> {dest_ip}:{port}")
+    #logger.info(f"Adding block rule: {source_ip} -> {dest_ip}:{port}")
     url = f"{FIREWALL_URL}/rules/block"
     
     payload = {
@@ -124,7 +125,8 @@ def add_block_rule(source_ip: str, dest_ip: str,
     result = _make_request("POST", url, json=payload)
     
     if result['success']:
-        logger.info("Successfully added block rule")
+        #logger.info("Successfully added block rule")
+        success = True
     else:
         logger.error(f"Failed to add block rule: {result['error']}")
         
@@ -159,25 +161,25 @@ def remove_firewall_rule(rule_numbers: List[int]) -> Dict[str, Any]:
             'status_code': 400
         }
     
-    if len(rule_numbers) == 1:
-        logger.info(f"Removing firewall rule #{rule_numbers[0]}")
-    else:
-        logger.info(f"Removing firewall rules: {rule_numbers}")
+    # if len(rule_numbers) == 1:
+    #     logger.info(f"Removing firewall rule #{rule_numbers[0]}")
+    # else:
+    #     logger.info(f"Removing firewall rules: {rule_numbers}")
 
     url = f"{FIREWALL_URL}/rules"
     payload = {"rule_numbers": rule_numbers}
     result = _make_request("DELETE", url, json=payload)
 
     if result['success']:
-        if len(rule_numbers) == 1:
-            logger.info(f"Successfully removed firewall rule #{rule_numbers[0]}")
-        else:
-            logger.info(f"Successfully removed firewall rules: {rule_numbers}")
+        # if len(rule_numbers) == 1:
+        #     logger.info(f"Successfully removed firewall rule #{rule_numbers[0]}")
+        # else:
+        #     logger.info(f"Successfully removed firewall rules: {rule_numbers}")
+        success = True
     else:
         logger.error(f"Failed to remove rules: {result['error']}")
     
     return result
-# Replace/add these tools in your graph_react.py
 
 def get_network_flows(time_window: int = 5) -> Dict[str, Any]:
     """
@@ -190,7 +192,7 @@ def get_network_flows(time_window: int = 5) -> Dict[str, Any]:
     Returns:
         Dict with flow analysis data including threat IPs and specific threat details
     """
-    logger.info(f"Retrieving network flows (window: {time_window} minutes)")
+    #logger.info(f"Retrieving network flows (window: {time_window} minutes)")
     url = f"{MONITOR_URL}/analysis/flows"
     
     params = {'window': min(time_window, 30)}  # Cap at 30 minutes
@@ -200,12 +202,12 @@ def get_network_flows(time_window: int = 5) -> Dict[str, Any]:
         data = result['data']
         threat_count = len(data.get('threat_ips', []))
         total_flows = data.get('total_flows', 0)
-        logger.info(f"Retrieved {total_flows} flows with {threat_count} threat IPs")
+        #logger.info(f"Retrieved {total_flows} flows with {threat_count} threat IPs")
         
         # Log threat details if found
         threat_details = data.get('threat_details', {})
-        if threat_details:
-            logger.info(f"Threat details found for IPs: {list(threat_details.keys())}")
+        # if threat_details:
+        #     logger.info(f"Threat details found for IPs: {list(threat_details.keys())}")
     else:
         logger.error(f"Failed to get network flows: {result['error']}")
         
@@ -222,7 +224,7 @@ def get_security_events(time_window: int = 5) -> Dict[str, Any]:
     Returns:
         Dict with security events, threat IPs, and specific command execution details
     """
-    logger.info(f"Retrieving security events (window: {time_window} minutes)")
+    #logger.info(f"Retrieving security events (window: {time_window} minutes)")
     url = f"{MONITOR_URL}/analysis/security"
     
     params = {'window': min(time_window, 30)}
@@ -234,7 +236,7 @@ def get_security_events(time_window: int = 5) -> Dict[str, Any]:
         command_exec_count = len(events.get('command_executions', []))
         total_threats = events.get('total_threats_detected', 0)
         
-        logger.info(f"Retrieved {threat_ips_count} threat IPs, {command_exec_count} command executions, {total_threats} total threats")
+        #logger.info(f"Retrieved {threat_ips_count} threat IPs, {command_exec_count} command executions, {total_threats} total threats")
         
         # Log specific command executions found
         if command_exec_count > 0:
@@ -263,7 +265,7 @@ def get_compressed_packets(limit: int = 500, time_window: int = 5,
     Returns:
         Dict with compressed packet data including threat information
     """
-    logger.info(f"Retrieving compressed packets (limit: {limit}, window: {time_window})")
+    #logger.info(f"Retrieving compressed packets (limit: {limit}, window: {time_window})")
     url = f"{MONITOR_URL}/packets/compressed"
     
     params = {
@@ -296,7 +298,7 @@ def get_compressed_packets(limit: int = 500, time_window: int = 5,
                             command_threats += 1
                             break
         
-        logger.info(f"Retrieved {packet_count} compressed packets, {threat_packets} with threats, {command_threats} with command execution")
+        #logger.info(f"Retrieved {packet_count} compressed packets, {threat_packets} with threats, {command_threats} with command execution")
         
         if command_threats > 0:
             logger.warning(f"ALERT: {command_threats} packets contain command execution patterns!")
@@ -314,13 +316,13 @@ def check_services_health() -> Dict[str, Any]:
     Returns:
         Dict with health status of both services
     """
-    logger.info("Retrieving services status")
+    #logger.info("Retrieving services status")
     try:
         firewall_status = _make_request("GET", f"{FIREWALL_URL}/health")
         monitor_status = _make_request("GET", f"{MONITOR_URL}/health")
         firewall_health = 'up' if firewall_status["data"]["status"] == 'healthy' else 'down'
         monitor_health = 'up' if monitor_status["data"]["status"] == 'healthy' else 'down'
-        logger.info("Successfully retrieve services health")
+        #logger.info("Successfully retrieve services health")
     except Exception as e:
         print(f"Error: {e}")
     return {
@@ -376,5 +378,3 @@ def getDockerContainers() -> List[Dict[str, Any]]:
         return {"error": f"Docker connection error: {str(e)}"}
     except Exception as e:
         return {"error": f"Unexpected error: {str(e)}"}
-
-

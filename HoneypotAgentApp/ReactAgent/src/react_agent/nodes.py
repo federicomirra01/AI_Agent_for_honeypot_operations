@@ -10,7 +10,6 @@ import datetime
 import prompts
 import tools
 import state
-import memory
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,10 +33,9 @@ tools = [
 ]
 
 
-llm = ChatOpenAI(model="gpt-4o")
-episodic_memory = memory.EpisodicMemory()
+llm = ChatOpenAI(model="gpt-4.1")
 
-def load_memory_context(state: state.HoneypotStateReact):
+def load_memory_context(state: state.HoneypotStateReact, episodic_memory):
     """Load memory context from episodic memory and update state"""
     
     if state.memory_context:
@@ -45,13 +43,13 @@ def load_memory_context(state: state.HoneypotStateReact):
     
     recent_iterations = episodic_memory.get_recent_iterations(limit=5)
     if not recent_iterations:
-        logger.info("No recent iterations found in episodic memory.")
+        #logger.info("No recent iterations found in episodic memory.")
         return []
     
     print(f"Loaded {len(recent_iterations)} recent iterations from episodic memory.")
     return recent_iterations
 
-def save_memory_context(state: state.HoneypotStateReact) -> Dict[str, Any]:
+def save_memory_context(state: state.HoneypotStateReact, episodic_memory) -> Dict[str, Any]:
     """Save the last message from current iteration"""
 
     if not state.messages:
@@ -76,13 +74,14 @@ def save_memory_context(state: state.HoneypotStateReact) -> Dict[str, Any]:
 
 llm_with_tools = llm.bind_tools(tools)
 
-def assistant(state: state.HoneypotStateReact):
+def assistant(state: state.HoneypotStateReact, config):
     """Main assistant function that processes the conversation and calls tools"""
-    
+    episodic_memory = config.get("configurable", {}).get("store")
+
     if not state.memory_context:
-        previous_iterations = load_memory_context(state)
+        previous_iterations = load_memory_context(state, episodic_memory)
     # Create system message with current state context
-    system_message = SystemMessage(content=prompts.ASSISTANT_PROMPT)
+    system_message = SystemMessage(content=prompts.ASSISTANT_PROMPT_V2)
     
     # Add context messages based on current state
     context_messages = []
@@ -99,11 +98,14 @@ def assistant(state: state.HoneypotStateReact):
         
         context_messages.append(HumanMessage(content=iterations_context))
     # Add packet summary context if available (this contains threat verification analysis)
-    if state.packet_summary:
+    if len(state.packet_summary) > 1:
         context_messages.append(
             HumanMessage(content=f"THREAT ANALYSIS RESULTS:\n{state.packet_summary}")
         )
-    
+    else:
+        context_messages.append(
+            HumanMessage(content=f"THREAT ANALYSIS from PACKET SUMMARY not available yet, DO NOT PRODUCE ITERATION SUMMARY\n")
+        )
     # Add enhanced network intelligence context
     if state.security_events and state.security_events.get('success'):
         events_data = state.security_events.get('data', {})
@@ -119,19 +121,6 @@ def assistant(state: state.HoneypotStateReact):
         threat_ips = len(flows_data.get('threat_ips', []))
         context_messages.append(
             HumanMessage(content=f"NETWORK FLOWS: {total_flows} flows analyzed, {threat_ips} threat IPs identified. Full data: {state.network_flows}")
-        )
-    
-    if state.compressed_packets and state.compressed_packets.get('success'):
-        packets_data = state.compressed_packets.get('data', {})
-        packet_count = packets_data.get('count', 0)
-        # Count threat packets
-        threat_packets = 0
-        if 'packets' in packets_data:
-            for packet in packets_data['packets']:
-                if packet.get('threats') or (packet.get('http') and packet['http'].get('threats')):
-                    threat_packets += 1
-        context_messages.append(
-            HumanMessage(content=f"PACKET ANALYSIS: {packet_count} packets analyzed, {threat_packets} contain threats.") #  Full data: {state.compressed_packets}
         )
     
     # Add configuration context
@@ -192,8 +181,8 @@ def execute_tools(state: state.HoneypotStateReact):
                     if flows_data.get('success') and flows_data.get('data'):
                         threat_details = flows_data['data'].get('threat_details', {})
                         threat_ips = flows_data['data'].get('threat_ips', [])
-                        if threat_details:
-                            logger.info(f"Network flows: Found threats from {len(threat_ips)} IPs with details: {list(threat_details.keys())}")
+                        # if threat_details:
+                        #     logger.info(f"Network flows: Found threats from {len(threat_ips)} IPs with details: {list(threat_details.keys())}")
                     
                 elif tool_message.name == 'get_security_events':
                     security_data = result.get('security_events', {})
@@ -370,7 +359,7 @@ def extract_threat_data_for_verification(state: state.HoneypotStateReact) -> Lis
     # Sort by timestamp for chronological analysis
     threat_incidents_with_payload.sort(key=lambda x: x.get('timestamp', 0))
     
-    logger.info(f"Extracted {len(threat_incidents_with_payload)} threat incidents with payload for verification")
+    #logger.info(f"Extracted {len(threat_incidents_with_payload)} threat incidents with payload for verification")
     return threat_incidents_with_payload
 
 def format_threat_data_for_llm(threat_incidents: List[Dict[str, Any]]) -> str:
@@ -443,7 +432,7 @@ def chunk_threat_data(threat_incidents: List[Dict[str, Any]], max_chunk_size: in
     if current_chunk:
         chunks.append(current_chunk)
     
-    logger.info(f"Split {len(threat_incidents)} incidents into {len(chunks)} chunks")
+    #logger.info(f"Split {len(threat_incidents)} incidents into {len(chunks)} chunks")
     return chunks
 
 def create_threat_verification_prompt(formatted_incidents: str, chunk_info: str = "") -> str:
@@ -618,9 +607,10 @@ Format as a clear executive summary for security decision-making."""
         packet_summary = f"## THREAT VERIFICATION ANALYSIS\n\n{analysis_result}"
     return {"packet_summary": packet_summary}
 
-def save_iteration_node(state: state.HoneypotStateReact):
+def save_iteration_node(state: state.HoneypotStateReact, config):
+    episodic_memory = config.get("configurable", {}).get("store")
     """Save the last message from current iteration to episodic memory"""
-    result = save_memory_context(state)
+    result = save_memory_context(state, episodic_memory)
     print(f"Memory: {result.get('message', 'Iteration save failed')}")
     return {"memory_context": result.get("memory_context", "")}
 

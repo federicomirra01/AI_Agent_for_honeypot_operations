@@ -1,10 +1,25 @@
-from typing import List, Dict, Any, Annotated
+from typing import List, Dict, Any, Annotated, Union
 from langgraph.graph.message import add_messages
-from langchain_core.messages import BaseMessage, HumanMessage
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from dataclasses import field
 
+def messages_reducer(current: List[BaseMessage], update: Union[List[BaseMessage], str]) -> List[BaseMessage]:
+    """Safe custom reducer that preserves tool call integrity"""
+    if update == "CLEAR_ALL":
+        # Only clear if no pending tool calls
+        if current:
+            last_msg = current[-1]
+            if isinstance(last_msg, AIMessage) and hasattr(last_msg, 'tool_calls') and last_msg.tool_calls:
+                print("Cannot clear: pending tool calls exist")
+                return current
+        return []
+    
+    else:
+        # Normal append operation
+        return add_messages(current, update)
+    
 class HoneypotStateReact:
-    messages: Annotated[List[BaseMessage], add_messages] = field(default_factory=list)
+    messages: Annotated[List[BaseMessage], messages_reducer] = field(default_factory=list)
     packet_summary: Dict[str, Any] = field(default_factory=dict)
     network_packets : List[Dict[str, Any]] = field(default_factory=list)
     network_flows: Dict[str, Any] = field(default_factory=dict)

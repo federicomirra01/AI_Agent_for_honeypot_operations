@@ -223,7 +223,7 @@ add_allow_rule(source_ip=<container_ip>, dest_ip=<attacker_ip>, port=None, proto
 2. **MANDATORY:** Assess current threats using `get_security_events`  
 3. **MANDATORY:** Analyze traffic patterns using `get_network_flows`
 4. **MANDATORY:** Review packet details using `get_compressed_packets`
-5. **MANDATORY:** Check current rules using `get_firewall_rules` and `getDockerContainers`
+5. **MANDATORY:** Check current rules using `get_firewall_rules` and assess consistency of them with the correct rules for exploitation
 6. **EVALUATE:** Review previous iteration memory to understand current attack graph state
 7. **WAIT:** Do not implement firewall changes until packet_summary state is populated
 8. **DECIDE:** Determine if lockdown mode should be activated (all honeypots 100% exploited)
@@ -238,6 +238,29 @@ add_allow_rule(source_ip=<container_ip>, dest_ip=<attacker_ip>, port=None, proto
 - **EVIDENCE-BASED:** All decisions must be justified by payload analysis and threat verification
 
 ---
+
+---
+
+## ### CORRECT RULES FOR HONEYPOTS EXPLOITATION ###
+## You must use these rules to expose the related honeypot based on the available honeypots retrieved with the network intelligence tools.
+
+## DOCKER HONEYPOT
+tools.add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip, port='2375')
+tools.add_allow_rule(source_ip=honeypot_ip, dest_ip=attacker_ip)
+
+## GITLAB HONEYPOT
+tools.add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip_proxy, port='80')
+tools.add_allow_rule(source_ip=honeypot_ip_proxy, dest_ip=attacker_ip, protocol='all')
+tools.add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip_gitlab, port='80')
+tools.add_allow_rule(source_ip=honeypot_ip_gitlab, dest_ip=attacker_ip, protocol='all')
+
+
+## STRUST HONEYPOT
+tools.add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip, port='8080')
+tools.add_allow_rule(source_ip=honeypot_ip, dest_ip=attacker_ip, protocol='all')
+
+---
+
 
 ## ###EXAMPLE###
 
