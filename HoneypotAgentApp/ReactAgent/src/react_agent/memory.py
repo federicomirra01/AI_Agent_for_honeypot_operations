@@ -12,7 +12,7 @@ class EpisodicMemory:
         self.meta_namespace = ("honeypot", "meta")
         self.iteration_counter = 0
 
-    def save_iteration(self, last_message_content: str) -> str:
+    def save_iteration(self, data: str) -> str:
         """Save the last message from current iteration"""
         self.iteration_counter += 1
         iteration_id = f"iteration_{self.iteration_counter }"
@@ -22,7 +22,7 @@ class EpisodicMemory:
             "iteration_number": self.iteration_counter,
             "timestamp": int(time.time()),
             "datetime": datetime.now().isoformat(),
-            "last_message": last_message_content
+            **data
         }
 
         self.store.put(self.namespace, iteration_id, iteration_data)

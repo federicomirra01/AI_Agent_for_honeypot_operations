@@ -10,7 +10,9 @@ Usage:
     runner = BenchmarkRunner(custom_config={'max_epochs': 5})
     results = runner.run()
 """
-
+import os
+import fcntl
+from pathlib import Path
 import json
 import time
 import docker
@@ -23,11 +25,7 @@ from dataclasses import dataclass, field, asdict
 from enum import Enum
 import threading
 from concurrent.futures import ThreadPoolExecutor
-from multiprocessing import Process, Queue
-
-def run_attack_wrapper(attacker, epoch_num, output_queue):
-    result = attacker.execute_attack(epoch_num)
-    output_queue.put(result)
+from queue import Queue, Empty
 
 # Configure module logger
 logging.basicConfig(level=logging.INFO)
@@ -54,26 +52,22 @@ class EpochMetrics:
     phase_timings: Dict[str, float] = field(default_factory=dict)
     
     # Attack metrics
-    services_scanned: List[str] = field(default_factory=list)
+    services_detected: List[str] = field(default_factory=list)
+    services_successfully_exploited: List[str] = field(default_factory=list)
     exploits_attempted: List[str] = field(default_factory=list)
     flags_captured: List[Dict[str, str]] = field(default_factory=list)
     attack_success_rate: float = 0.0
     
     # Agent metrics
-    threats_detected: int = 0
     firewall_rules_added: List[str] = field(default_factory=list)
     firewall_rules_removed: List[int] = field(default_factory=list)
     honeypots_exposed: List[Dict[str, Any]] = field(default_factory=list)
     attack_graph_coverage: Dict[str, float] = field(default_factory=dict)
     
-    # System metrics
-    total_packets: int = 0
-    malicious_packets: int = 0
-    blocked_attempts: int = 0
+  
     
     # Final state
     final_honeypot_status: Dict[str, Dict] = field(default_factory=dict)
-    agent_decision: str = ""
     lockdown_activated: bool = False
     
     def to_dict(self) -> Dict[str, Any]:
@@ -94,10 +88,6 @@ class BenchmarkConfig:
     monitor_accumulation_wait: int = 3
     firewall_update_wait: int = 1
     between_epoch_wait: int = 3
-    
-    # Agent configuration
-    agent_mode: str = "local"  # "local" or "langsmith"
-    langsmith_api_key: Optional[str] = None
     
     # Network configuration
     attacker_network: str = "192.168.100.0/24"
@@ -166,72 +156,175 @@ class AttackerController:
             return {"error": "Container not started"}
         
         results = {
-            "services_found": [],
+            "services_detected": [],
             "exploits_attempted": [],
-            "flags": [],
+            "services_successfully_exploited": [],
+            "flags_captured": [],
+            "total_flags": 0,
+            "total_services_detected": 0,
+            "total_exploits_attempted": 0,
             "output": "",
-            "exit_code": -1
+            "exit_code": -1,
+            "timed_out": False
         }
+
+        timeout = self.config.attack_duration
+        results_file = "/tmp/benchmark_results/attack_results.json"
         
         try:
-            # Execute attack script
-            exec_result = self.container.exec_run(
-                "python3 /attacker/scripts/manager_exploit.py",
-                stdout=True,
-                stderr=True,
-                stream=True,
-                demux=True
-            )
-            
-            output_lines = []
-            error_lines = []
-            
-            # Process streaming output
-            for stdout_chunk, stderr_chunk in exec_result.output:
-                if stdout_chunk:
-                    line = stdout_chunk.decode('utf-8')
-                    output_lines.append(line)
-                    print(f"[ATTACK-{epoch_num}] {line}", end='')
+
+            if os.path.exists(results_file):
+                os.remove(results_file)
+                self.logger.info("Cleared previous attack results file")
+
+
+            output_queue = Queue()
+            exec_result = None
+            execution_complete = threading.Event()
+
+            def run_container():
+                nonlocal exec_result
+                try:
+                    exec_result = self.container.exec_run(
+                        "python3 /attacker/scripts/manager_exploit.py",
+                        stdout=True,
+                        stderr=True,
+                        stream=True
+                    )
                     
-                    # Parse for metrics
-                    if "flag{" in line:
-                        flag_match = line[line.find("flag{"):line.find("}")+1]
-                        results["flags"].append({
-                            "flag": flag_match,
-                            "service": self._extract_service_from_line(line),
-                            "timestamp": time.time()
-                        })
-                    elif "Detected vulnerable services:" in line:
-                        results["services_found"] = self._parse_services(output_lines)
+                    # Stream output to queue
+                    for chunk in exec_result.output:
+                        if chunk:
+                            output_queue.put(chunk.decode('utf-8'))
+                    output_queue.put(None)  # Signal completion
+                    
+                except Exception as e:
+                    output_queue.put(f"Container execution error: {e}")
+                    output_queue.put(None)
+                finally:
+                    execution_complete.set()
+
+            container_thread = threading.Thread(target=run_container)
+            container_thread.start()
+
+            output_lines = []
+            start_time = time.time()
+
+            while True:
+                elapsed = time.time() - start_time
+                remaining = timeout - elapsed
                 
-                if stderr_chunk:
-                    error_line = stderr_chunk.decode('utf-8')
-                    error_lines.append(error_line)
-                    self.logger.debug(f"[ATTACK-ERR] {error_line}")
+                if remaining <= 0:
+                    # Timeout reached - force stop
+                    self.logger.warning(f"Attack timeout ({timeout}s) reached - terminating process")
+                    self._force_stop_container_process()
+                    results["timed_out"] = True
+                    break
+                
+                try:
+                    # Wait for output with remaining time
+                    chunk = output_queue.get(timeout=min(remaining, 1.0))
+                    if chunk is None:  # Completion signal
+                        break
+                        
+                    output_lines.append(chunk)
+                    for line in chunk.split('\n'):
+                        if line.strip():
+                            self.logger.info(f"[ATTACK-{epoch_num}] {line}")
+                            
+                except Empty:
+                    # Queue timeout - check if process still running
+                    if execution_complete.is_set():
+                        break
+                    continue
+
+            container_thread.join(timeout=5)
+            if container_thread.is_alive():
+                self.logger.warning("Container thread still alive after cleanup timeout")
+           
+            # At this point, the iterator is exhausted = process completed
+            results["output"] = ''.join(output_lines)
             
-            results["output"] = "".join(output_lines)
-            results["errors"] = "".join(error_lines)
-            results["exit_code"] = exec_result.exit_code
-            
+            # Get exit code (available after stream completion)
+            results["exit_code"] = exec_result.exit_code if exec_result else -1
+
+            if results["timed_out"]:
+                self.logger.info(f"Attack process terminated due to timeout after {timeout}s")
+            else:
+                self.logger.info(f"Attack process completed with exit code: {results['exit_code']}")
+        
+            # Continue with file processing only if not timed out
+            if not results["timed_out"]:
+                # [Rest of your existing file reading logic here]
+                pass
+        
+
+            # At this point, the container process has completed
+            self.logger.info(f"Attack process completed with exit code: {exec_result.exit_code}")
+
+            max_wait_time = 5
+            poll_interval = 1
+            elapsed_time = 0
+
+            while elapsed_time < max_wait_time:
+                if os.path.exists(results_file):
+                    try:
+                        with open(results_file, 'r') as f:
+                            file_content = f.read()
+
+                            if file_content.strip():
+                                summary = json.loads(file_content)
+                                benchmark_data = summary.get("BENCHMARK_SUMMARY", {})
+                                results["services_detected"] = benchmark_data.get("services_detected", [])
+                                results["exploits_attempted"] = benchmark_data.get("exploits_attempted", [])
+                                results["services_successfully_exploited"] = benchmark_data.get("services_successfully_exploited", [])
+                                results["flags_captured"] = benchmark_data.get("flags_captured", [])
+                                results["total_flags"] = benchmark_data.get("total_flags", 0)
+                                results["total_services_detected"] = benchmark_data.get("total_services_detected", 0)
+                                results["total_exploits_attempted"] = benchmark_data.get("total_exploits_attempted", 0)
+                                
+                                self.logger.info(f"Successfully read attack results from file: {len(results['flags_captured'])} flags captured")
+                                break
+                    except PermissionError as e:
+                        self.logger.warning(f"Permission denied deleting previous results file: {e}")
+                        self.logger.info("Container will overwrite the file")
+                    except OSError as e:
+                        self.logger.warning(f"Could not clear previous results file: {e}")
+                    except (json.JSONDecodeError, PermissionError) as e:
+                        self.logger.warning(f"Error reading results file (attampt {elapsed_time}s): {e}")
+                    except FileNotFoundError as e:
+                        self.logger.warning(f"File not found: {e}")
+                else:
+                    logger.warning(f"File path does not exists {results_file}")
+                time.sleep(poll_interval)
+                elapsed_time += poll_interval
+
+            if elapsed_time >= max_wait_time:
+                self.logger.warning(f"Timeout waiting for results file after {max_wait_time}s")
+        
         except Exception as e:
             self.logger.error(f"Error executing attack: {e}")
             results["error"] = str(e)
         
         return results
-    
-    def _extract_service_from_line(self, line: str) -> str:
-        """Extract service name from output line"""
-        services = ["GITLAB", "DOCKER", "STRUTS", "CVE"]
-        for service in services:
-            if service in line.upper():
-                return service
-        return "UNKNOWN"
-    
-    def _parse_services(self, output_lines: List[str]) -> List[str]:
-        """Parse detected services from output"""
-        # Implementation depends on your output format
-        return []
-    
+
+    def _force_stop_container_process(self):
+        """Force stop any running processes in the container"""
+        try:
+            # Kill the specific process
+            kill_result = self.container.exec_run(
+                "pkill -f manager_exploit.py",
+                stdout=True,
+                stderr=True
+            )
+            self.logger.info(f"Process kill attempt: exit code {kill_result.exit_code}")
+            
+            # Alternative: restart the container if needed
+            # self.container.restart()
+            
+        except Exception as e:
+            self.logger.error(f"Error stopping container process: {e}")
+
     def stop(self):
         """Stop and remove attacker container"""
         if self.container:
@@ -246,8 +339,9 @@ class AttackerController:
 class MetricsCollector:
     """Collects and processes metrics from various sources"""
     
-    def __init__(self, config: BenchmarkConfig):
+    def __init__(self, config: BenchmarkConfig, episodic_memory=None):
         self.config = config
+        self.episodic_memory = episodic_memory
         self.logger = logging.getLogger(f"{__name__}.MetricsCollector")
     
     def collect_firewall_state(self) -> Dict[str, Any]:
@@ -268,83 +362,97 @@ class MetricsCollector:
             self.logger.error(f"Error collecting firewall state: {e}")
             return {}
     
-    def parse_agent_metrics(self, agent_result: Dict[str, Any]) -> Dict[str, Any]:
+    def parse_agent_metrics(self) -> Dict[str, Any]:
         """Extract metrics from agent execution result"""
         metrics = {
-            "threats_detected": 0,
             "rules_added": [],
             "rules_removed": [],
-            "honeypots_exposed": [],
+            "honeypots_exposed": "",
             "attack_graph_status": {},
             "decision": "",
             "lockdown_activated": False
         }
         
         # Parse the final message for ITERATION SUMMARY
-        if not agent_result.get('messages'):
+        if not self.episodic_memory:
+            self.logger.warning("No episodic memory provided, returning default metrics")
             return metrics
-            
-        last_message = agent_result['messages'][-1]
-        if not hasattr(last_message, 'content'):
+        recent_iterations = self.episodic_memory.get_recent_iterations(limit=1)[0]
+        if not recent_iterations:
+            self.logger.warning("No recent iterations found in episodic memory")
             return metrics
+        
+        
+        iteration_data = recent_iterations.value if hasattr(recent_iterations, 'value') else recent_iterations
+        logger.info(f"Memory from agent: {iteration_data}")
+        try:
+            if 'rules_applied' in iteration_data:
+                metrics["rules_added"] = iteration_data['rules_applied']
             
-        content = last_message.content
+            if 'attack_graph_progressions' in iteration_data:
+                metrics["attack_graph_status"] = iteration_data['attack_graph_progressions']
+            
+            if 'currently_exposed' in iteration_data:
+                metrics["honeypots_exposed"] = iteration_data['currently_exposed'].split(', ') if isinstance(iteration_data['currently_exposed'], str) else iteration_data['currently_exposed']
+            
+            if 'decision_rationale' in iteration_data:
+                metrics["decision"] = iteration_data['decision_rationale']
+            
+            if 'lockdown_status' in iteration_data:
+                metrics["lockdown_activated"] = iteration_data['lockdown_status'] == 'ACTIVE'
+            
+        except Exception as e:
+            self.logger.error(f"Error extracting metrics from memory: {e}")
         
-        # Extract attack graph progression
-        if "ATTACK GRAPH PROGRESSION:" in content:
-            lines = content.split('\n')
-            for line in lines:
-                if "Honeypot" in line and "%" in line:
-                    # Parse: - **Honeypot 1 (172.20.0.10):** [66%] - [SSH] - [Status]
-                    try:
-                        parts = line.split(':')
-                        if len(parts) >= 2:
-                            ip_match = parts[0].strip().split('(')[-1].split(')')[0]
-                            percent_part = parts[1].strip()
-                            percent_match = percent_part.split('%')[0].strip('[')
-                            metrics["attack_graph_status"][ip_match] = float(percent_match)
-                    except Exception as e:
-                        self.logger.debug(f"Error parsing honeypot line: {e}")
-        
-        # Extract honeypot exposure info
-        if "Currently Exposed:" in content:
-            lines = content.split('\n')
-            for i, line in enumerate(lines):
-                if "Currently Exposed:" in line:
-                    exposed_info = line.split("Currently Exposed:")[-1].strip()
-                    if exposed_info != "NONE":
-                        metrics["honeypots_exposed"].append(exposed_info)
-        
-        # Check lockdown status
-        if "LOCKDOWN STATUS: ACTIVE" in content:
-            metrics["lockdown_activated"] = True
-        
-        # Extract firewall actions
-        if "Rules Applied:" in content:
-            lines = content.split('\n')
-            for i, line in enumerate(lines):
-                if "Rules Applied:" in line:
-                    # Parse the rules from subsequent lines
-                    j = i + 1
-                    while j < len(lines) and lines[j].strip().startswith('-'):
-                        rule = lines[j].strip().lstrip('-').strip()
-                        if "add_allow_rule" in rule or "add_block_rule" in rule:
-                            metrics["rules_added"].append(rule)
-                        elif "remove_firewall_rule" in rule:
-                            metrics["rules_removed"].append(rule)
-                        j += 1
-        
+    
         return metrics
-
-
+    
+    def parse_attack_results(self, attack_results: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse attack results and calculate metrics"""
+        parsed_metrics = {
+            "services_detected": [],
+            "exploits_attempted": [],
+            "services_successfully_exploited": [],
+            "flags_captured": [],
+            "attack_success_rate": 0.0
+        }
+        
+        try:
+            if "error" in attack_results:
+                self.logger.warning(f"Attack had errors: {attack_results['error']}")
+                return parsed_metrics
+            
+            # Extract services
+            parsed_metrics["services_detected"] = attack_results.get("services_detected", [])
+            parsed_metrics["exploits_attempted"] = attack_results.get("exploits_attempted", [])
+            parsed_metrics["services_successfully_exploited"] = attack_results.get("services_successfully_exploited", [])
+            parsed_metrics["flags_captured"] = attack_results.get("flags_captured", [])
+            
+            
+            # Calculate success rate
+            total_services = len(parsed_metrics["exploits_attempted"])
+            successful_services = len(parsed_metrics["flags_captured"])
+            
+            if total_services > 0:
+                parsed_metrics["attack_success_rate"] = (successful_services / total_services) * 100
+            else:
+                parsed_metrics["attack_success_rate"] = 0.0
+            
+            self.logger.info(f"Attack metrics: {len(parsed_metrics["flags_captured"])} flags, {total_services} services attempted, {parsed_metrics['attack_success_rate']:.1f}% success rate")
+            
+        except Exception as e:
+            self.logger.error(f"Error parsing attack results: {e}")
+        
+        return parsed_metrics
+    
 class BenchmarkOrchestrator:
     """Main orchestrator for benchmark execution"""
     
-    def __init__(self, config: BenchmarkConfig, agent_executor: Optional[Callable] = None):
+    def __init__(self, config: BenchmarkConfig, agent_executor: Optional[Callable] = None, episodic_memory=None):
         self.config = config
         self.agent_executor = agent_executor
         self.attacker = AttackerController(config)
-        self.metrics_collector = MetricsCollector(config)
+        self.metrics_collector = MetricsCollector(config, episodic_memory)
         self.epochs_data: List[EpochMetrics] = []
         self.current_epoch: Optional[EpochMetrics] = None
         self.logger = self._setup_logging()
@@ -411,21 +519,17 @@ class BenchmarkOrchestrator:
             # Phase 2: Execute attack
             self._phase_transition(BenchmarkPhase.ATTACK)
             self.logger.info(f"Starting attacker script with a fallback timeout of {self.config.attack_duration}s...")
-            attack_thread = threading.Thread(
-                target=lambda: self.attacker.execute_attack(epoch_num)
-            )
-            attack_thread.start()
-
-            self.logger.info(f"Attack script running with a fallback timeout of {self.config.attack_duration}s...")
-
-            attack_thread.join(timeout=self.config.attack_duration)
-
-            if attack_thread.is_alive():
-                self.logger.warning("Attack did not finish in time. Proceeding after timeout fallback.")
-            else:
-                self.logger.info("Attack script completed before timeout.")
-
             
+            attack_results = self.attacker.execute_attack(epoch_num)
+
+            # NEW: Parse attack results and update epoch metrics
+            attack_metrics = self.metrics_collector.parse_attack_results(attack_results)
+            epoch_metrics.services_detected = attack_metrics["services_detected"]
+            epoch_metrics.services_successfully_exploited = attack_metrics["services_successfully_exploited"]
+            epoch_metrics.exploits_attempted = attack_metrics["exploits_attempted"]
+            epoch_metrics.flags_captured = attack_metrics["flags_captured"]
+            epoch_metrics.attack_success_rate = attack_metrics["attack_success_rate"]
+                
             # Phase 3: Wait for monitoring data
             self._phase_transition(BenchmarkPhase.MONITOR_WAIT)
             self.logger.info(f"Accumulating monitoring data for {self.config.monitor_accumulation_wait}s...")
@@ -434,8 +538,8 @@ class BenchmarkOrchestrator:
             # Phase 4: Execute agent
             self._phase_transition(BenchmarkPhase.AGENT_ANALYSIS)
             if self.agent_executor:
-                agent_result = self.agent_executor(epoch_num)
-                agent_metrics = self.metrics_collector.parse_agent_metrics(agent_result)
+                self.agent_executor(epoch_num)
+                agent_metrics = self.metrics_collector.parse_agent_metrics()
                 
                 # Update epoch metrics
                 epoch_metrics.attack_graph_coverage = agent_metrics["attack_graph_status"]
@@ -489,10 +593,13 @@ class BenchmarkOrchestrator:
             return False
         
         # Check if all honeypots are fully compromised
+        percentages = []
+        for v in epoch_metrics.attack_graph_coverage.values():
+            percentages.append(v['percentage'])
         if epoch_metrics.attack_graph_coverage:
             all_compromised = all(
                 coverage >= 100.0 
-                for coverage in epoch_metrics.attack_graph_coverage.values()
+                for coverage in percentages
             )
             
             if all_compromised and not self.config.allow_full_compromise:
@@ -516,7 +623,7 @@ class BenchmarkOrchestrator:
 class BenchmarkRunner:
     """High-level runner for easy notebook integration"""
     
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: Optional[Dict[str, Any]] = None, episodic_memory=None):
         """Initialize runner with optional config overrides"""
         config_dict = {
             "max_epochs": 10,
@@ -532,7 +639,7 @@ class BenchmarkRunner:
             config_dict.update(config)
         
         self.config = BenchmarkConfig(**config_dict)
-        self.orchestrator = BenchmarkOrchestrator(self.config)
+        self.orchestrator = BenchmarkOrchestrator(self.config, episodic_memory=episodic_memory)
         self.results = None
     
     def set_agent_executor(self, executor: Callable):
@@ -621,27 +728,30 @@ class BenchmarkRunner:
     
     def _generate_summary(self, epochs_data: List[EpochMetrics]) -> Dict[str, Any]:
         """Generate summary statistics"""
-        if not epochs_data:
-            return {}
-        
-        total_flags = sum(len(e.flags_captured) for e in epochs_data)
-        unique_honeypots = set()
-        max_coverage = {}
-        
-        for epoch in epochs_data:
-            for ip, coverage in epoch.attack_graph_coverage.items():
-                unique_honeypots.add(ip)
-                max_coverage[ip] = max(max_coverage.get(ip, 0), coverage)
-        
-        return {
-            "total_flags_captured": total_flags,
-            "unique_honeypots_touched": len(unique_honeypots),
-            "honeypots_fully_compromised": sum(1 for c in max_coverage.values() if c >= 100),
-            "average_epoch_duration": sum(e.end_time - e.start_time for e in epochs_data) / len(epochs_data),
-            "lockdown_triggered": any(e.lockdown_activated for e in epochs_data),
-            "lockdown_epoch": next((e.epoch_number for e in epochs_data if e.lockdown_activated), None),
-            "final_attack_graph_state": max_coverage
-        }
+        try:
+            if not epochs_data:
+                return {}
+            
+            total_flags = sum(len(e.flags_captured) for e in epochs_data)
+            unique_honeypots = set()
+            max_coverage = {}
+            
+            for epoch in epochs_data:
+                for ip, coverage in epoch.attack_graph_coverage.items():
+                    unique_honeypots.add(ip)
+                    max_coverage[ip] = max(max_coverage.get(ip, 0), coverage['percentage'])
+            
+            return {
+                "total_flags_captured": total_flags,
+                "unique_honeypots_touched": len(unique_honeypots),
+                "honeypots_fully_compromised": sum(1 for c in max_coverage.values() if c >= 100),
+                "average_epoch_duration": sum(e.end_time - e.start_time for e in epochs_data) / len(epochs_data),
+                "lockdown_triggered": any(e.lockdown_activated for e in epochs_data),
+                "lockdown_epoch": next((e.epoch_number for e in epochs_data if e.lockdown_activated), None),
+                "final_attack_graph_state": max_coverage
+            }
+        except Exception as e:
+            logger.error(f"Exception: {e}")
 
 
 def create_benchmark_report(results: Dict[str, Any], output_format: str = "markdown") -> str:

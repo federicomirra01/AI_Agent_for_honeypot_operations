@@ -904,28 +904,28 @@ def load_memory_context(state: HoneypotStateReact):
     print(f"Loaded {len(recent_iterations)} recent iterations from episodic memory.")
     return recent_iterations
 
-def save_memory_context(state: HoneypotStateReact) -> Dict[str, Any]:
-    """Save the last message from current iteration"""
+# def save_memory_context(state: HoneypotStateReact) -> Dict[str, Any]:
+#     """Save the last message from current iteration"""
 
-    if not state.messages:
-        logger.error("No messages to save in memory context.")
-        return {}
+#     if not state.messages:
+#         logger.error("No messages to save in memory context.")
+#         return {}
     
-    last_message = state.messages[-1]
+#     last_message = state.messages[-1]
 
-    if hasattr(last_message, 'content'):
-        message_content = last_message.content
-    else:
-        message_content = str(last_message)
+#     if hasattr(last_message, 'content'):
+#         message_content = last_message.content
+#     else:
+#         message_content = str(last_message)
 
-    # Save to memory
-    iteration_id = episodic_memory.save_iteration(message_content)
-    total_iterations = episodic_memory.get_iteration_count()
+#     # Save to memory
+#     iteration_id = episodic_memory.save_iteration(message_content)
+#     total_iterations = episodic_memory.get_iteration_count()
 
-    return {
-        "message" : f"Iteration saved with ID {iteration_id}. Total iterations: {total_iterations}",
-        "memory_context": message_content
-    }
+#     return {
+#         "message" : f"Iteration saved with ID {iteration_id}. Total iterations: {total_iterations}",
+#         "memory_context": message_content
+#     }
 
 llm_with_tools = llm.bind_tools(tools)
 
@@ -977,19 +977,6 @@ def assistant(state: HoneypotStateReact):
             HumanMessage(content=f"NETWORK FLOWS: {total_flows} flows analyzed, {threat_ips} threat IPs identified. Full data: {state.network_flows}")
         )
     
-    # COMMENTED OUT: Large packet data to prevent ccontext overflow
-    # if state.compressed_packets and state.compressed_packets.get('success'):
-    #     packets_data = state.compressed_packets.get('data', {})
-    #     packet_count = packets_data.get('count', 0)
-    #     # Count threat packets
-    #     threat_packets = 0
-    #     if 'packets' in packets_data:
-    #         for packet in packets_data['packets']:
-    #             if packet.get('threats') or (packet.get('http') and packet['http'].get('threats')):
-    #                 threat_packets += 1
-    #     context_messages.append(
-    #         HumanMessage(content=f"PACKET ANALYSIS: {packet_count} packets analyzed, {threat_packets} contain threats.") #  Full data: {state.compressed_packets}
-    #     )
     
     # Add configuration context
     if state.firewall_config:
@@ -1475,11 +1462,11 @@ Format as a clear executive summary for security decision-making."""
         packet_summary = f"## THREAT VERIFICATION ANALYSIS\n\n{analysis_result}"
     return {"packet_summary": packet_summary}
 
-def save_iteration_node(state: HoneypotStateReact):
-    """Save the last message from current iteration to episodic memory"""
-    result = save_memory_context(state)
-    print(f"Memory: {result.get('message', 'Iteration save failed')}")
-    return {"memory_context": result.get("memory_context", "")}
+# def save_iteration_node(state: HoneypotStateReact):
+#     """Save the last message from current iteration to episodic memory"""
+#     result = save_memory_context(state)
+#     print(f"Memory: {result.get('message', 'Iteration save failed')}")
+#     return {"memory_context": result.get("memory_context", "")}
 
 def cleanup_messages(state: HoneypotStateReact):
     """Clean up ALL messages and data, keeping only essential state for next iteration"""
@@ -1489,7 +1476,7 @@ def cleanup_messages(state: HoneypotStateReact):
         print("Flushing all messages and resetting state for next iteration")
         
         return {
-            "messages": "CLEAR_ALL",  # Flush all messages
+            "messages": state.messages[-1],  # Flush all messages
             "packet_summary": {},  # Clear packet summary
             "network_flows": {},  # Clear network flows
             "security_events": {},  # Clear security events
@@ -1505,31 +1492,31 @@ def cleanup_messages(state: HoneypotStateReact):
         print("No messages to cleanup")
         return {}
 
-def should_continue(state: HoneypotStateReact) -> Literal["tools", "threat_verification", "save_iteration", "cleanup", "__end__"]:
-    """Determine next action based on the last message"""
+def should_continue_from_assistant(state: HoneypotStateReact) -> Literal["tools", "save_iteration", "cleanup", "__end__"]:
     last_message = state.messages[-1]
-    print(last_message)
-    print("\n" * 5)
-    # If the last message has tool calls, execute them
+    
     if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
         return "tools"
     
-    # Check if we need to summarize packet data
-    if state.network_flows and state.security_events and state.compressed_packets and not state.packet_summary:
-        return "threat_verification"
+    # if state.network_flows and state.security_events and state.compressed_packets and not state.packet_summary:
+    #     return "threat_verification"
     
-    # Before cleanup, save the iteration if we have analyzed data and final response
     if (len(state.packet_summary) > 1 and len(state.messages) > 1 and 
         not state.cleanup_flag and (not hasattr(last_message, 'tool_calls') or not last_message.tool_calls)) \
             and "ITERATION SUMMARY" in last_message.content:
         return "save_iteration"
     
-    # After saving iteration, do cleanup
     if not state.cleanup_flag and len(state.messages) > 1 and len(state.packet_summary) > 1:
         return "cleanup"
 
     return "__end__"
-# Build the graph
+
+def should_continue_from_tools(state: HoneypotStateReact) -> Literal["threat_verification", "assistant"]:
+    # After tools are executed, decide where to go next
+    if state.network_flows and state.security_events and state.compressed_packets and not state.packet_summary:
+        return "threat_verification"
+    return "assistant"
+
 def build_react_graph():
     builder = StateGraph(HoneypotStateReact)
     
@@ -1542,12 +1529,13 @@ def build_react_graph():
     
     # Add edges
     builder.add_edge(START, "assistant")
-    builder.add_conditional_edges("assistant", should_continue)
-    builder.add_edge("tools", "assistant")
+    builder.add_conditional_edges("assistant", should_continue_from_assistant)
+    builder.add_conditional_edges("tools", should_continue_from_tools)
     builder.add_edge("threat_verification", "assistant")
     builder.add_edge("save_iteration", "cleanup")  # NEW: Save iteration then cleanup
     builder.add_edge("cleanup", "__end__")  # Cleanup then end
         
     return builder.compile()
+
 # Create the graph
 graph = build_react_graph()

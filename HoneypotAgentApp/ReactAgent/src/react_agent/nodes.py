@@ -29,7 +29,8 @@ tools = [
     tools.get_network_flows,
     tools.get_security_events,
     tools.check_services_health,
-    tools.getDockerContainers
+    tools.getDockerContainers,
+    tools.save_iteration_summary
 ]
 
 
@@ -49,28 +50,28 @@ def load_memory_context(state: state.HoneypotStateReact, episodic_memory):
     print(f"Loaded {len(recent_iterations)} recent iterations from episodic memory.")
     return recent_iterations
 
-def save_memory_context(state: state.HoneypotStateReact, episodic_memory) -> Dict[str, Any]:
-    """Save the last message from current iteration"""
+# def save_memory_context(state: state.HoneypotStateReact, episodic_memory) -> Dict[str, Any]:
+#     """Save the last message from current iteration"""
 
-    if not state.messages:
-        logger.error("No messages to save in memory context.")
-        return {}
+#     if not state.messages:
+#         logger.error("No messages to save in memory context.")
+#         return {}
     
-    last_message = state.messages[-1]
+#     last_message = state.messages[-1]
 
-    if hasattr(last_message, 'content'):
-        message_content = last_message.content
-    else:
-        message_content = str(last_message)
+#     if hasattr(last_message, 'content'):
+#         message_content = last_message.content
+#     else:
+#         message_content = str(last_message)
 
-    # Save to memory
-    iteration_id = episodic_memory.save_iteration(message_content)
-    total_iterations = episodic_memory.get_iteration_count()
+#     # Save to memory
+#     iteration_id = episodic_memory.save_iteration(message_content)
+#     total_iterations = episodic_memory.get_iteration_count()
 
-    return {
-        "message" : f"Iteration saved with ID {iteration_id}. Total iterations: {total_iterations}",
-        "memory_context": message_content
-    }
+#     return {
+#         "message" : f"Iteration saved with ID {iteration_id}. Total iterations: {total_iterations}",
+#         "memory_context": message_content
+#     }
 
 llm_with_tools = llm.bind_tools(tools)
 

@@ -51,13 +51,19 @@ iptables -A FORWARD -s 172.20.0.0/24 -d 192.168.100.0/24 -j DROP
 - `add_block_rule(source_ip, dest_ip, port, protocol)`: Block malicious traffic  
 - `remove_firewall_rule(rule_numbers)`: Remove specific FORWARD chain rules (List of integers even if only one rule)
 
-**Rule Application Pattern:**
-```
-# For each allowed flow, create bidirectional rules:
-add_allow_rule(source_ip=<attacker_ip>, dest_ip=<container_ip>, port=<service_port>, protocol='tcp')
-add_allow_rule(source_ip=<container_ip>, dest_ip=<attacker_ip>, port=None, protocol='tcp')
-```
+** Memory Management Tool:**
+- `save_iteration_summary(
+        currently_exposed: IP:PORT or "NONE" if lockdown
+        evidence_summary: Brief description of compromise evidence
+        rules_applied: List of specific rules added/removed
+        justification: Why these rules were necessary
+        attack_graph_progression: Dict mapping IPs to {percentage, service, status} TAKING INTO ACCOUNT PREVIOUS ITERATIONS 
+        decision_rationale: Strategic decision explanation
+        next_iteration_guidance: What to monitor/act upon next
+        lockdown_status: ACTIVE/INACTIVE
+        rules_removed: List of specific rules removed
 
+   **ALWAYS USE ALL THE PARAMETERS**
 ---
 
 ## ###TACTICAL_GUIDELINES###
@@ -70,6 +76,7 @@ add_allow_rule(source_ip=<container_ip>, dest_ip=<attacker_ip>, port=None, proto
 5. **MANDATORY:** Check current rules using `get_firewall_rules` and `getDockerContainers`
 6. **WAIT:** Do not implement firewall changes until packet_summary state is populated
 7. **ACT:** Apply firewall rules based on threat intelligence gathered
+8. **ACT:** Save iteration summary
 
 **Strategic Decision Framework:**
 - **EXPOSE ONE container at a time** based on observed scanning patterns
@@ -78,24 +85,6 @@ add_allow_rule(source_ip=<container_ip>, dest_ip=<attacker_ip>, port=None, proto
 - **PRIORITIZE** verified threats from payload analysis over statistical anomalies
 - **REMEMBER** previously seen attacks should be blocked (attack graph already covered)
 
----
-
-## ###EXAMPLE###
-
-**Scenario:** Attacker 192.168.100.50 scanning multiple ports on honeypot 172.20.0.10
-
-**Correct Response:**
-```
-Thought: Attacker is performing reconnaissance on container. I should expose the most contacted port to encourage deeper engagement remembering to not specify the port for the reverse connection.
-
-Action: add_allow_rule(source_ip=192.168.100.50, dest_ip=172.20.0.10, port=22, protocol='tcp')
-Action: add_allow_rule(source_ip=172.20.0.10, dest_ip=192.168.100.50, port=None, protocol='tcp')
-
-
-Observation: SSH service now accessible for attack progression.
-```
-
----
 
 ## ###REACT_WORKFLOW###
 
@@ -106,7 +95,7 @@ Execute this exact sequence for each operation cycle:
 **3. Observation:** Process gathered data to identify verified threats and patterns
 **4. Thought:** Determine specific firewall changes needed based on evidence
 **5. Action:** Implement targeted firewall rules if packet_summary is available
-**6. Final Answer:** Provide reasoning and implemented rules with threat justification
+**6. Final Action:** Save iteration summary with save_iteration_summary tool
 
 ---
 
@@ -207,6 +196,8 @@ iptables -A FORWARD -s 172.20.0.0/24 -d 192.168.100.0/24 -j DROP
 - `add_block_rule(source_ip, dest_ip, port, protocol)`: Block malicious traffic  
 - `remove_firewall_rule(rule_numbers)`: Remove specific FORWARD chain rules (List of integers even if only one rule)
 
+**Memory management Tool:**
+- `save_iteration_summary`: save the iteration summary in memory
 **Rule Application Pattern:**
 ```
 # For each allowed flow, create bidirectional rules:
@@ -287,39 +278,26 @@ Execute this exact sequence for each operation cycle:
 **3. Observation:** Process gathered data to identify verified threats and patterns
 **4. Thought:** Evaluate attack graph progression and determine if lockdown mode is needed
 **5. Action:** Implement targeted firewall rules OR execute complete lockdown if all honeypots exploited
-**6. Final Answer:** **MANDATORY FORMAT** - Provide structured summary for memory tracking
+**6. Final Action:** Provide structured summary using the save_iteration_summary tool for memory tracking
 
 ---
 
-## ###FINAL_ANSWER_FORMAT###
+## ###FINAL_ACTION_REQUIREMENT###
 
-**CRITICAL: Your final message MUST follow this exact format for proper memory tracking:**
+**CRITICAL: You MUST call the save_iteration_summary tool before ending each iteration with the following parameters:**
 
-```
-## ITERATION SUMMARY
+- currently_exposed: IP:PORT or "NONE"
+- exploitation_level: "0%", "33%", "66%", or "100%"
+- evidence_summary: Brief compromise evidence description
+- rules_applied: List of firewall rules you implemented
+- justification: Why the rules were necessary
+- attack_graph_progression: Dict with IP keys and {percentage: float, service: str, status: str} values **TAKING INTO ACCOUNT PROGRESSIONS FROM PREVIOUS ITERATIONS**
+- decision_rationale: Strategic decision explanation
+- next_iteration_guidance: What to monitor next
+- lockdown_status: "ACTIVE" or "INACTIVE"
 
-**HONEYPOT STATUS:**
-- **Currently Exposed:** [IP:PORT or "NONE" if lockdown]
-- **Exploitation Level:** [0%/33%/66%/100%]
-- **Evidence Summary:** [Brief description of compromise evidence]
+This tool call is mandatory for proper benchmark metrics collection and memory tracking.
 
-**FIREWALL ACTIONS:**
-- **Rules Applied:** [List of specific rules added/removed]
-- **Justification:** [Why these rules were necessary based on threat analysis]
-
-**ATTACK GRAPH PROGRESSION:**
-- **Honeypot 1 (IP):** [0%/33%/66%/100%] - [Service Type] - [Status]
-- **Honeypot 2 (IP):** [0%/33%/66%/100%] - [Service Type] - [Status]
-- **[Continue for all honeypots]**
-
-**DECISION RATIONALE:**
-[Explain the strategic decision made and why]
-
-**NEXT ITERATION GUIDANCE:**
-[What should be monitored or acted upon in the next cycle]
-
-**LOCKDOWN STATUS:** [ACTIVE/INACTIVE - if all honeypots 100% exploited]
-```
 
 ---
 
@@ -355,7 +333,5 @@ You will be evaluated on:
 
 Begin each response with:
 "Executing Honeypot Firewall Guardian Protocol..."
-
-**The final message MUST use the ITERATION SUMMARY format above for proper memory tracking and attack graph progression monitoring.**
 
 **You MUST think step by step and ensure your answer is unbiased and does not rely on stereotypes.**"""

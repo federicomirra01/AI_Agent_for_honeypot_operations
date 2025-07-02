@@ -3,7 +3,16 @@ import docker
 import requests
 import logging
 from typing import Dict, List, Optional, Any
+from langgraph.store.memory import InMemoryStore
+# In tools.py, add this at the top after imports:
+_episodic_memory = None
 
+def set_episodic_memory(memory_instance):
+    """Set the episodic memory instance from external source (like notebook)"""
+    global _episodic_memory
+    _episodic_memory = memory_instance
+    logger.info(f"Episodic memory set: {type(_episodic_memory)}")
+    return _episodic_memory
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -378,3 +387,61 @@ def getDockerContainers() -> List[Dict[str, Any]]:
         return {"error": f"Docker connection error: {str(e)}"}
     except Exception as e:
         return {"error": f"Unexpected error: {str(e)}"}
+
+def save_iteration_summary(
+    currently_exposed: str = "",
+    evidence_summary: str = "",
+    rules_applied: List[str] = [],
+    justification: str = "",
+    attack_graph_progression: Dict[str, Dict[str, Any]] = {},  # IP -> {percentage: float, service: str, status: str}
+    decision_rationale: str = "",
+    next_iteration_guidance: str = "",
+    lockdown_status: str = "INACTIVE",
+    rules_removed: List[str] = []
+) -> Dict[str, Any]:
+    """
+    Save iteration summary with structured data for benchmark metrics collection.
+    
+    Args:
+        currently_exposed: IP:PORT or "NONE" if lockdown
+        evidence_summary: Brief description of compromise evidence
+        rules_applied: List of specific rules added/removed
+        justification: Why these rules were necessary
+        attack_graph_progression: Dict mapping IPs to {percentage, service, status}
+        decision_rationale: Strategic decision explanation
+        next_iteration_guidance: What to monitor/act upon next
+        lockdown_status: ACTIVE/INACTIVE
+        rules_removed: List of specific rules removed
+    
+    Returns:
+        Dict with success status and iteration info
+    """
+    if rules_removed is None:
+        rules_removed = []
+    
+    iteration_data = {
+        "currently_exposed": currently_exposed,
+        "rules_applied": rules_applied,
+        "attack_graph_progressions": attack_graph_progression,
+        "decision_rationale": decision_rationale,
+        "lockdown_status": lockdown_status,
+        "rules_removed": rules_removed,
+
+        "evidence_summary": evidence_summary,
+        "justification": justification,
+        "next_iteration_guidance": next_iteration_guidance,
+    }
+
+    # Save to episodic memory
+    iteration_id = _episodic_memory.save_iteration(iteration_data)
+    total_iterations = _episodic_memory.get_iteration_count()
+    
+    logger.info(f"Iteration saved with ID {iteration_id}. Total iterations: {total_iterations}")
+    
+    return {
+        "success": True,
+        "iteration_id": iteration_id,
+        "total_iterations": total_iterations,
+        "structured_data": iteration_data
+    }
+
