@@ -186,7 +186,7 @@ class AttackerController:
                 nonlocal exec_result
                 try:
                     exec_result = self.container.exec_run(
-                        "python3 /attacker/scripts/manager_exploit.py",
+                        f"python3 /attacker/scripts/manager_exploit.py {epoch_num}",
                         stdout=True,
                         stderr=True,
                         stream=True

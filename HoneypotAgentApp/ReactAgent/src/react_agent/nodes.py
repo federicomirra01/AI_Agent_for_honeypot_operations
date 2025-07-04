@@ -42,7 +42,7 @@ def load_memory_context(state: state.HoneypotStateReact, episodic_memory):
     if state.memory_context:
         return state.memory_context
     
-    recent_iterations = episodic_memory.get_recent_iterations(limit=5)
+    recent_iterations = episodic_memory.get_recent_iterations(limit=10)
     if not recent_iterations:
         #logger.info("No recent iterations found in episodic memory.")
         return []
@@ -93,10 +93,7 @@ def assistant(state: state.HoneypotStateReact, config):
         iterations_context = "PREVIOUS ITERATIONS CONTEXT:\n"
         for i, iteration in enumerate(memory_context, 1):
             iteration = iteration.value if hasattr(iteration, 'value') else iteration
-            iterations_context += f"\n--- ITERATION {iteration.get('iteration_number', i)} ({iteration.get('datetime', 'Unknown time')}) ---\n"
-            iterations_context += iteration.get('last_message', 'No message content')
-            iterations_context += "\n"
-        
+            iterations_context += f"\n--- {iteration}\n"
         context_messages.append(HumanMessage(content=iterations_context))
     # Add packet summary context if available (this contains threat verification analysis)
     if len(state.packet_summary) > 1:
