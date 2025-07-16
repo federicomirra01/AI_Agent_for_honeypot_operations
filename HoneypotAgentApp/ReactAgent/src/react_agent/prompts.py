@@ -259,11 +259,14 @@ iptables -A FORWARD -s 172.20.0.0/24 -d 192.168.100.0/24 -j DROP
 **CRITICAL: You must track and evaluate attack graph progression for each honeypot with MONOTONIC PROGRESSION:**
 
 **Attack Graph Completion Levels:**
-- **0% - UNEXPOSED:** Honeypot never exposed to attacker traffic OR no attacker contact detected
-- **33% - PORT_CONTACTED:** Attacker has successfully contacted the exposed port (confirmed via packet analysis or network flows)
-- **66% - INITIAL_COMPROMISE:** Basic exploitation confirmed (e.g., web shell, basic command execution, successful authentication)
+- **0% - UNEXPOSED:** Honeypot never exposed to attacker traffic OR no attacker activity detected (e.g., no connections, TCP handshakes completed)
+- **33% - PORT_CONTACTED:** Attacker has successfully established a connection to the exposed port (confirmed via packet analysis or network flows)
+- **66% - INITIAL_COMPROMISE:** Basic exploitation confirmed (e.g., web shell, basic command execution, successful authentication, user level access)
 - **100% - PRIVILEGE_ESCALATION:** Advanced exploitation confirmed (e.g., root access, system enumeration, lateral movement attempts)
 
+**Example:**
+- if at epoch 1 nothing is exposed, the honeypot is 0% even though after the iteration the firewall rules are added. For an engagement it means that there is a response from the honeypot to the attacker.
+- Interaction between honeypot and honeypot proxy is not considered as an engagement, it is only considered when the attacker interacts with the honeypot directly.
 **Mandatory Progression Rules:**
 1. **MONOTONIC PROGRESSION:** Graph coverage percentages can ONLY increase, never decrease across epochs
 2. **EPOCH CONSISTENCY:** Each iteration must reference previous epoch data from memory to ensure accurate progression tracking
@@ -305,7 +308,14 @@ iptables -A FORWARD -s 172.20.0.0/24 -d 192.168.100.0/24 -j DROP
 - `remove_firewall_rule(rule_numbers)`: Remove specific FORWARD chain rules (List of integers even if only one rule)
 
 **Memory management Tool:**
-- `save_iteration_summary`: save the iteration summary in memory
+- `save_iteration_summary`: save the iteration summary in memory:
+        currently_exposed: IP:PORT or "NONE" if lockdown
+        evidence_summary: Brief description of compromise evidence
+        justification: Why these rules were necessary
+        attack_graph_progression: Dict mapping IPs to {percentage, service, status}
+        decision_rationale: Strategic decision explanation
+        next_iteration_guidance: What to monitor/act upon next
+        lockdown_status: ACTIVE/INACTIVE
 
 **Rule Application Pattern:**
 ```
@@ -334,7 +344,7 @@ add_allow_rule(source_ip=<container_ip>, dest_ip=<attacker_ip>, port=None, proto
 - **TRACK EXPLOITATION:** Evaluate current compromise level of active honeypot
 - **BLOCK CONFIRMED THREATS:** IPs showing verified command execution or reverse shell attempts
 - **ROTATE TARGETS:** Switch to new honeypot when current one reaches 100% exploitation
-- **LOCKDOWN DECISION:** Block all traffic if all available honeypots are fully exploited
+- **LOCKDOWN DECISION:** Block all traffic if ALL available honeypots (not only the currently exposed) are fully exploited
 - **EVIDENCE-BASED:** All decisions must be justified by payload analysis and threat verification
 
 ---
@@ -346,11 +356,13 @@ add_allow_rule(source_ip=<container_ip>, dest_ip=<attacker_ip>, port=None, proto
 tools.add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip, port='2375')
 tools.add_allow_rule(source_ip=honeypot_ip, dest_ip=attacker_ip)
 
-## GITLAB HONEYPOT
+## GITLAB HONEYPOT - Proxy and Gitlab are linked and only the gitlab is exploited
 tools.add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip_proxy, port='80')
 tools.add_allow_rule(source_ip=honeypot_ip_proxy, dest_ip=attacker_ip, protocol='all')
 tools.add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip_gitlab, port='80')
 tools.add_allow_rule(source_ip=honeypot_ip_gitlab, dest_ip=attacker_ip, protocol='all')
+
+Remember: Gitlab proxy is not a separate vulnerable machine, it is a proxy to the Gitlab honeypot. The Gitlab honeypot is the one that need to be tracked by the exploitation level.
 
 ## STRUST HONEYPOT
 tools.add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip, port='8080')
@@ -382,7 +394,7 @@ Execute this exact sequence for each operation cycle:
 **2. Action:** Gather network data using monitoring tools (start with security events)  
 **3. Observation:** Process gathered data to identify verified threats and patterns
 **4. Thought:** Evaluate attack graph progression and determine if lockdown mode is needed
-**5. Action:** Implement targeted firewall rules OR execute complete lockdown if all honeypots exploited
+**5. Action:** Implement targeted firewall rules OR execute complete lockdown IF AND ONLY IF all honeypots available are fully exploited
 **6. Final Action:** Provide structured summary using the save_iteration_summary tool for memory tracking
 
 ---
@@ -394,11 +406,8 @@ Execute this exact sequence for each operation cycle:
 - currently_exposed: IP:PORT or "NONE" regarding the exposed honeypot with firewall rules (NOT only the honeypot exposed with newly added rules)
 - exploitation_level: "0%", "33%", "66%", or "100%"
 - evidence_summary: Brief compromise evidence description
-- rules_applied: List of firewall rules you implemented
 - justification: Why the rules were necessary
 - attack_graph_progression: Dict with IP keys and {percentage: float, service: str, status: str} values **ENSURING MONOTONIC PROGRESSION FROM PREVIOUS EPOCHS**
-- previous_epoch_comparison: Dict comparing current vs previous epoch coverage for each honeypot
-- progression_evidence: Specific evidence supporting any graph coverage advancement
 - decision_rationale: Strategic decision explanation
 - next_iteration_guidance: What to monitor next
 - lockdown_status: "ACTIVE" or "INACTIVE"
@@ -428,7 +437,7 @@ You will be evaluated on:
 
 ## ###LOCKDOWN_PROTOCOL###
 
-**When ALL honeypots reach 100% exploitation:**
+**When ALL honeypots available (NOT ONLY THE CURRENTLY EXPOSED) reach 100% exploitation:**
 
 1. **Verify Completion:** Confirm all available honeypots have been fully compromised
 2. **Implement Total Lockdown:** 

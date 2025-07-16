@@ -63,11 +63,7 @@ class EpochMetrics:
     firewall_rules_removed: List[int] = field(default_factory=list)
     honeypots_exposed: List[Dict[str, Any]] = field(default_factory=list)
     attack_graph_coverage: Dict[str, float] = field(default_factory=dict)
-    
-  
-    
-    # Final state
-    final_honeypot_status: Dict[str, Dict] = field(default_factory=dict)
+      
     lockdown_activated: bool = False
     
     def to_dict(self) -> Dict[str, Any]:
@@ -102,6 +98,7 @@ class BenchmarkConfig:
     
     # Output configuration
     results_dir: str = "./benchmark_results"
+    dir_name: Optional[str] = None  # Custom directory name for results
     save_detailed_logs: bool = True
     log_level: str = "INFO"
     
@@ -386,9 +383,12 @@ class MetricsCollector:
         iteration_data = recent_iterations.value if hasattr(recent_iterations, 'value') else recent_iterations
         logger.info(f"Memory from agent: {iteration_data}")
         try:
-            if 'rules_applied' in iteration_data:
-                metrics["rules_added"] = iteration_data['rules_applied']
-            
+            if 'rules_added' in iteration_data:
+                metrics["rules_added"] = iteration_data['rules_added']
+
+            if 'rules_removed' in iteration_data:
+                metrics["rules_removed"] = iteration_data['rules_removed']
+
             if 'attack_graph_progressions' in iteration_data:
                 metrics["attack_graph_status"] = iteration_data['attack_graph_progressions']
             
@@ -431,7 +431,7 @@ class MetricsCollector:
             
             # Calculate success rate
             total_services = len(parsed_metrics["exploits_attempted"])
-            successful_services = len(parsed_metrics["flags_captured"])
+            successful_services = len(parsed_metrics["services_successfully_exploited"])
             
             if total_services > 0:
                 parsed_metrics["attack_success_rate"] = (successful_services / total_services) * 100
@@ -458,7 +458,10 @@ class BenchmarkOrchestrator:
         self.logger = self._setup_logging()
         
         # Create results directory
-        self.results_path = Path(self.config.results_dir) / datetime.now().strftime("%Y%m%d_%H%M%S")
+        if self.config.dir_name is None:
+            self.results_path = Path(self.config.results_dir) / datetime.now().strftime("%Y%m%d_%H%M%S")
+        else:
+            self.results_path = Path(self.config.results_dir) / self.config.dir_name
         self.results_path.mkdir(parents=True, exist_ok=True)
         
         # Status tracking
@@ -632,7 +635,8 @@ class BenchmarkRunner:
             "firewall_update_wait": 10,
             "between_epoch_wait": 20,
             "stop_on_lockdown": True,
-            "results_dir": "./benchmark_results"
+            "results_dir": "./benchmark_results",
+            "dir_name": None
         }
         
         if config:

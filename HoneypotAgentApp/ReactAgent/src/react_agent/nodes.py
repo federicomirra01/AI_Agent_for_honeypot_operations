@@ -50,29 +50,6 @@ def load_memory_context(state: state.HoneypotStateReact, episodic_memory):
     print(f"Loaded {len(recent_iterations)} recent iterations from episodic memory.")
     return recent_iterations
 
-# def save_memory_context(state: state.HoneypotStateReact, episodic_memory) -> Dict[str, Any]:
-#     """Save the last message from current iteration"""
-
-#     if not state.messages:
-#         logger.error("No messages to save in memory context.")
-#         return {}
-    
-#     last_message = state.messages[-1]
-
-#     if hasattr(last_message, 'content'):
-#         message_content = last_message.content
-#     else:
-#         message_content = str(last_message)
-
-#     # Save to memory
-#     iteration_id = episodic_memory.save_iteration(message_content)
-#     total_iterations = episodic_memory.get_iteration_count()
-
-#     return {
-#         "message" : f"Iteration saved with ID {iteration_id}. Total iterations: {total_iterations}",
-#         "memory_context": message_content
-#     }
-
 llm_with_tools = llm.bind_tools(tools)
 
 def assistant(state: state.HoneypotStateReact, config):
@@ -158,7 +135,8 @@ def execute_tools(state: state.HoneypotStateReact):
     
     # Get the last message 
     last_message = state.messages[-1]
-    
+    rules_added = []
+    rules_removed = []
     if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
         tool_node = ToolNode(tools)
         tool_responses = tool_node.invoke({"messages": [last_message]})
@@ -214,6 +192,24 @@ def execute_tools(state: state.HoneypotStateReact):
                 elif tool_message.name == 'check_services_health':
                     new_state["firewall_status"] = result.get('firewall_status', '')
                     new_state["monitor_status"] = result.get('monitor_status', '')
+                
+                elif tool_message.name == 'add_allow_rule':
+                    rules_added.append(result.get('rules_added_current_epoch', []))
+                    new_state["rules_added_current_epoch"] = rules_added
+                elif tool_message.name == 'add_block_rule':
+                    rules_added.append(result.get('rules_added_current_epoch', []))
+                    new_state["rules_added_current_epoch"] = rules_added
+                elif tool_message.name == 'remove_firewall_rule':
+                    rules_removed.append(result.get('rules_removed_current_epoch', []))
+                    new_state["rules_removed_current_epoch"] = rules_removed
+                elif tool_message.name == 'save_iteration_summary':
+                    new_state["currently_exposed"] = result.get('currently_exposed', [])
+                    new_state["attack_graph_progressions"] = result.get('attack_graph_progressions', [])
+                    new_state["decision_rationale"] = result.get('decision_rationale', [])
+                    new_state["lockdown_status"] = result.get('lockdown_status', [])
+                    new_state["evidence_summary"] = result.get('evidence_summary', [])
+                    new_state["justification"] = result.get('justification', [])
+                    new_state["next_iteration_guidance"] = result.get('next_iteration_guidance', [])
 
             except Exception as e:
                 logger.error(f"Error processing tool response: {e}\nTool: {tool_message.name}\nContent: {tool_message.content[:200]}...")
@@ -533,7 +529,7 @@ def summarize_packets(state: state.HoneypotStateReact, use_chunking: bool = True
     
     Args:
         state: Current honeypot state with packet and threat data
-        use_chunking: Whether to split data into chunks for large datasets
+        use_chunking: Whether to split data into chunks for large datas
         max_chunk_size: Maximum size per chunk in characters
     """
     print("Analyzing packets and verifying detected threats...")
@@ -605,12 +601,41 @@ Format as a clear executive summary for security decision-making."""
         packet_summary = f"## THREAT VERIFICATION ANALYSIS\n\n{analysis_result}"
     return {"packet_summary": packet_summary}
 
-def save_iteration_node(state: state.HoneypotStateReact, config):
+def save_iteration(state: state.HoneypotStateReact, config) -> Dict[str, Any]:
+    """
+    Save iteration summary with structured data for benchmark metrics collection.
+    
+    Args:
+        state: Current honeypot state with all relevant data
+        config: Configuration dictionary with episodic memory store
+    
+    Returns:
+        Dict with success status and iteration info
+    """
+    iteration_data = {
+        "currently_exposed": state.currently_exposed,
+        "rules_added": state.rules_added_current_epoch if state.rules_added_current_epoch else [],
+        "attack_graph_progressions": state.attack_graph_progressions,
+        "decision_rationale": state.decision_rationale,
+        "lockdown_status": state.lockdown_status,
+        "rules_removed": state.rules_removed_current_epoch if state.rules_removed_current_epoch else [],
+
+        "evidence_summary": state.evidence_summary,
+        "justification": state.justification,
+        "next_iteration_guidance": state.next_iteration_guidance,
+    }
     episodic_memory = config.get("configurable", {}).get("store")
-    """Save the last message from current iteration to episodic memory"""
-    result = save_memory_context(state, episodic_memory)
-    print(f"Memory: {result.get('message', 'Iteration save failed')}")
-    return {"memory_context": result.get("memory_context", "")}
+    # Save to episodic memory
+    iteration_id = episodic_memory.save_iteration(iteration_data)
+    total_iterations = episodic_memory.get_iteration_count()
+
+    logger.info(f"Iteration saved with ID {iteration_id}. Total iterations: {total_iterations}")
+    
+    return {
+        "success": True,
+        "iteration_id": iteration_id,
+        "total_iterations": total_iterations,
+    }
 
 
 def tool_list():

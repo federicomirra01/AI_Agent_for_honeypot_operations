@@ -4,15 +4,8 @@ import requests
 import logging
 from typing import Dict, List, Optional, Any
 from langgraph.store.memory import InMemoryStore
-# In tools.py, add this at the top after imports:
-_episodic_memory = None
 
-def set_episodic_memory(memory_instance):
-    """Set the episodic memory instance from external source (like notebook)"""
-    global _episodic_memory
-    _episodic_memory = memory_instance
-    logger.info(f"Episodic memory set: {type(_episodic_memory)}")
-    return _episodic_memory
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -89,7 +82,13 @@ def add_allow_rule(source_ip: str, dest_ip: str, port=None, protocol: str = "tcp
     Returns:
         Dict with success status and response data
     """
-    #logger.info(f"Adding allow rule: {source_ip} -> {dest_ip}:{port}")
+    # Create rule description for tracking
+
+    port_str = f":{port}" if port else ""
+    rule_description = f"ALLOW {source_ip} -> {dest_ip}{port_str} ({protocol})"
+    
+    logger.info(f"Adding allow rule: {rule_description}")
+
     url = f"{FIREWALL_URL}/rules/allow"
     
     payload = {
@@ -103,13 +102,9 @@ def add_allow_rule(source_ip: str, dest_ip: str, port=None, protocol: str = "tcp
         
     result = _make_request("POST", url, json=payload)
     
-    if result['success']:
-        #logger.info("Successfully added allow rule")
-        success = True
-    else:
+    if not result['success']:
         logger.error(f"Failed to add allow rule: {result['error']}")
-        
-    return result
+    return {'rules_added_current_epoch': rule_description}
 
 def add_block_rule(source_ip: str, dest_ip: str,
                   port: Optional[int] = None, protocol: str = "tcp") -> Dict[str, Any]:
@@ -119,7 +114,12 @@ def add_block_rule(source_ip: str, dest_ip: str,
     Returns:
         Dict with success status and response data
     """
-    #logger.info(f"Adding block rule: {source_ip} -> {dest_ip}:{port}")
+
+    port_str = f":{port}" if port else ""
+    rule_description = f"ALLOW {source_ip} -> {dest_ip}{port_str} ({protocol})"
+    
+    logger.info(f"Adding allow rule: {rule_description}")
+
     url = f"{FIREWALL_URL}/rules/block"
     
     payload = {
@@ -133,13 +133,10 @@ def add_block_rule(source_ip: str, dest_ip: str,
         
     result = _make_request("POST", url, json=payload)
     
-    if result['success']:
-        #logger.info("Successfully added block rule")
-        success = True
-    else:
+    if not result['success']:
         logger.error(f"Failed to add block rule: {result['error']}")
         
-    return result
+    return {'rules_added_current_epoch': rule_description}
 
 def remove_firewall_rule(rule_numbers: List[int]) -> Dict[str, Any]:
     """
@@ -170,25 +167,44 @@ def remove_firewall_rule(rule_numbers: List[int]) -> Dict[str, Any]:
             'status_code': 400
         }
     
-    # if len(rule_numbers) == 1:
-    #     logger.info(f"Removing firewall rule #{rule_numbers[0]}")
-    # else:
-    #     logger.info(f"Removing firewall rules: {rule_numbers}")
+    # Get current rules before removal for tracking
+    current_rules = {}
+    try:
+        firewall_result = get_firewall_rules()
+        if firewall_result.get('firewall_config', {}).get('success'):
+            rules_text = firewall_result['firewall_config']['data']['rules']
+            
+            # Parse the iptables output to extract individual rules
+            for line in rules_text.split('\n'):
+                line = line.strip()
+                if line and line[0].isdigit():
+                    # Extract rule number and rule content
+                    parts = line.split(' ', 1)
+                    if len(parts) >= 2:
+                        rule_num = int(parts[0])
+                        rule_content = parts[1]
+                        current_rules[rule_num] = rule_content
+                        
+    except Exception as e:
+        logger.warning(f"Could not retrieve current rules for tracking: {e}")
+    
+    # Create rule descriptions for tracking
+    rule_descriptions = []
+    for rule_num in rule_numbers:
+        if rule_num in current_rules:
+            rule_description = f"REMOVED rule #{rule_num}: {current_rules[rule_num]}"
+        else:
+            rule_description = f"REMOVED rule #{rule_num}: unknown"
+        rule_descriptions.append(rule_description)
 
     url = f"{FIREWALL_URL}/rules"
     payload = {"rule_numbers": rule_numbers}
     result = _make_request("DELETE", url, json=payload)
 
-    if result['success']:
-        # if len(rule_numbers) == 1:
-        #     logger.info(f"Successfully removed firewall rule #{rule_numbers[0]}")
-        # else:
-        #     logger.info(f"Successfully removed firewall rules: {rule_numbers}")
-        success = True
-    else:
+    if not result['success']:
         logger.error(f"Failed to remove rules: {result['error']}")
     
-    return result
+    return {'rules_removed_current_epoch': rule_descriptions}
 
 def get_network_flows(time_window: int = 5) -> Dict[str, Any]:
     """
@@ -258,7 +274,7 @@ def get_security_events(time_window: int = 5) -> Dict[str, Any]:
         
     return {'security_events': result}
 
-def get_compressed_packets(limit: int = 500, time_window: int = 5, 
+def get_compressed_packets(limit: int = 1000, time_window: int = 5, 
                          protocol: Optional[str] = None, 
                          direction: Optional[str] = None) -> Dict[str, Any]:
     """
@@ -266,7 +282,7 @@ def get_compressed_packets(limit: int = 500, time_window: int = 5,
     Now includes HTTP payload threats and command injection detection.
     
     Args:
-        limit: Maximum packets to retrieve (capped at 500)
+        limit: Maximum packets to retrieve (capped at 10,000)
         time_window: Recent minutes to analyze (default 5)
         protocol: Filter by protocol (TCP/UDP/ICMP)
         direction: Filter by direction (inbound/outbound/internal)
@@ -274,11 +290,11 @@ def get_compressed_packets(limit: int = 500, time_window: int = 5,
     Returns:
         Dict with compressed packet data including threat information
     """
-    #logger.info(f"Retrieving compressed packets (limit: {limit}, window: {time_window})")
+    logger.info(f"Retrieving compressed packets (limit: {limit}, window: {time_window})")
     url = f"{MONITOR_URL}/packets/compressed"
     
     params = {
-        'limit': min(limit, 500),  # Hard cap to prevent context overflow
+        'limit': min(limit, 10000),  # Cap at 10,000 packets
         'recent': time_window
     }
     
@@ -391,13 +407,11 @@ def getDockerContainers() -> List[Dict[str, Any]]:
 def save_iteration_summary(
     currently_exposed: str = "",
     evidence_summary: str = "",
-    rules_applied: List[str] = [],
     justification: str = "",
-    attack_graph_progression: Dict[str, Dict[str, Any]] = {},  # IP -> {percentage: float, service: str, status: str}
+    attack_graph_progressions: Dict[str, Dict[str, Any]] = {},  # IP -> {percentage: float, service: str, status: str}
     decision_rationale: str = "",
     next_iteration_guidance: str = "",
     lockdown_status: str = "INACTIVE",
-    rules_removed: List[str] = []
 ) -> Dict[str, Any]:
     """
     Save iteration summary with structured data for benchmark metrics collection.
@@ -405,43 +419,26 @@ def save_iteration_summary(
     Args:
         currently_exposed: IP:PORT or "NONE" if lockdown
         evidence_summary: Brief description of compromise evidence
-        rules_applied: List of specific rules added/removed
         justification: Why these rules were necessary
-        attack_graph_progression: Dict mapping IPs to {percentage, service, status}
+        attack_graph_progressions: Dict mapping IPs to {percentage, service, status}
         decision_rationale: Strategic decision explanation
         next_iteration_guidance: What to monitor/act upon next
         lockdown_status: ACTIVE/INACTIVE
-        rules_removed: List of specific rules removed
     
     Returns:
         Dict with success status and iteration info
     """
-    if rules_removed is None:
-        rules_removed = []
-    
     iteration_data = {
         "currently_exposed": currently_exposed,
-        "rules_applied": rules_applied,
-        "attack_graph_progressions": attack_graph_progression,
+        "attack_graph_progressions": attack_graph_progressions,
         "decision_rationale": decision_rationale,
         "lockdown_status": lockdown_status,
-        "rules_removed": rules_removed,
 
         "evidence_summary": evidence_summary,
         "justification": justification,
         "next_iteration_guidance": next_iteration_guidance,
     }
 
-    # Save to episodic memory
-    iteration_id = _episodic_memory.save_iteration(iteration_data)
-    total_iterations = _episodic_memory.get_iteration_count()
-    
-    logger.info(f"Iteration saved with ID {iteration_id}. Total iterations: {total_iterations}")
-    
-    return {
-        "success": True,
-        "iteration_id": iteration_id,
-        "total_iterations": total_iterations,
-        "structured_data": iteration_data
-    }
+
+    return iteration_data
 
