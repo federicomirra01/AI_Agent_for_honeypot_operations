@@ -1,15 +1,3 @@
-"""
-Honeypot Benchmark Orchestrator Module
-
-This module provides all necessary components to orchestrate automated benchmarking
-of the honeypot firewall agent system.
-
-Usage:
-    from honeypot_benchmark_orchestrator import BenchmarkRunner, BenchmarkConfig
-    
-    runner = BenchmarkRunner(custom_config={'max_epochs': 5})
-    results = runner.run()
-"""
 import os
 import fcntl
 from pathlib import Path
@@ -384,19 +372,19 @@ class MetricsCollector:
         logger.info(f"Memory from agent: {iteration_data}")
         try:
             if 'rules_added' in iteration_data:
-                metrics["rules_added"] = iteration_data['rules_added']
+                metrics["rules_added"] = iteration_data.get('rules_added', ["No rules detected"])
 
             if 'rules_removed' in iteration_data:
-                metrics["rules_removed"] = iteration_data['rules_removed']
+                metrics["rules_removed"] = iteration_data.get('rules_removed', ["No rules detected"])
 
-            if 'attack_graph_progressions' in iteration_data:
-                metrics["attack_graph_status"] = iteration_data['attack_graph_progressions']
-            
+            if 'attack_graph' in iteration_data:
+                metrics["attack_graph_status"] = iteration_data.get('attack_graph', ["No progressions detected"])
+
             if 'currently_exposed' in iteration_data:
-                metrics["honeypots_exposed"] = iteration_data['currently_exposed'].split(', ') if isinstance(iteration_data['currently_exposed'], str) else iteration_data['currently_exposed']
-            
+                metrics["honeypots_exposed"] = iteration_data.get('currently_exposed', ["No honeypots exposed"])
+
             if 'decision_rationale' in iteration_data:
-                metrics["decision"] = iteration_data['decision_rationale']
+                metrics["decision"] = iteration_data.get('decision_rationale', ["No decision rationale available"])
             
             if 'lockdown_status' in iteration_data:
                 metrics["lockdown_activated"] = iteration_data['lockdown_status'] == 'ACTIVE'

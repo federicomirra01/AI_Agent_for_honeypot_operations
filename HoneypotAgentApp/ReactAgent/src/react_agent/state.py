@@ -35,7 +35,7 @@ class HoneypotStateReact:
     rules_added_current_epoch: List[str] = field(default_factory=list)
     rules_removed_current_epoch: List[str] = field(default_factory=list)
     currently_exposed: List[str] = field(default_factory=list)
-    attack_graph_progressions: List[str] = field(default_factory=list)
+    attack_graph: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     decision_rationale: List[str] = field(default_factory=list)
     lockdown_status: List[str] = field(default_factory=list)
 
@@ -65,7 +65,7 @@ class HoneypotStateReact:
         self.rules_added_current_epoch = kwargs.get('rules_added_current_epoch', [])
         self.rules_removed_current_epoch = kwargs.get('rules_removed_current_epoch', [])
         self.currently_exposed = kwargs.get('currently_exposed', [])
-        self.attack_graph_progressions = kwargs.get('attack_graph_progressions', [])
+        self.attack_graph = kwargs.get('attack_graph', {})
         self.decision_rationale = kwargs.get('decision_rationale', [])
         self.lockdown_status = kwargs.get('lockdown_status', [])
         self.evidence_summary = kwargs.get('evidence_summary', [])

@@ -408,7 +408,7 @@ def save_iteration_summary(
     currently_exposed: str = "",
     evidence_summary: str = "",
     justification: str = "",
-    attack_graph_progressions: Dict[str, Dict[str, Any]] = {},  # IP -> {percentage: float, service: str, status: str}
+    attack_graph: Dict[str, Dict[str, Any]] = {},  # IP -> {percentage: float, service: str, status: str}
     decision_rationale: str = "",
     next_iteration_guidance: str = "",
     lockdown_status: str = "INACTIVE",
@@ -420,7 +420,7 @@ def save_iteration_summary(
         currently_exposed: IP:PORT or "NONE" if lockdown
         evidence_summary: Brief description of compromise evidence
         justification: Why these rules were necessary
-        attack_graph_progressions: Dict mapping IPs to {percentage, service, status}
+        attack_graph: Dict mapping IPs to {percentage, service, status}
         decision_rationale: Strategic decision explanation
         next_iteration_guidance: What to monitor/act upon next
         lockdown_status: ACTIVE/INACTIVE
@@ -430,7 +430,7 @@ def save_iteration_summary(
     """
     iteration_data = {
         "currently_exposed": currently_exposed,
-        "attack_graph_progressions": attack_graph_progressions,
+        "attack_graph": attack_graph,
         "decision_rationale": decision_rationale,
         "lockdown_status": lockdown_status,
 
@@ -439,6 +439,7 @@ def save_iteration_summary(
         "next_iteration_guidance": next_iteration_guidance,
     }
 
+    logger.info(f"Attack graph: {attack_graph}")
 
     return iteration_data
 

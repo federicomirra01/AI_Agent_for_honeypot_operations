@@ -59,7 +59,7 @@ def assistant(state: state.HoneypotStateReact, config):
     if not state.memory_context:
         previous_iterations = load_memory_context(state, episodic_memory)
     # Create system message with current state context
-    system_message = SystemMessage(content=prompts.ASSISTANT_PROMPT_V2)
+    system_message = SystemMessage(content=prompts.ASSISTANT_PROMPT)
     
     # Add context messages based on current state
     context_messages = []
@@ -204,7 +204,7 @@ def execute_tools(state: state.HoneypotStateReact):
                     new_state["rules_removed_current_epoch"] = rules_removed
                 elif tool_message.name == 'save_iteration_summary':
                     new_state["currently_exposed"] = result.get('currently_exposed', [])
-                    new_state["attack_graph_progressions"] = result.get('attack_graph_progressions', [])
+                    new_state["attack_graph"] = result.get('attack_graph', [])
                     new_state["decision_rationale"] = result.get('decision_rationale', [])
                     new_state["lockdown_status"] = result.get('lockdown_status', [])
                     new_state["evidence_summary"] = result.get('evidence_summary', [])
@@ -615,7 +615,7 @@ def save_iteration(state: state.HoneypotStateReact, config) -> Dict[str, Any]:
     iteration_data = {
         "currently_exposed": state.currently_exposed,
         "rules_added": state.rules_added_current_epoch if state.rules_added_current_epoch else [],
-        "attack_graph_progressions": state.attack_graph_progressions,
+        "attack_graph": state.attack_graph,
         "decision_rationale": state.decision_rationale,
         "lockdown_status": state.lockdown_status,
         "rules_removed": state.rules_removed_current_epoch if state.rules_removed_current_epoch else [],
