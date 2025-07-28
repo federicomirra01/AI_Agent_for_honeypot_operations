@@ -1,0 +1,302 @@
+%YAML 1.1
+---
+
+vars:
+  address-groups:
+    HOME_NET: "172.20.0.0/24"
+    EXTERNAL_NET: "!$HOME_NET"
+    
+    # Focused server definitions for attack targets
+    HTTP_SERVERS: "$HOME_NET"
+    SMTP_SERVERS: "$HOME_NET"
+    SQL_SERVERS: "$HOME_NET"
+    DNS_SERVERS: "$HOME_NET"
+    TELNET_SERVERS: "$HOME_NET"
+    AIM_SERVERS: "$EXTERNAL_NET"
+    DC_SERVERS: "$HOME_NET"
+    DNP3_SERVER: "$HOME_NET"
+    DNP3_CLIENT: "$HOME_NET"
+    MODBUS_CLIENT: "$HOME_NET"
+    MODBUS_SERVER: "$HOME_NET"
+    ENIP_CLIENT: "$HOME_NET"
+    ENIP_SERVER: "$HOME_NET"
+    
+  port-groups:
+    # Attack-specific ports from manager_exploit.py
+    HTTP_PORTS: "[80,8080,8081,8202]"
+    HTTPS_PORTS: "443"
+    SSH_PORTS: "22"
+    DOCKER_PORTS: "2375"
+    DNS_PORTS: "53"
+    SHELLCODE_PORTS: "!80"
+    ORACLE_PORTS: 1521
+
+# Minimal logging directory
+default-log-dir: /var/log/suricata/
+
+# Basic stats - reduced interval for faster response
+stats:
+  enabled: yes
+  interval: 30
+  exception-policy:
+    per-app-proto-errors: false
+
+# Optimized outputs for AI processing
+outputs:
+  # Fast alerts for basic logging
+  - fast:
+      enabled: yes
+      filename: fast.log
+      append: yes
+
+  # Main EVE JSON output optimized for AI agent processing
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: eve.json
+      threaded: false
+      
+      # Optimized for AI processing
+      community-id: true
+      community-id-seed: 0
+      
+      # Disable X-Forwarded-For processing to reduce complexity
+      xff:
+        enabled: no
+
+      types:
+        # Alert configuration optimized for AI analysis
+        - alert:
+            payload-printable: yes          # Human-readable for AI
+            payload-length: yes
+            packet: yes
+            
+            # Essential metadata for AI context
+            metadata:
+              app-layer: true               # Application layer info
+              flow: true                    # Flow state info
+              
+            # HTTP body analysis for web exploits
+            http-body-printable: yes
+            tagged-packets: yes
+
+  # Minimal stats logging
+  - stats:
+      enabled: yes
+      filename: stats.log
+      append: yes
+      totals: yes
+      threads: no
+
+# Single interface configuration for container
+af-packet:
+  - interface: eth0
+    threads: 1                              # Single thread for resource efficiency
+    cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: yes
+    ring-size: 2048                         # Reduced ring size
+    
+af-packet:
+  - interface: eth2
+    threads: 1                              # Single thread for resource efficiency
+    cluster-id: 98
+    cluster-type: cluster_flow
+    defrag: yes
+    ring-size: 2048 
+    
+  - interface: default
+    threads: 1
+
+# Application layer protocols - focused on attack vectors
+app-layer:
+  protocols:
+    # Essential protocols for the attack scenarios
+    arp:
+      enabled: yes
+    http:
+      enabled: yes
+      libhtp:
+        default-config:
+          personality: IDS
+          # Reduced limits for container environment
+          request-body-limit: 50 kb
+          response-body-limit: 50 kb
+          request-body-minimal-inspect-size: 16 kb
+          request-body-inspect-window: 2 kb
+          response-body-minimal-inspect-size: 20 kb
+          response-body-inspect-window: 8 kb
+          response-body-decompress-layer-limit: 1
+          http-body-inline: auto
+          
+    tls:
+      enabled: yes
+      detection-ports:
+        dp: 443
+      encryption-handling: track-only
+      
+    ssh:
+      enabled: yes
+      encryption-handling: track-only
+      
+    dns:
+      tcp:
+        enabled: yes
+        detection-ports:
+          dp: 53
+      udp:
+        enabled: yes
+        detection-ports:
+          dp: 53
+         
+          
+    # Minimal protocol set - disable unnecessary protocols
+    telnet:
+      enabled: yes
+    smtp:
+      enabled: yes
+    imap:
+      enabled: yes
+    pop3:
+      enabled: yes
+    ftp:
+      enabled: yes
+    smb:
+      enabled: yes
+    nfs:
+      enabled: yes
+    tftp:
+      enabled: yes
+    snmp:
+      enabled: yes
+    modbus:
+      enabled: yes
+    dnp3:
+      enabled: yes
+    enip:
+      enabled: yes
+    arp:
+      enabled: yes
+  
+
+# Minimal logging configuration
+logging:
+  default-log-level: notice
+  outputs:
+  - console:
+      enabled: yes
+  - file:
+      enabled: yes
+      level: info
+      filename: suricata.log
+
+# Resource-optimized settings
+host-mode: auto
+max-pending-packets: 512                    # Reduced from default 1024
+
+# Optimized flow and memory settings for container
+flow:
+  memcap: 32 mb                           # Reduced memory usage
+  hash-size: 16384                         # Smaller hash table
+  prealloc: 2048                           # Fewer preallocated flows
+  emergency-recovery: 30
+
+# Reduced stream reassembly for efficiency
+stream:
+  memcap: 16 mb                           # Reduced memory
+  checksum-validation: yes
+  inline: auto
+  reassembly:
+    enabled: yes
+    memcap: 32 mb                         # Reduced reassembly memory
+    depth: 1 mb                         # Smaller reassembly depth
+    toserver-chunk-size: 1280
+    toclient-chunk-size: 1280
+    randomize-chunk-size: no               # Disable for consistency
+
+# Minimal defragmentation
+defrag:
+  memcap: 8 mb                            # Reduced memory
+  hash-size: 16384
+  trackers: 16384
+  max-frags: 16384
+  prealloc: yes
+  timeout: 60
+
+# Optimized host table
+host:
+  hash-size: 2048                          # Smaller hash table
+  prealloc: 512
+  memcap: 8 mb                            # Reduced memory
+
+# Reduced flow timeouts for faster detection
+flow-timeouts:
+  default:
+    new: 30
+    established: 120                       # Reduced from 300
+    closed: 0
+    bypassed: 60
+    emergency-new: 10
+    emergency-established: 60
+    emergency-closed: 0
+    emergency-bypassed: 30
+  tcp:
+    new: 60
+    established: 300
+    closed: 30                             # Reduced from 60
+    bypassed: 60
+    emergency-new: 5
+    emergency-established: 60
+    emergency-closed: 5
+    emergency-bypassed: 30
+  udp:
+    new: 30
+    established: 120                       # Reduced from 300
+    bypassed: 60
+    emergency-new: 10
+    emergency-established: 60
+    emergency-bypassed: 30
+
+# Optimized detection engine
+detect:
+  profile: medium                             # Low profile for resource efficiency
+  sgh-mpm-context: single                  # Single context for efficiency
+  prefilter:
+    default: mpm
+
+# Basic threading for container environment
+threading:
+  set-cpu-affinity: no
+  detect-thread-ratio: 1.0
+
+# Disable profiling to save resources
+profiling:
+  rules:
+    enabled: no
+  keywords:
+    enabled: no
+  packets:
+    enabled: no
+
+# Pattern matching algorithms
+mpm-algo: auto
+spm-algo: auto
+
+# Minimal decoder settings
+decoder:
+  teredo:
+    enabled: no
+  vxlan:
+    enabled: no
+  geneve:
+    enabled: no
+
+# Rule configuration
+default-rule-path: /var/lib/suricata/rules
+rule-files:
+  - suricata.rules
+  - local.rules
+
+classification-file: /etc/suricata/classification.config
+reference-config-file: /etc/suricata/reference.config
+threshold-file: /etc/suricata/threshold.config

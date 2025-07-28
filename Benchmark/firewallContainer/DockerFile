@@ -8,7 +8,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     iptables \
     iptables-persistent \
-    tcpdump \
     python3 \
     python3-pip \
     net-tools \
@@ -25,6 +24,7 @@ RUN pip3 install flask
 RUN mkdir -p /firewall/scripts \
     /firewall/logs \
     /firewall/rules \
+    /suricata/logs \
     /var/spool/rsyslog
 
 # Fix rsyslog permissions and configuration
@@ -41,16 +41,16 @@ RUN echo '$ModLoad imuxsock' > /etc/rsyslog.conf && \
 
 # Copy scripts
 COPY firewall_scripts/firewall_api.py /firewall/scripts/
-COPY firewall_scripts/packet_monitor.py /firewall/scripts/
 COPY firewall_scripts/init_firewall.sh /firewall/scripts/
 COPY firewall_scripts/setup_routing.sh /firewall/scripts/
+COPY firewall_scripts/suricata_API.py /firewall/scripts
 COPY startup.sh /firewall/
 
 # Make scripts executable
 RUN chmod +x /firewall/scripts/*.sh /firewall/startup.sh
 
 # Create log files
-RUN touch /var/log/syslog /firewall/logs/firewall.log /firewall/logs/packet_monitor.log
+RUN touch /var/log/syslog /firewall/logs/firewall.log /suricata/logs/suricata_API.log
 
 # Set working directory
 WORKDIR /firewall
@@ -60,7 +60,7 @@ RUN echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf
 RUN echo 'net.ipv6.conf.all.forwarding=1' >> /etc/sysctl.conf
 
 # Expose ports
-EXPOSE 5000 6000
+EXPOSE 5000 7000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \

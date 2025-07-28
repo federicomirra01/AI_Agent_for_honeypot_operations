@@ -5,13 +5,14 @@ echo "=== VM4 Firewall/Router Starting ==="
 # Clean up log files from previous runs
 echo "Cleaning up previous logs..."
 > /firewall/logs/firewall.log
-> /firewall/logs/packet_monitor.log
 > /var/log/syslog
 
 # Enable IP forwarding
 echo 1 > /proc/sys/net/ipv4/ip_forward
 echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
 
+# DNS configuration
+echo -e "nameserver 8.8.8.8\nnameserver 1.1.1.1" > /etc/resolv.conf
 # Fix rsyslog startup - create necessary directories and config
 mkdir -p /var/spool/rsyslog
 chown syslog:adm /var/spool/rsyslog
@@ -50,20 +51,14 @@ echo "Setting up routing..."
 # Ensure only one instance of each service runs
 echo "Stopping any existing services..."
 pkill -f "firewall_api.py" 2>/dev/null || true
-pkill -f "packet_monitor.py" 2>/dev/null || true
-sleep 3
+pkill -f "suricata_API.py" 2>/dev/null || true
+sleep 1
 
 # Verify no processes are running
 if pgrep -f "firewall_api.py" > /dev/null; then
     echo "⚠️  Warning: firewall_api.py still running, force killing..."
     pkill -9 -f "firewall_api.py" || true
-    sleep 2
-fi
-
-if pgrep -f "packet_monitor.py" > /dev/null; then
-    echo "⚠️  Warning: packet_monitor.py still running, force killing..."
-    pkill -9 -f "packet_monitor.py" || true
-    sleep 2
+    sleep 1
 fi
 
 # Start firewall management API
@@ -73,7 +68,7 @@ python3 scripts/firewall_api.py > /firewall/logs/firewall.log 2>&1 &
 FIREWALL_API_PID=$!
 
 # Wait for API to start and verify
-sleep 5
+sleep 3
 if ps -p $FIREWALL_API_PID > /dev/null 2>&1; then
     echo "✅ Firewall API started successfully (PID: $FIREWALL_API_PID)"
 
@@ -89,40 +84,39 @@ else
     tail -10 /firewall/logs/firewall.log
 fi
 
-# Start packet monitor API service
-echo "Starting Packet Monitor API Service..."
-python3 scripts/packet_monitor.py > /firewall/logs/packet_monitor.log 2>&1 &
-PACKET_MONITOR_PID=$!
+# Start suricata API service
+echo "Starting Suricata API Service..."
+python3 scripts/suricata_API.py > /firewall/logs/suricata_API.log 2>&1 &
 
-sleep 5
-# Verify packet monitor started
-if ps -p $PACKET_MONITOR_PID > /dev/null 2>&1; then
-    echo "✅ Packet Monitor started successfully (PID: $PACKET_MONITOR_PID)"
+SURICATA_PID=$!
+sleep 1
+# Verify suricata started
+if ps -p $SURICATA_PID > /dev/null 2>&1; then
+    echo "✅ Suricata started successfully (PID: $SURICATA_PID)"
 
     # Test API connectivity
-    if curl -s --connect-timeout 5 http://192.168.200.2:6000/health > /dev/null 2>&1; then
-        echo "✅ Packet Monitor API responding to health checks"
+    if curl -s --connect-timeout 5 http://192.168.200.2:7000/health > /dev/null 2>&1; then
+        echo "✅ Suricata API responding to health checks"
     else
-        echo "⚠️  Packet Monitor API not responding yet"
+        echo "⚠️  Suricata  API not responding yet"
     fi
 else
-    echo "❌ Packet Monitor failed to start"
-    echo "Last 10 lines of packet monitor log:"
-    tail -10 /firewall/logs/packet_monitor.log
+    echo "❌ Suricata API failed to start"
+    echo "Last 10 lines of Suricata API log:"
+    tail -10 /firewall/logs/suricata_api.log
 fi
 
 # Function to cleanup processes on exit
 cleanup() {
     echo "Cleaning up processes..."
     kill $FIREWALL_API_PID 2>/dev/null || true
-    kill $PACKET_MONITOR_PID 2>/dev/null || true
     kill $RSYSLOG_PID 2>/dev/null || true
+    kill $SURICATA_PID 2>/dev/null || true
 
     # Force kill if still running
-    sleep 2
+    sleep 1
     pkill -9 -f "firewall_api.py" 2>/dev/null || true
-    pkill -9 -f "packet_monitor.py" 2>/dev/null || true
-
+    pkill -9 -f "suricata_API.py" 2>/dev/null || true
     exit 0
 }
 
@@ -132,17 +126,16 @@ trap cleanup SIGTERM SIGINT
 echo ""
 echo "=== VM4 Firewall/Router Ready ==="
 echo "Firewall API: http://192.168.200.2:5000"
-echo "Packet Monitor API: http://192.168.200.2:6000"
+echo "Suricata API: http://192.168.200.2:7000"
 echo ""
 echo "Log Files:"
-echo "  Packet logs: /firewall/logs/packets.json"
 echo "  Firewall logs: /firewall/logs/firewall.log"
-echo "  Monitor logs: /firewall/logs/packet_monitor.log"
+echo "  Suricata logs: /suricata/logs/suricata_api.log"
 
 # Show currently running services
 echo ""
 echo "Currently running services:"
-ps aux | grep -E "(firewall_api|packet_monitor|rsyslog)" | grep -v grep | while read line; do
+ps aux | grep -E "(firewall_api|rsyslog|suricata_API)" | grep -v grep | while read line; do
     echo "  $line"
 done
 
@@ -157,9 +150,9 @@ while true; do
         echo "❌ Firewall API died (PID: $FIREWALL_API_PID)"
         break
     fi
-
-    if ! ps -p $PACKET_MONITOR_PID > /dev/null 2>&1; then
-        echo "❌ Packet Monitor died (PID: $PACKET_MONITOR_PID)"
+    
+    if ! ps -p $SURICATA_PID > /dev/null 2>&1; then
+        echo "❌ Suricata API died (PID: $SURICATA_PID)"
         break
     fi
 
@@ -167,7 +160,7 @@ while true; do
     if [ $(($(date +%s) % 300)) -eq 0 ]; then
         echo "🔍 Health check at $(date)"
         curl -s http://192.168.200.2:5000/health || echo "  ⚠️  Firewall API not responding"
-        curl -s http://192.168.200.2:6000/health || echo "  ⚠️  Packet Monitor API not responding"
+        curl -s http://192.168.200.2:7000/health || echo "  ⚠️  Suricata API not responding"
     fi
 done
 

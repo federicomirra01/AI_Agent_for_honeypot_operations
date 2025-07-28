@@ -19,13 +19,19 @@ services:
       - ./firewall_scripts:/firewall/scripts:ro
       # Mount logs directory
       - ./firewall_logs:/firewall/logs:rw
+      # Mount suricata logs
+      - ./suricata/suricata_logs:/suricata/logs:rw
       # Mount rules directory
       - ./firewall_rules:/firewall/rules:rw
+      # Sync timezone
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     ports:
       # Management API
       - "5000:5000"
-      # Packet monitor API
-      - "6000:6000"
+
+      # Suricata API
+      - "7000:7000"
     environment:
       - ATTACKER_NETWORK=192.168.100.0/24
       - HONEYPOT_NETWORK=172.20.0.0/24
@@ -34,10 +40,27 @@ services:
       - NET_ADMIN
       - NET_RAW
     privileged: true
+    
     sysctls:
       - net.ipv4.ip_forward=1
       - net.ipv6.conf.all.forwarding=1
     restart: unless-stopped
+
+  suricata:
+    image: jasonish/suricata:latest
+    container_name: suricata
+    network_mode: "service:vm4-firewall"  # ← Share network namespace with the gateway
+    volumes:
+      - ./suricata/suricata.yaml:/etc/suricata/suricata.yaml
+      - ./suricata/suricata_rules/threshold.config:/etc/suricata/threshold.config
+      - ./suricata/suricata_rules/local.rules:/var/lib/suricata/rules/local.rules
+      - ./suricata/suricata_logs:/var/log/suricata
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    command: -i eth0 -i eth2
+    cap_add:
+      - NET_ADMIN
+      - SYS_NICE
 
 networks:
   attacker_net:
