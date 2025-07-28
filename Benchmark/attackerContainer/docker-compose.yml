@@ -16,6 +16,8 @@ services:
       - ./logs:/attacker/logs:rw
       # Mount config if needed
       - ./config:/attacker/config:ro
+      # Mount results directory
+      - /tmp/benchmark_results:/tmp/benchmark_results:rw
     environment:
       - TARGET_NETWORK=172.20.0.0/24
       - HONEYPOT_GATEWAY=172.20.0.1

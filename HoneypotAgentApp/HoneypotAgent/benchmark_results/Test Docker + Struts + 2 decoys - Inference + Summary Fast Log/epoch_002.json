@@ -1,0 +1,59 @@
+{
+  "epoch_number": 2,
+  "start_time": 1753625910.4793596,
+  "end_time": 1753625964.869447,
+  "phase_timings": {
+    "initialization": 1753625910.479376,
+    "attack_execution": 1753625910.4955316,
+    "monitoring_accumulation": 1753625923.659132,
+    "agent_analysis": 1753625924.6611142,
+    "firewall_update_wait": 1753625962.8510284,
+    "metrics_collection": 1753625964.8530579,
+    "epoch_complete": 1753625964.8680162
+  },
+  "services_detected": [
+    "DOCKER(172.20.0.2:2375)"
+  ],
+  "services_successfully_exploited": [
+    "DOCKER"
+  ],
+  "exploits_attempted": [
+    "DOCKER(172.20.0.2:2375)"
+  ],
+  "flags_captured": [
+    {
+      "service": "DOCKER",
+      "flag": "flag{first_stage_compromised}"
+    }
+  ],
+  "attack_success_rate": 100.0,
+  "firewall_rules_added": [
+    "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
+  ],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": "172.20.0.2, 172.20.0.3",
+  "honeypots_exploitation": {
+    "172.20.0.2": {
+      "level": 30,
+      "service": "docker-unauthorized-rce",
+      "status": "interacted (scanned, attempted exploitation, no confirmed exploit)"
+    },
+    "172.20.0.3": {
+      "level": 0,
+      "service": "struts2-showcase",
+      "status": "unexposed"
+    },
+    "172.20.0.4": {
+      "level": 0,
+      "service": "bash-httpd-shellshock",
+      "status": "unexposed"
+    },
+    "172.20.0.5": {
+      "level": 0,
+      "service": "activemq-cve-2015-5254",
+      "status": "unexposed"
+    }
+  },
+  "inferred_attack_graph": {},
+  "lockdown_activated": false
+}

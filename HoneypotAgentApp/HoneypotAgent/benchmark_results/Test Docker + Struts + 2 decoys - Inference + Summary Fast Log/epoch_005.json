@@ -1,0 +1,73 @@
+{
+  "epoch_number": 5,
+  "start_time": 1753626086.5040367,
+  "end_time": 1753626136.7009387,
+  "phase_timings": {
+    "initialization": 1753626086.5040545,
+    "attack_execution": 1753626086.517741,
+    "monitoring_accumulation": 1753626099.1293082,
+    "agent_analysis": 1753626100.1304708,
+    "firewall_update_wait": 1753626134.6825814,
+    "metrics_collection": 1753626136.6843693,
+    "epoch_complete": 1753626136.7000546
+  },
+  "services_detected": [
+    "DOCKER(172.20.0.2:2375)",
+    "HTTP-PROXY(172.20.0.3:8080)",
+    "HTTP(172.20.0.4:80)",
+    "UNKNOWN(172.20.0.5:61616)",
+    "PATROL-SNMP(172.20.0.5:8161)"
+  ],
+  "services_successfully_exploited": [
+    "STRUTS",
+    "DOCKER"
+  ],
+  "exploits_attempted": [
+    "HTTP-PROXY(172.20.0.3:8080)",
+    "DOCKER(172.20.0.2:2375)",
+    "HTTP(172.20.0.4:80)"
+  ],
+  "flags_captured": [
+    {
+      "service": "DOCKER",
+      "flag": "flag{first_stage_compromised}"
+    },
+    {
+      "service": "STRUTS",
+      "flag": "flag{second_stage_completed}"
+    }
+  ],
+  "attack_success_rate": 66.66666666666666,
+  "firewall_rules_added": [
+    "BLOCK 192.168.100.0/24 -> 172.20.0.0/24 (tcp)",
+    "BLOCK 172.20.0.0/24 -> 192.168.100.0/24 (tcp)"
+  ],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": "NONE",
+  "honeypots_exploitation": {
+    "172.20.0.2": {
+      "level": 30,
+      "service": "docker-unauthorized-rce",
+      "status": "sustained recon, attempted exploit, but no confirmed compromise"
+    },
+    "172.20.0.3": {
+      "level": 100,
+      "service": "struts2-showcase",
+      "status": "RCE confirmed, reverse shell, post-exploitation; classified interesting"
+    },
+    "172.20.0.4": {
+      "level": 10,
+      "service": "bash-httpd-shellshock",
+      "status": "scanned, no exploit"
+    },
+    "172.20.0.5": {
+      "level": 10,
+      "service": "activemq-cve-2015-5254",
+      "status": "scanned, no exploit"
+    }
+  },
+  "inferred_attack_graph": {
+    "172.20.0.3": "struts2-showcase"
+  },
+  "lockdown_activated": true
+}

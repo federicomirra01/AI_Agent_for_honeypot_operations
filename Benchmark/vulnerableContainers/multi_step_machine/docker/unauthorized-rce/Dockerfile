@@ -1,5 +1,4 @@
 FROM vulhub/docker:28.0.1
-
 # Create a directory and write the flag
 RUN mkdir -p /home/ctf && \
     echo "flag{first_stage_compromised}" > /home/ctf/user.txt && \

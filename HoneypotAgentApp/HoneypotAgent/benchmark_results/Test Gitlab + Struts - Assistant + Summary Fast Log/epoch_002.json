@@ -1,0 +1,49 @@
+{
+  "epoch_number": 2,
+  "start_time": 1753357031.5771198,
+  "end_time": 1753357102.8458874,
+  "phase_timings": {
+    "initialization": 1753357031.5771463,
+    "attack_execution": 1753357031.5907614,
+    "monitoring_accumulation": 1753357049.7832162,
+    "agent_analysis": 1753357050.7848995,
+    "firewall_update_wait": 1753357100.826818,
+    "metrics_collection": 1753357102.827994,
+    "epoch_complete": 1753357102.8446658
+  },
+  "services_detected": [
+    "SSH(172.20.0.5:22)",
+    "HTTP(172.20.0.5:80)",
+    "HTTP(172.20.0.6:80)"
+  ],
+  "services_successfully_exploited": [
+    "GITLAB"
+  ],
+  "exploits_attempted": [
+    "HTTP(172.20.0.5:80)",
+    "HTTP(172.20.0.6:80)"
+  ],
+  "flags_captured": [
+    {
+      "service": "GITLAB",
+      "flag": "flag{user_access}"
+    }
+  ],
+  "attack_success_rate": 50.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": "172.20.0.5:80",
+  "honeypots_exploitation": {
+    "172.20.0.5": {
+      "percentage": 33,
+      "service": "gitlab",
+      "status": "reconnaissance"
+    },
+    "172.20.0.2": {
+      "percentage": 0,
+      "service": "struts2",
+      "status": "unexposed"
+    }
+  },
+  "lockdown_activated": false
+}

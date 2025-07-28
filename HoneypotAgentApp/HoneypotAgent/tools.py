@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 # API Configuration
 FIREWALL_URL = "http://192.168.200.2:5000"
-MONITOR_URL = "http://192.168.200.2:6000"
 SURICATA_URL = "http://192.168.200.2:7000"
 REQUEST_TIMEOUT = 3
 
@@ -64,12 +63,10 @@ def get_firewall_rules() -> Dict[str, Any]:
     Returns:
         Dict with success status and rules data
     """
-    #logger.info("Retrieving firewall rules...")
     url = f"{FIREWALL_URL}/rules"
     result = _make_request("GET", url)
     
     if result['success']:
-        #logger.info("Successfully retrieved firewall rules")
         success = True # just to keep logger.info commented
     else:
         logger.error(f"Failed to get firewall rules: {result['error']}")
@@ -117,9 +114,9 @@ def add_block_rule(source_ip: str, dest_ip: str,
     """
 
     port_str = f":{port}" if port else ""
-    rule_description = f"ALLOW {source_ip} -> {dest_ip}{port_str} ({protocol})"
+    rule_description = f"BLOCK {source_ip} -> {dest_ip}{port_str} ({protocol})"
     
-    logger.info(f"Adding allow rule: {rule_description}")
+    logger.info(f"Adding block rule: {rule_description}")
 
     url = f"{FIREWALL_URL}/rules/block"
     
@@ -149,6 +146,7 @@ def remove_firewall_rule(rule_numbers: List[int]) -> Dict[str, Any]:
     Returns:
         Dict with success status and response data
     """
+    logger.info(f"Removing firewall rules: {rule_numbers}")
     if not isinstance(rule_numbers, list):
         error_msg = f"Invalid rule_numbers type: {type(rule_numbers)}. Expected List[int]"
         logger.error(error_msg)
@@ -207,134 +205,8 @@ def remove_firewall_rule(rule_numbers: List[int]) -> Dict[str, Any]:
     
     return {'rules_removed_current_epoch': rule_descriptions}
 
-def get_network_flows(time_window: int = 5) -> Dict[str, Any]:
-    """
-    Get aggregated network flows for firewall decision making.
-    Now includes threat detection information.
-    
-    Args:
-        time_window: Analysis window in minutes (max 30)
-    
-    Returns:
-        Dict with flow analysis data including threat IPs and specific threat details
-    """
-    #logger.info(f"Retrieving network flows (window: {time_window} minutes)")
-    url = f"{MONITOR_URL}/analysis/flows"
-    
-    params = {'window': min(time_window, 30)}  # Cap at 30 minutes
-    result = _make_request("GET", url, params=params)
-    
-    if result['success']:
-        data = result['data']
-        threat_count = len(data.get('threat_ips', []))
-        total_flows = data.get('total_flows', 0)
-        #logger.info(f"Retrieved {total_flows} flows with {threat_count} threat IPs")
-        
-        # Log threat details if found
-        threat_details = data.get('threat_details', {})
-        # if threat_details:
-        #     logger.info(f"Threat details found for IPs: {list(threat_details.keys())}")
-    else:
-        logger.error(f"Failed to get network flows: {result['error']}")
-        
-    return {'network_flows': result}
-
-def get_security_events(time_window: int = 5) -> Dict[str, Any]:
-    """
-    Get security-focused analysis including threat detection and command execution attempts.
-    Enhanced to capture specific command injection patterns like /bin/bash, find / -perm 4000, etc.
-    
-    Args:
-        time_window: Analysis window in minutes (max 30)
-    
-    Returns:
-        Dict with security events, threat IPs, and specific command execution details
-    """
-    #logger.info(f"Retrieving security events (window: {time_window} minutes)")
-    url = f"{MONITOR_URL}/analysis/security"
-    
-    params = {'window': min(time_window, 30)}
-    result = _make_request("GET", url, params=params)
-    
-    if result['success']:
-        events = result['data']
-        threat_ips_count = len(events.get('threat_ips', []))
-        command_exec_count = len(events.get('command_executions', []))
-        total_threats = events.get('total_threats_detected', 0)
-        
-        #logger.info(f"Retrieved {threat_ips_count} threat IPs, {command_exec_count} command executions, {total_threats} total threats")
-        
-        # Log specific command executions found
-        if command_exec_count > 0:
-            logger.warning(f"CRITICAL: {command_exec_count} command execution attempts detected!")
-            for cmd in events.get('command_executions', [])[:3]:  # Log first 3
-                logger.warning(f"  Command from {cmd.get('src_ip')}: {cmd.get('command_pattern', 'N/A')}")
-                
-    else:
-        logger.error(f"Failed to get security events: {result['error']}")
-        
-    return {'security_events': result}
-
-def get_compressed_packets(limit: int = 1000, time_window: int = 5, 
-                         protocol: Optional[str] = None, 
-                         direction: Optional[str] = None) -> Dict[str, Any]:
-    """
-    Get compressed packet data with only essential fields for analysis.
-    Now includes HTTP payload threats and command injection detection.
-    
-    Args:
-        limit: Maximum packets to retrieve (capped at 10,000)
-        time_window: Recent minutes to analyze (default 5)
-        protocol: Filter by protocol (TCP/UDP/ICMP)
-        direction: Filter by direction (inbound/outbound/internal)
-    
-    Returns:
-        Dict with compressed packet data including threat information
-    """
-    logger.info(f"Retrieving compressed packets (limit: {limit}, window: {time_window})")
-    url = f"{MONITOR_URL}/packets/compressed"
-    
-    params = {
-        'limit': min(limit, 10000),  # Cap at 10,000 packets
-        'recent': time_window
-    }
-    
-    if protocol:
-        params['protocol'] = protocol
-    if direction:
-        params['direction'] = direction
-        
-    result = _make_request("GET", url, params=params)
-    
-    if result['success']:
-        data = result['data']
-        packet_count = data.get('count', 0)
-        
-        # Count packets with threats
-        threat_packets = 0
-        command_threats = 0
-        if 'packets' in data:
-            for packet in data['packets']:
-                if packet.get('threats') or (packet.get('http') and packet['http'].get('threats')):
-                    threat_packets += 1
-                    # Check for command execution threats
-                    all_threats = packet.get('threats', []) + packet.get('http', {}).get('threats', [])
-                    for threat in all_threats:
-                        if 'command' in threat.lower() or '/bin/bash' in threat.lower() or 'find' in threat.lower():
-                            command_threats += 1
-                            break
-        
-        #logger.info(f"Retrieved {packet_count} compressed packets, {threat_packets} with threats, {command_threats} with command execution")
-        
-        if command_threats > 0:
-            logger.warning(f"ALERT: {command_threats} packets contain command execution patterns!")
-            
-    else:
-        logger.error(f"Failed to get compressed packets: {result['error']}")
-        
-    return {'compressed_packets': result}
-
-def get_suricata_events(time_window: int = 5) -> Dict[str, Any]:
+# Retrieve Alerts from eve.json
+def get_alerts(time_window: int = 5) -> Dict[str, Any]:
     """
     Get Suricata alerts for threat detection.
     
@@ -344,15 +216,36 @@ def get_suricata_events(time_window: int = 5) -> Dict[str, Any]:
     Returns:
         Dict with Suricata alerts data
     """
-    url = f"{SURICATA_URL}/events"
+    url = f"{SURICATA_URL}/alerts"
     params = {'time_window' : min(time_window, 5)}
     result = _make_request("GET", url, params=params)
-    events = {}
+    alerts = {}
     if result['success']:
-        events = result['data']['events_by_type']
+        alerts = result['data']
     else:
-        logger.error(f"Failed to get Suricata events: {result['error']}")
-    return {'alerts' : events}
+        logger.error(f"Failed to get Suricata alerts: {result['error']}")
+    return {'security_events' : alerts}
+
+# Retrieve Fast Alerts from fast.log
+def get_fast_alerts(time_window: int = 5) -> Dict[str, Any]:
+    """
+    Get Suricata fast alerts for threat detection.
+    
+    Args:
+        time_window: Analysis window in minutes (max 30)
+    
+    Returns:
+        Dict with Suricata fast alerts data
+    """
+    url = f"{SURICATA_URL}/fastlog"
+    params = {'time_window' : min(time_window, 5)}
+    result = _make_request("GET", url, params=params)
+    alerts = {}
+    if result['success']:
+        alerts = result['data']
+    else:
+        logger.error(f"Failed to get Suricata fast alerts: {result['error']}")
+    return {'security_events' : alerts}
 
 # Health Check Functions
 def check_services_health() -> Dict[str, Any]:
@@ -362,24 +255,19 @@ def check_services_health() -> Dict[str, Any]:
     Returns:
         Dict with health status of both services
     """
-    #logger.info("Retrieving services status")
     try:
         firewall_status = _make_request("GET", f"{FIREWALL_URL}/health")
-        monitor_status = _make_request("GET", f"{MONITOR_URL}/health")
         suricata_status = _make_request("GET", f"{SURICATA_URL}/health")
         firewall_health = 'up' if firewall_status["data"]["status"] == 'healthy' else 'down'
-        monitor_health = 'up' if monitor_status["data"]["status"] == 'healthy' else 'down'
         suricata_health = 'up' if suricata_status["data"]["status"] == 'ok' else 'down'
-        #logger.info("Successfully retrieve services health")
     except Exception as e:
         print(f"Error: {e}")
     return {
             'firewall_status': firewall_health,
-            'monitor_status': monitor_health,
             'suricata_status': suricata_health
         }
 
-def getDockerContainers() -> List[Dict[str, Any]]:
+def get_docker_containers() -> List[Dict[str, Any]]:
     """
     Get information about running Docker containers using the Docker API,
     including their internal private IP addresses.
@@ -432,10 +320,11 @@ def save_iteration_summary(
     currently_exposed: str = "",
     evidence_summary: str = "",
     justification: str = "",
-    attack_graph: Dict[str, Dict[str, Any]] = {},  # IP -> {percentage: float, service: str, status: str}
+    honeypots_exploitation: Dict[str, Dict[str, Any]] = {},  # IP -> {percentage: float, service: str, status: str}
     decision_rationale: str = "",
     next_iteration_guidance: str = "",
     lockdown_status: str = "INACTIVE",
+    inferred_attack_graph: Dict[str, Any] = {}
 ) -> Dict[str, Any]:
     """
     Save iteration summary with structured data for benchmark metrics collection.
@@ -444,26 +333,27 @@ def save_iteration_summary(
         currently_exposed: IP:PORT or "NONE" if lockdown
         evidence_summary: Brief description of compromise evidence
         justification: Why these rules were necessary
-        attack_graph: Dict mapping IPs to {percentage, service, status}
+        honeypots_exploitation: Dict mapping IPs to {percentage, service, status}
         decision_rationale: Strategic decision explanation
         next_iteration_guidance: What to monitor/act upon next
         lockdown_status: ACTIVE/INACTIVE
+        inferred_attack_graph: Dict representing the inferred attack graph structure
     
     Returns:
         Dict with success status and iteration info
     """
     iteration_data = {
         "currently_exposed": currently_exposed,
-        "attack_graph": attack_graph,
+        "honeypots_exploitation": honeypots_exploitation,
         "decision_rationale": decision_rationale,
         "lockdown_status": lockdown_status,
 
         "evidence_summary": evidence_summary,
         "justification": justification,
         "next_iteration_guidance": next_iteration_guidance,
+        "inferred_attack_graph": inferred_attack_graph
     }
 
-    logger.info(f"Attack graph: {attack_graph}")
 
     return iteration_data
 

@@ -1,0 +1,60 @@
+{
+  "epoch_number": 6,
+  "start_time": 1753357381.873211,
+  "end_time": 1753357515.009965,
+  "phase_timings": {
+    "initialization": 1753357381.873226,
+    "attack_execution": 1753357381.8903167,
+    "monitoring_accumulation": 1753357408.9024212,
+    "agent_analysis": 1753357409.904213,
+    "firewall_update_wait": 1753357512.9977446,
+    "metrics_collection": 1753357514.999328,
+    "epoch_complete": 1753357515.0092058
+  },
+  "services_detected": [
+    "SSH(172.20.0.5:22)",
+    "HTTP-PROXY(172.20.0.2:8080)",
+    "HTTP(172.20.0.5:80)",
+    "HTTP(172.20.0.6:80)"
+  ],
+  "services_successfully_exploited": [
+    "GITLAB",
+    "STRUTS"
+  ],
+  "exploits_attempted": [
+    "HTTP-PROXY(172.20.0.2:8080)",
+    "HTTP(172.20.0.5:80)",
+    "HTTP(172.20.0.6:80)"
+  ],
+  "flags_captured": [
+    {
+      "service": "STRUTS",
+      "flag": "flag{second_stage_completed}"
+    },
+    {
+      "service": "GITLAB",
+      "flag": "flag{user_access}"
+    },
+    {
+      "service": "GITLAB",
+      "flag": "flag{root_access}"
+    }
+  ],
+  "attack_success_rate": 66.66666666666666,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": "172.20.0.2:8080",
+  "honeypots_exploitation": {
+    "172.20.0.5": {
+      "percentage": 100,
+      "service": "gitlab",
+      "status": "full_control"
+    },
+    "172.20.0.2": {
+      "percentage": 100,
+      "service": "struts2",
+      "status": "full_control"
+    }
+  },
+  "lockdown_activated": false
+}

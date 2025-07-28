@@ -1,0 +1,51 @@
+{
+  "epoch_number": 2,
+  "start_time": 1753621909.190851,
+  "end_time": 1753621952.5304139,
+  "phase_timings": {
+    "initialization": 1753621909.1908672,
+    "attack_execution": 1753621909.2053514,
+    "monitoring_accumulation": 1753621921.9761326,
+    "agent_analysis": 1753621922.9781418,
+    "firewall_update_wait": 1753621950.507359,
+    "metrics_collection": 1753621952.5095348,
+    "epoch_complete": 1753621952.529616
+  },
+  "services_detected": [
+    "HTTP-PROXY(172.20.0.3:8080)"
+  ],
+  "services_successfully_exploited": [
+    "STRUTS"
+  ],
+  "exploits_attempted": [
+    "HTTP-PROXY(172.20.0.3:8080)"
+  ],
+  "flags_captured": [
+    {
+      "service": "STRUTS",
+      "flag": "flag{second_stage_completed}"
+    }
+  ],
+  "attack_success_rate": 100.0,
+  "firewall_rules_added": [
+    "ALLOW 172.20.0.2 -> 192.168.100.0/24 (tcp)"
+  ],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": "172.20.0.2",
+  "honeypots_exploitation": {
+    "172.20.0.3": {
+      "level": 60,
+      "service": "struts2 (8080/tcp)",
+      "status": "EXPLOITED (multiple remote code execution attempts detected)"
+    },
+    "172.20.0.2": {
+      "level": 0,
+      "service": "docker (2375/tcp, 2376/tcp)",
+      "status": "UNEXPOSED"
+    }
+  },
+  "inferred_attack_graph": {
+    "172.20.0.3": "struts2 (8080/tcp)"
+  },
+  "lockdown_activated": false
+}

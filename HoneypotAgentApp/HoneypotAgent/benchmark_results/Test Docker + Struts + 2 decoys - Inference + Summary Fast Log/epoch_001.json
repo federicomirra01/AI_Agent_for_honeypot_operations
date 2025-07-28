@@ -1,0 +1,49 @@
+{
+  "epoch_number": 1,
+  "start_time": 1753625881.46207,
+  "end_time": 1753625909.4742875,
+  "phase_timings": {
+    "initialization": 1753625881.4620998,
+    "attack_execution": 1753625881.483459,
+    "monitoring_accumulation": 1753625887.7067657,
+    "agent_analysis": 1753625888.7082152,
+    "firewall_update_wait": 1753625907.45496,
+    "metrics_collection": 1753625909.4564626,
+    "epoch_complete": 1753625909.473433
+  },
+  "services_detected": [],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    "ALLOW 192.168.100.0/24 -> 172.20.0.2 (tcp)",
+    "ALLOW 172.20.0.2 -> 192.168.100.0/24 (tcp)"
+  ],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": "172.20.0.2",
+  "honeypots_exploitation": {
+    "172.20.0.2": {
+      "level": 0,
+      "service": "docker-unauthorized-rce",
+      "status": "unexposed"
+    },
+    "172.20.0.3": {
+      "level": 0,
+      "service": "struts2-showcase",
+      "status": "unexposed"
+    },
+    "172.20.0.4": {
+      "level": 0,
+      "service": "bash-httpd-shellshock",
+      "status": "unexposed"
+    },
+    "172.20.0.5": {
+      "level": 0,
+      "service": "activemq-cve-2015-5254",
+      "status": "unexposed"
+    }
+  },
+  "inferred_attack_graph": {},
+  "lockdown_activated": false
+}

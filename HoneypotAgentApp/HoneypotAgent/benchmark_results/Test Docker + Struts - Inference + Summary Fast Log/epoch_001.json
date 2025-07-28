@@ -1,0 +1,38 @@
+{
+  "epoch_number": 1,
+  "start_time": 1753621883.622822,
+  "end_time": 1753621908.1854959,
+  "phase_timings": {
+    "initialization": 1753621883.6228507,
+    "attack_execution": 1753621883.6367142,
+    "monitoring_accumulation": 1753621888.6181026,
+    "agent_analysis": 1753621889.6197228,
+    "firewall_update_wait": 1753621906.1670234,
+    "metrics_collection": 1753621908.1691144,
+    "epoch_complete": 1753621908.1841562
+  },
+  "services_detected": [],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
+  ],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": "172.20.0.3",
+  "honeypots_exploitation": {
+    "172.20.0.3": {
+      "level": 0,
+      "service": "struts2 (8080/tcp)",
+      "status": "UNEXPOSED"
+    },
+    "172.20.0.2": {
+      "level": 0,
+      "service": "docker (2375/tcp, 2376/tcp)",
+      "status": "UNEXPOSED"
+    }
+  },
+  "inferred_attack_graph": {},
+  "lockdown_activated": false
+}

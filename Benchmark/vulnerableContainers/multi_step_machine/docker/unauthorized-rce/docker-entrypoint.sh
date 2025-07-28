@@ -2,6 +2,8 @@
 set -e
 # no arguments passed
 # or first arg is `-f` or `--some-option`
+# DNS configuration
+echo -e "nameserver 8.8.8.8\nnameserver 1.1.1.1" > /etc/resolv.conf
 if [ "$#" -eq 0 -o "${1#-}" != "$1" ]; then
 	# add our default arguments
 	set -- dockerd \
@@ -19,7 +21,7 @@ echo "Setting up gateway..."
 echo "Running setup_gateway.sh..."
 /setup_gateway.sh
 # Start crond process
-crond -b -L /var/log/crond.log
+crond -b -S -L /var/log/crond.log
 
 
 
