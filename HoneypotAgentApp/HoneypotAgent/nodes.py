@@ -197,7 +197,6 @@ def save_iteration(state: state.HoneypotStateReact, config) -> Dict[str, Any]:
     Returns:
         Dict with success status and iteration info
     """
-    logger.info(f"Inferred attack_graph: {state.inferred_attack_graph}")
     iteration_data = {
         "currently_exposed": state.currently_exposed,
         "rules_added": state.rules_added_current_epoch if state.rules_added_current_epoch else [],

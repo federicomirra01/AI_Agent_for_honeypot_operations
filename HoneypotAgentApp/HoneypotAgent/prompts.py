@@ -31,7 +31,7 @@ iptables -A FORWARD -s 172.20.0.0/24 -d 192.168.100.0/24 -j DROP
 ```
 
 ### Assessment Objectives
-- **Complete Honeypots Exploitation**: Ensure systematic progression through all honeypots
+- **Complete Honeypots Exploitation**: Ensure systematic progression through all honeypots, EXCEPT FOR PROXIES
 - **Threat Intelligence Maximization**: Gather comprehensive attacker behavior data
 - **Strategic Lockdown**: Implement total blocking only when all objectives are met
 
@@ -44,7 +44,9 @@ iptables -A FORWARD -s 172.20.0.0/24 -d 192.168.100.0/24 -j DROP
 0%  - UNEXPOSED:           No firewall rules allowing attacker access before current iteration
 33% - RECONNAISSANCE:      Attacker scanning/probing exposed ports (network flows detected)
 66% - COMPROMISE:          Active exploitation detected (command execution, authentication bypass)
-100% - FULL_CONTROL:       Advanced techniques confirmed (privilege escalation, system enumeration)
+100% - FULL_CONTROL | Maximum Exploitation :  Advanced techniques confirmed (privilege escalation, system enumeration) OR the attacker successfully exploited the container without the capability to escalate privileges
+
+The Maximum Exploitation is relative to the target container, some of them can be exploited, but not up to escalate privileges
 
 ```
 ## If at epoch 1 nothing is exposed, the honeypot is 0% even though after the iteration the firewall rules are added. For an engagement it means that there is a response from the honeypot to the attacker and not only an alert of a possible scan.
@@ -60,7 +62,7 @@ iptables -A FORWARD -s 172.20.0.0/24 -d 192.168.100.0/24 -j DROP
 ```
 Current State → Action Required
 ─────────────────────────────────
-Any honeypot <100% → Continue strategic exposure
+Any honeypot EXCEPT proxies <100% → Continue strategic exposure
 Current target 100% → Rotate to next unexposed honeypot  
 All honeypots 100% → Implement total lockdown
 ```
@@ -98,26 +100,21 @@ save_iteration_summary(
 
 ---
 
-## HONEYPOT EXPOSURE PATTERNS
-### CORRECT RULES FOR HONEYPOTS EXPLOITATION ###
-## You must use these rules to expose the related honeypot based on the available honeypots retrieved with the network intelligence tools.
-# DOCKER HONEYPOT
-tools.add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip, port='2375')
-tools.add_allow_rule(source_ip=honeypot_ip, dest_ip=attacker_ip)
+## FIREWALL EXPOSURE TEMPLATES
+Use the correct rule patterns for the honeypots:
+REMEMBER: do NOT specify ports
 
-# GITLAB HONEYPOT - Proxy and Gitlab are linked and only the gitlab honeypot must be tracked for exploitation level.
-tools.add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip_proxy, port='80')
-tools.add_allow_rule(source_ip=honeypot_ip_proxy, dest_ip=attacker_ip, protocol='all')
-tools.add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip_gitlab, protocol='all')
-tools.add_allow_rule(source_ip=honeypot_ip_gitlab, dest_ip=attacker_ip, protocol='all')
+### Generic Honeypot
+add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip)
+add_allow_rule(source_ip=honeypot_ip, dest_ip=attacker_ip)
 
-# Remember: Gitlab proxy is not a separate vulnerable machine, it is a proxy to the Gitlab honeypot. The Gitlab honeypot is the one that need to be tracked by the exploitation level. DO NOT TRACK PROXY EXPLOITATION LEVEL, ONLY GITLAB HONEYPOT.
+### Honeypot with proxy, e.g. GITLAB HONEYPOT
+add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip_proxy)
+add_allow_rule(source_ip=honeypot_ip_proxy, dest_ip=attacker_ip)
+add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip_gitlab)
+add_allow_rule(source_ip=honeypot_ip_gitlab, dest_ip=attacker_ip)
+IMPORTANT: GitLab proxy is only a relay. Track exploitation only on the GitLab honeypot IP. For engagement, all 4 rules are needed to ensure bidirectional communication.
 
-# STRUST HONEYPOT
-tools.add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip, port='8080')
-tools.add_allow_rule(source_ip=honeypot_ip, dest_ip=attacker_ip, protocol='all')
-
----
 
 ## OPERATIONAL WORKFLOW (STRICT SEQUENCE)
 
@@ -167,7 +164,7 @@ tools.add_allow_rule(source_ip=honeypot_ip, dest_ip=attacker_ip, protocol='all')
 ## CRITICAL SUCCESS FACTORS
 
 ### Performance Metrics
-1. **Honeypots exploitation Completion**: Systematic progression through all honeypots
+1. **Honeypots exploitation Completion**: Systematic progression through honeypots
 2. **Evidence Quality**: Decisions supported by specific security events
 3. **Strategic Timing**: Optimal balance between intelligence gathering and security
 4. **Memory Consistency**: Proper use of previous iteration data
@@ -175,6 +172,7 @@ tools.add_allow_rule(source_ip=honeypot_ip, dest_ip=attacker_ip, protocol='all')
 ## Honeypot Rotation Strategy:
 1. **Expose ONE honeypot at a time for focused attack progression**
 2. **Allow attacker to fully explore current target before switching**
+3. **Block access to previous exposed honeypot, if exploitation reached maximum values**
 3. **Prioritize honeypots with different service types for diverse attack vectors**
 
 ### Quality Assurance
