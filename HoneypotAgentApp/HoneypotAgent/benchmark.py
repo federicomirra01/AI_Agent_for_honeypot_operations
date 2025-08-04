@@ -466,18 +466,6 @@ class BenchmarkOrchestrator:
         logger = logging.getLogger(f"{__name__}.Orchestrator")
         logger.setLevel(getattr(logging, self.config.log_level))
         
-        # File handler for detailed logs
-        if self.config.save_detailed_logs:
-            file_handler = logging.FileHandler(
-                Path(self.config.results_dir) / "orchestrator.log"
-            )
-            file_handler.setLevel(logging.DEBUG)
-            formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-            )
-            file_handler.setFormatter(formatter)
-            logger.addHandler(file_handler)
-        
         return logger
     
     def set_agent_executor(self, executor: Callable):
