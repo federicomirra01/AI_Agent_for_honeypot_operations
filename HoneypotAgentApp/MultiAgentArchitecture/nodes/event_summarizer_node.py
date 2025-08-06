@@ -1,15 +1,15 @@
 import state
 from typing import Dict,  Any
 from prompts import eve_summary_prompt, fast_summary_prompt
-from .node_utils import llm
+from .node_utils import llm, OPEN_AI_KEY
 from openai import BadRequestError 
-import os 
-from dotenv import load_dotenv
 import logging
+from pydantic import BaseModel
+import instructor
+from openai import OpenAI
 
-# Load environment variables
-load_dotenv()
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+class StructuredOutput(BaseModel):
+    security_summary: str
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -32,11 +32,21 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
             security_events=state.security_events,
             honeypot_config=state.honeypot_config
         )
+    messages = {"role":"system", "content": prompt}
+
     try:
-        response = await llm.ainvoke(prompt)
+        agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
+        response = agent.chat.completions.create(
+            model='gpt-4.1',
+            response_model=StructuredOutput,
+            messages=[messages]
+        )
+        message = ""
+        message += str(response.security_summary)
+
     except BadRequestError as e:
         logger.error(f"Error in calling Summarizer Agent: {e}")
     return {
-        "messages": [response],
-        "security_events_summary": response.content
+        "messages": [message],
+        "security_events_summary": response.security_summary
         }

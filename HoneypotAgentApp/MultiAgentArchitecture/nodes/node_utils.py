@@ -2,6 +2,11 @@ from langchain_openai import ChatOpenAI
 from tools import firewall_tools
 import state
 import logging
+import os
+from dotenv import load_dotenv
+# Load environment variables
+load_dotenv()
+OPEN_AI_KEY = os.getenv("OPENAI_API_KEY")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
