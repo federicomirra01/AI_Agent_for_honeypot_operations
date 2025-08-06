@@ -21,6 +21,7 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
     """
     logger.info("Summarizer Agent")
     configuration = config.get("configurable", {}).get("prompt", "Default")
+    # Initialize the prompt from configuration: eve.json or fast.log analysis
     if "fast" in configuration:
         prompt = fast_summary_prompt.SUMMARY_PROMPT_FAST.format(
             security_events=state.security_events,

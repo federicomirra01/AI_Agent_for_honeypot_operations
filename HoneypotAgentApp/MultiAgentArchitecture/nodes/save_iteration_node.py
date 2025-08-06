@@ -6,8 +6,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
-
 def save_iteration(state: state.HoneypotStateReact, config) -> Dict[str, Any]:
     """
     Save iteration summary with structured data for benchmark metrics collection.

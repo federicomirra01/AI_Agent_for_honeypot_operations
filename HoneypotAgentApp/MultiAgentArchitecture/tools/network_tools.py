@@ -31,6 +31,7 @@ async def get_alerts(time_window: int = 5) -> Dict[str, Any]:
 
 # Retrieve Fast Alerts from fast.log
 async def get_fast_alerts(time_window: int = 5) -> Dict[str, Any]:
+
     """
     Get Suricata fast alerts for threat detection.
     

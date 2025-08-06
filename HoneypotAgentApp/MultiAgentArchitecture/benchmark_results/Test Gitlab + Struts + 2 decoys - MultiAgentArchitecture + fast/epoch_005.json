@@ -1,0 +1,72 @@
+{
+  "epoch_number": 5,
+  "start_time": 1754466804.0047233,
+  "end_time": 1754466867.456867,
+  "phase_timings": {
+    "initialization": 1754466804.0047348,
+    "attack_execution": 1754466804.0211174,
+    "monitoring_accumulation": 1754466810.7222126,
+    "agent_analysis": 1754466811.7232041,
+    "firewall_update_wait": 1754466865.4392292,
+    "metrics_collection": 1754466867.440405,
+    "epoch_complete": 1754466867.4561496
+  },
+  "services_detected": [
+    "UNKNOWN(172.20.0.6:61616)",
+    "PATROL-SNMP(172.20.0.6:8161)"
+  ],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    "ALLOW 192.168.100.0/24 -> 172.20.0.2:8080 (tcp)",
+    "ALLOW 172.20.0.2 -> 192.168.100.0/24 (tcp)"
+  ],
+  "firewall_rules_removed": [
+    [
+      "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.6           192.168.100.0/24",
+      "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.6           tcp dpt:8161",
+      "REMOVED rule #3:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.6           tcp dpt:61616"
+    ]
+  ],
+  "honeypots_exposed": [
+    {
+      "IP": "172.20.0.2",
+      "service": "s2-057-struts2-1"
+    }
+  ],
+  "honeypots_exploitation": [
+    {
+      "IP": "172.20.0.2",
+      "service": "s2-057-struts2-1",
+      "exploitation level": 66,
+      "alert involved": "OGNL injection, reverse shell activity (from previous epoch)"
+    },
+    {
+      "IP": "172.20.0.7",
+      "service": "httpd",
+      "exploitation level": 0,
+      "alert involved": "None"
+    },
+    {
+      "IP": "172.20.0.6",
+      "service": "activemq",
+      "exploitation level": 33,
+      "alert involved": "SURICATA Applayer Detect protocol only one direction [22], ET INFO POSSIBLE Web Crawl using Curl [1]"
+    },
+    {
+      "IP": "172.20.0.10",
+      "service": "nginx-proxy",
+      "exploitation level": 0,
+      "alert involved": "None"
+    }
+  ],
+  "inferred_attack_graph": [
+    {
+      "IP": "172.20.0.2",
+      "service": "s2-057-struts2-1"
+    }
+  ],
+  "lockdown_activated": false
+}

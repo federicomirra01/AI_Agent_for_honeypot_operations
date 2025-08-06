@@ -28,6 +28,7 @@ async def firewall_executor(state:state.HoneypotStateReact):
     try:
         response = await llm_firewall.ainvoke(prompt)
         content = response.content
+        # Parse the response following the structured output
         substring = content.split('Reasoning:')
         reasoning = substring[1] if len(substring)> 0 else substring
         return {
@@ -55,7 +56,6 @@ async def tools_firewall(state: state.HoneypotStateReact):
         new_state = {
             "messages": state.messages + tool_responses["messages"]
         }
-        
 
         for tool_message in tool_responses["messages"]:
             try:

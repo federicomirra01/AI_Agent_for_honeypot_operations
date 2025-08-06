@@ -1,0 +1,60 @@
+{
+  "epoch_number": 5,
+  "start_time": 1754409234.7729309,
+  "end_time": 1754409280.486897,
+  "phase_timings": {
+    "initialization": 1754409234.7729468,
+    "attack_execution": 1754409234.786671,
+    "monitoring_accumulation": 1754409241.5478013,
+    "agent_analysis": 1754409242.549458,
+    "firewall_update_wait": 1754409278.4695354,
+    "metrics_collection": 1754409280.4722285,
+    "epoch_complete": 1754409280.48625
+  },
+  "services_detected": [],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": [
+    {
+      "IP": "172.20.0.7",
+      "service": "http"
+    }
+  ],
+  "honeypots_exploitation": [
+    {
+      "IP": "172.20.0.2",
+      "service": "struts2",
+      "exploitation level": 100,
+      "alert involved": "reverse shell, privilege escalation (cat /root/root.txt)"
+    },
+    {
+      "IP": "172.20.0.7",
+      "service": "http",
+      "exploitation level": 33,
+      "alert involved": "ET INFO POSSIBLE Web Crawl using Curl"
+    },
+    {
+      "IP": "172.20.0.6",
+      "service": "activemq",
+      "exploitation level": 0,
+      "alert involved": "None"
+    },
+    {
+      "IP": "172.20.0.10",
+      "service": "http-proxy",
+      "exploitation level": 0,
+      "alert involved": "None"
+    }
+  ],
+  "inferred_attack_graph": [
+    {
+      "IP": "172.20.0.2",
+      "service": "struts2"
+    }
+  ],
+  "lockdown_activated": false
+}

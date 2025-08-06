@@ -21,9 +21,7 @@ async def network_gathering(state: state.HoneypotStateReact, config) -> Dict[str
     """
     time_window = config.get("configurable", {}).get("time_window", "0")
     time_window = int(time_window)
-    logger.info(f"Time window: {time_window}")
     alerts = config.get("configurable", {}).get("prompt", "Default")
-    logger.info(f"Eve.json retrieval: {alerts}")
     # Call tools directly
     if "fast" in alerts:
         alerts_response = await network_tools.get_fast_alerts(time_window=time_window)
@@ -33,7 +31,7 @@ async def network_gathering(state: state.HoneypotStateReact, config) -> Dict[str
     containers_response = network_tools.get_docker_containers()
     firewall_response = await firewall_tools.get_firewall_rules()
     
-    # Parse results (assuming each tool returns a dict with the right keys)
+    # Parse results 
     security_events = alerts_response.get('security_events', {})
     honeypot_config = containers_response.get('honeypot_config', {})
     firewall_config = firewall_response.get('firewall_config', {})

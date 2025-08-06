@@ -1,7 +1,11 @@
 from langchain_openai import ChatOpenAI
 from tools import firewall_tools
 import state
+import logging
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 fw_tools = [
     firewall_tools.add_allow_rule,
@@ -22,5 +26,5 @@ def load_memory_context(state: state.HoneypotStateReact, episodic_memory):
     if not recent_iterations:
         return []
     
-    print(f"Loaded {len(recent_iterations)} recent iterations from episodic memory.")
+    logger.info(f"Loaded {len(recent_iterations)} recent iterations from episodic memory.")
     return recent_iterations

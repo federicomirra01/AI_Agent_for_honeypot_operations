@@ -1,0 +1,63 @@
+{
+  "epoch_number": 7,
+  "start_time": 1754466933.7496443,
+  "end_time": 1754467001.4354286,
+  "phase_timings": {
+    "initialization": 1754466933.749658,
+    "attack_execution": 1754466933.763544,
+    "monitoring_accumulation": 1754466940.510431,
+    "agent_analysis": 1754466941.5113213,
+    "firewall_update_wait": 1754466999.4231265,
+    "metrics_collection": 1754467001.4242418,
+    "epoch_complete": 1754467001.4349031
+  },
+  "services_detected": [],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    "ALLOW 192.168.100.0/24 -> 172.20.0.2:8080 (tcp)",
+    "ALLOW 172.20.0.2 -> 192.168.100.0/24 (tcp)"
+  ],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": [
+    {
+      "IP": "172.20.0.2",
+      "service": "s2-057-struts2-1"
+    }
+  ],
+  "honeypots_exploitation": [
+    {
+      "IP": "172.20.0.2",
+      "service": "s2-057-struts2-1",
+      "exploitation level": 66,
+      "alert involved": "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt; Reverse Shell Detected - No Job Control"
+    },
+    {
+      "IP": "172.20.0.6",
+      "service": "activemq",
+      "exploitation level": 33,
+      "alert involved": "SURICATA protocol detection & web crawling via Curl"
+    },
+    {
+      "IP": "172.20.0.7",
+      "service": "httpd",
+      "exploitation level": 0,
+      "alert involved": "None"
+    },
+    {
+      "IP": "172.20.0.10",
+      "service": "nginx-proxy",
+      "exploitation level": 0,
+      "alert involved": "None"
+    }
+  ],
+  "inferred_attack_graph": [
+    {
+      "IP": "172.20.0.2",
+      "service": "s2-057-struts2-1"
+    }
+  ],
+  "lockdown_activated": false
+}
