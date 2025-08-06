@@ -35,7 +35,8 @@ class HoneypotStateReact:
     honeypots_exploitation: Dict[str, Dict[str, Any]] = field(default_factory=dict) 
     reasoning_exploitation: List[str] = field(default_factory=list)
     # Firewall Agent
-    firewall_reasoning: List[str] = field(default_factory=list)
+    firewall_reasoning: str = ""
+    firewall_action : List[Any] = field(default_factory=list)
     
     # Configuration fields
     firewall_config: List[Dict[str, Any]] = field(default_factory=list)
@@ -61,6 +62,9 @@ class HoneypotStateReact:
         self.firewall_config = kwargs.get('firewall_config', [])
         self.honeypot_config = kwargs.get('honeypot_config', [])
 
+        self.firewall_reasoning = kwargs.get('firewall_reasoning', "")
+        self.firewall_action = kwargs.get('firewall_action', [])
+
         # Benchmark and log fields 
         self.rules_added_current_epoch = kwargs.get('rules_added_current_epoch', [])
         self.rules_removed_current_epoch = kwargs.get('rules_removed_current_epoch', [])
@@ -72,3 +76,4 @@ class HoneypotStateReact:
         self.reasoning_inference = kwargs.get('reasoning_inference', [])
         self.exploitation_strategy = kwargs.get('exploitation_strategy', {})
         self.reasoning_exploitation = kwargs.get('reasoning_exploitation', [])
+    

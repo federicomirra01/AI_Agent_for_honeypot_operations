@@ -18,10 +18,6 @@ num  target     prot opt source               destination
 5    DROP       all  --  192.168.100.0/24     172.20.0.0/24       
 6    DROP       all  --  172.20.0.0/24        192.168.100.0/24  
 
-## TOOLS AVAILABLE
-- remove_firewall_rule(rule_numbers: List[int])
-- add_allow_rule(source_ip, dest_ip, port=None, protocol="tcp")
-- add_block_rule(source_ip, dest_ip, port=None, protocol="tcp")
 
 ## RULES
 - Only make changes necessary to match the desired exposure plan.
@@ -32,11 +28,9 @@ num  target     prot opt source               destination
 - After actions, ensure firewall matches the intended exposure plan; if not, warn explicitly.
 
 ## FIREWALL EXPOSURE TEMPLATE
-add_allow_rule(source_ip=attacker_ip, dest_ip=honeypot_ip, port, protocol)
-add_allow_rule(source_ip=honeypot_ip, dest_ip=attacker_ip) # allow traffic to all attackers port
+AddAllowRule(source_ip=attacker_ip, dest_ip=honeypot_ip, port, protocol)
+AddAllowRule(source_ip=honeypot_ip, dest_ip=attacker_ip) # allow traffic to all attackers port
 
-## OUTPUT FORMAT
-Reasoning: "Detailed, step-by-step justification of all rule changes. Quote the Plan and explain logic. If no action needed, state so. If error detected, output warning and recommended correction."
 
 ## INPUTS
 - Proposed plan: {exposure_plan}
