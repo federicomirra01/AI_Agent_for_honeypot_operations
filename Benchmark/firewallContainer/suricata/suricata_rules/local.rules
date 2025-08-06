@@ -48,11 +48,11 @@ alert tcp any ![21,22,23,25,53,80,88,110,135,137,138,139,143,161,389,443,445,465
 # UDP destination port: 4444
 alert udp any ![53,67,68,69,123,161,162,389,520,1026,1027,1028,1029,1194,1434,1900,11211,12345,27017,51820] -> any 4444 (msg:"POSSBL SCAN SHELL M-SPLOIT UDP"; classtype:trojan-activity; sid:3400021; priority:1; rev:2;)
 
-alert tcp any any -> any any (msg:"GENERIC Reverse Shell Detected - No Job Control";content:"no job control in this shell";nocase;classtype:trojan-activity;priority:2;sid:9100001; rev:1;)
+alert tcp any any -> any any (msg:"User-Level File Discovery - find binary execution";pcre:"/find\s+[^\s]*\s+-type\s+f\s+-name\s+['\"]?user\.txt['\"]?.*2>\s*\/dev\/null/i";classtype:attempted-recon;priority:2;sid:9100002; rev:1;)
 
-alert tcp any any -> any any (msg:"GENERIC User-Level File Discovery - find user.txt";pcre:"/find\s+\/\s+-type\s+f\s+-name\s+['\"]?user\.txt['\"]?\s+2>\/dev\/null/";classtype:attempted-recon;priority:2;sid:9100002; rev:1;)
+alert tcp any any -> any any (msg:"SUID Binary Enumeration Detected";pcre:"/find\s+[^\s]*\s+-perm\s+-?4000\s+-type\s+f/i";classtype:attempted-recon;priority:2;sid:9100004; rev:1;)
 
-alert tcp any any -> any any (msg:"GENERIC SUID Binary Enumeration Detected";content:"find / -perm -4000 -type f";nocase;classtype:attempted-recon;priority:2;sid:9100004; rev:1;)
+alert tcp any any -> any any (msg:"Privilege Escalation Attempt - bash -p";pcre:"/bash\s+-p/i";classtype:attempted-admin;priority:1;sid:9100005; rev:1;)
 
-alert tcp any any -> any any (msg:"GENERIC Privilege Escalation Attempt - bash -p";content:"/bin/bash -p";nocase;classtype:attempted-admin;priority:1;sid:9100005; rev:1;)
+alert tcp any any -> any any (msg:"Reverse Shell Detected - No Job Control";pcre:"/no\s+job\s+control\s+in\s+this\s+shell/i";classtype:trojan-activity;priority:2;sid:9100001; rev:1;)
 

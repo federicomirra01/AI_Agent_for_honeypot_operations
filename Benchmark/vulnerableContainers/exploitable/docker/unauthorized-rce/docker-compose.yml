@@ -1,0 +1,11 @@
+services:
+  docker:
+    build: .
+    ports:
+      - "2375:2375"
+    privileged: true
+    networks:
+      - thesis_net
+networks:
+  thesis_net:
+    external: true

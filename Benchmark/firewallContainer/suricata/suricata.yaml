@@ -48,13 +48,16 @@ outputs:
       enabled: yes
       filename: fast.log
       append: yes
+      flush: yes
 
   # Main EVE JSON output optimized for AI agent processing
   - eve-log:
       enabled: yes
       filetype: regular
       filename: eve.json
-      threaded: false
+      #threaded: false
+      append: yes
+      flush: yes
       
       # Optimized for AI processing
       community-id: true

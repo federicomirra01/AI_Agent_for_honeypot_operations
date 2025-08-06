@@ -38,21 +38,11 @@ iptables -A OUTPUT -p icmp -j ACCEPT
 # Enable NAT for outbound internet access from honeypot containers
 iptables -t nat -A POSTROUTING -s 172.20.0.0/24 -o eth0 -j MASQUERADE
 
-# Allow DNS traffic from honeypot containers (UDP and TCP)
-iptables -A FORWARD -s 172.20.0.0/24 -p udp --dport 53 -j ACCEPT
-iptables -A FORWARD -s 172.20.0.0/24 -p tcp --dport 53 -j ACCEPT
-
-# Allow DNS traffic to/from the host itself (if needed)
-iptables -A INPUT -p udp --dport 53 -j ACCEPT
-iptables -A INPUT -p tcp --dport 53 -j ACCEPT
-iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
-iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
-
 # Allow all outbound traffic from honeypot containers to internet
-iptables -A FORWARD -s 172.20.0.0/24 -o eth0 -j ACCEPT
+#iptables -A FORWARD -s 172.20.0.0/24 -o eth0 -j ACCEPT
 
 # Allow return traffic from internet to honeypot containers (established/related only)
-iptables -A FORWARD -i eth0 -d 172.20.0.0/24 -m state --state ESTABLISHED,RELATED -j ACCEPT
+#iptables -A FORWARD -i eth0 -d 172.20.0.0/24 -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 # Allow containers to communicate with each other within the honeypot network
 iptables -A FORWARD -s 172.20.0.0/24 -d 172.20.0.0/24 -j ACCEPT

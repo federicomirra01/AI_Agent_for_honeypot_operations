@@ -1,0 +1,22 @@
+version: '2'
+networks:
+  thesis_net:
+    external: true
+
+services:
+  struts2:
+    image: vulhub/struts2:2.3.34-showcase
+    volumes:
+      - ./struts-actionchaining.xml:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/struts-actionchaining.xml
+      - ./init.sh:/init.sh
+    entrypoint: ["sh", "/init.sh"]
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "8080"
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:  # Correct indentation (aligned with other service keys)
+      - thesis_net

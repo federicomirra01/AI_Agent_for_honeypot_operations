@@ -34,6 +34,7 @@ event_buffers = {
 }
 buffer_lock = threading.Lock()
 
+seen_alerts_ids = set()
 def tail_eve_json():
     """Thread to tail eve.json and store events by type."""
     logger.info("Starting to tail Suricata's eve.json for all event types")
@@ -48,11 +49,18 @@ def tail_eve_json():
             try:
                 data = json.loads(line)
                 event_type = data.get('event_type')
-                
-                if event_type in event_buffers:
-                    with buffer_lock:
-                        event_buffers[event_type].append(data)
-                        
+                fid = data.get('flow_id')
+                sigid=data.get('alert', {}).get('signature_id')
+                key = (fid, sigid, data.get('timestamp'))
+
+                with buffer_lock:
+                    if key in seen_alerts_ids:
+                        continue
+                    seen_alerts_ids.add(key)
+                    event_buffers[event_type].append(data)
+                    if len(seen_alerts_ids) > MAX_EVENTS * 2:
+                        seen_alerts_ids.clear()
+
             except json.JSONDecodeError:
                 continue
 
@@ -71,8 +79,8 @@ def compress_alert(alert, max_payload_len=200):
         'severity': alert_info.get('severity'),
         'payload': alert.get('payload_printable', '')[:max_payload_len] if alert.get('payload_printable') else None,
         'flow_id': alert.get('flow_id'),
-        'community_id': alert.get('community_id'),
-        'metadata': alert.get('metadata')
+        #'community_id': alert.get('community_id'),
+        #'metadata': alert.get('metadata')
     }
 
 
@@ -128,54 +136,42 @@ def read_fast_log(time_window_minutes=10):
 logger = logging.getLogger(__name__)
 
 def parse_timestamp(timestamp_str):
-    """Parse various timestamp formats into a timezone-aware datetime object."""
-    try:
-        # Normalize +HHMM to +HH:MM (e.g., +0200 → +02:00)
+    # If ends with 'Z', treat as UTC
+    if timestamp_str.endswith('Z'):
+        timestamp_str = timestamp_str[:-1] + '+00:00'
+    else:
+        # Normalize +0000 or +0100 to +00:00 or +01:00
         match = re.match(r"(.*)([+-]\d{2})(\d{2})$", timestamp_str)
         if match:
             base, hour, minute = match.groups()
             timestamp_str = f"{base}{hour}:{minute}"
-        
-        # Handle Zulu time (UTC)
-        if timestamp_str.endswith('Z'):
-            timestamp_str = timestamp_str.replace('Z', '+00:00')
-        
-        return datetime.fromisoformat(timestamp_str)
-    except Exception as e:
-        raise ValueError(f"Unrecognized timestamp format: {timestamp_str}") from e
+    dt = datetime.fromisoformat(timestamp_str)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
 
 def filter_events_by_time(events, time_window_minutes):
-    """Filter events that occurred within the last `time_window_minutes` minutes."""
-    if time_window_minutes <= 0:
-        return events
-
+    from datetime import datetime, timezone, timedelta
     now = datetime.now(timezone.utc)
-    time_window_start = now - timedelta(minutes=time_window_minutes)
-
+    cutoff = now - timedelta(minutes=time_window_minutes)
     filtered = []
-    for event in events:
+    for e in events:
         try:
-            timestamp_str = event['timestamp']
-            event_time = parse_timestamp(timestamp_str)
-            
-            if event_time > time_window_start:
-                filtered.append(event)
-        except (ValueError, KeyError) as e:
-            logger.warning(f"Failed to parse timestamp {event.get('timestamp', 'missing')}: {e}")
-            # Optionally exclude or include; here we exclude invalid timestamp events
-            # filtered.append(event)  # uncomment if you want to include them
+            event_time = parse_timestamp(e['timestamp'])
+            if event_time >= cutoff:
+                filtered.append(e)
+        except (ValueError, KeyError):
             continue
-
     return filtered
+
 
 @app.route("/alerts", methods=["GET"])
 def get_alerts():
     """Get recent alerts - useful for AI correlation analysis."""
-    limit_per_type = int(request.args.get("limit_per_type", 100))
     time_window = int(request.args.get("time_window", 10))  # minutes
-    
+
     with buffer_lock:
-        alerts = list(event_buffers.get('alert', []))[-limit_per_type:]
+        alerts = list(event_buffers.get('alert', []))
         if time_window > 0:
             alerts = filter_events_by_time(alerts, time_window)
 
@@ -192,13 +188,13 @@ def health_check():
     """Health check with buffer status for all event types."""
     buffer_status = {}
     total_events = 0
-    
+
     with buffer_lock:
         for event_type, buffer in event_buffers.items():
             count = len(buffer)
             buffer_status[event_type] = count
             total_events += count
-    
+
     return jsonify({
         "status": "ok",
         "total_events": total_events,
@@ -222,14 +218,14 @@ def get_fast_log():
 def get_stats():
     """Get statistics about collected events - useful for AI monitoring."""
     time_window = int(request.args.get("time_window", 10))  # minutes
-    
+
     stats = {}
     with buffer_lock:
         for event_type, buffer in event_buffers.items():
             events = list(buffer)
             if time_window > 0:
                 events = filter_events_by_time(events, time_window)
-            
+
             # Basic statistics
             stats[event_type] = {
                 "total_count": len(events),
@@ -237,17 +233,17 @@ def get_stats():
                 "unique_dest_ips": len(set(e.get('dest_ip', '') for e in events if e.get('dest_ip'))),
                 "protocols": list(set(e.get('proto', '') for e in events if e.get('proto')))
             }
-            
+
             # Event-specific stats
             if event_type == 'alert':
                 severities = [e.get('alert', {}).get('severity', 0) for e in events if e.get('alert')]
                 stats[event_type]["avg_severity"] = sum(severities) / len(severities) if severities else 0
                 stats[event_type]["max_severity"] = max(severities) if severities else 0
-                
+
             elif event_type == 'http':
                 methods = [e.get('http', {}).get('http_method', '') for e in events if e.get('http')]
                 stats[event_type]["http_methods"] = list(set(methods))
-    
+
     return jsonify({
         "time_window_minutes": time_window,
         "statistics": stats,
