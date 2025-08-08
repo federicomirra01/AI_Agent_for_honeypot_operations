@@ -1,7 +1,7 @@
 import state
 from typing import Dict,  Any
 from prompts import eve_summary_prompt, fast_summary_prompt
-from .node_utils import llm, OPEN_AI_KEY
+from .node_utils import OPEN_AI_KEY
 from openai import BadRequestError 
 import logging
 from pydantic import BaseModel

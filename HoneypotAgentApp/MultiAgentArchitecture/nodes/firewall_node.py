@@ -1,11 +1,7 @@
 import state
-from .node_utils import llm_firewall
-from openai import BadRequestError
-from langgraph.prebuilt import ToolNode
 from prompts import firewall_executor_prompt
-from .node_utils import fw_tools, OPEN_AI_KEY
+from .node_utils import OPEN_AI_KEY
 from tools import firewall_tools
-import json
 import logging
 from pydantic import BaseModel, Field
 from typing import Optional, Union, List
@@ -60,12 +56,9 @@ async def firewall_executor(state:state.HoneypotStateReact):
         logger.error(f"Error splitting reasoning in firewall executor:\n{e}")
     
 
-
-
 async def tools_firewall(state: state.HoneypotStateReact):
     """Execute pending tool calls and update state with enhanced threat data handling"""
     agent_output = state.firewall_action
-    logger.info(f"Tools handler: {agent_output}")
 
     rules_added = []
     rules_removed = []
