@@ -383,7 +383,7 @@ class MetricsCollector:
                 metrics["honeypots_exposed"] = iteration_data.get('currently_exposed', ["No honeypots exposed"])
 
             if 'lockdown_status' in iteration_data:
-                metrics["lockdown_activated"] = iteration_data['lockdown_status'] == 'ACTIVE'
+                metrics["lockdown_activated"] = iteration_data['lockdown_status']
             
             if 'inferred_attack_graph' in iteration_data:
                 metrics["inferred_attack_graph"] = iteration_data.get('inferred_attack_graph', {})
@@ -715,22 +715,13 @@ class BenchmarkRunner:
                 return {}
             
             total_flags = sum(len(e.flags_captured) for e in epochs_data)
-            unique_honeypots = set()
-            max_coverage = {}
-            
-            for epoch in epochs_data:
-                for ip, coverage in epoch.honeypots_exploitation.items():
-                    unique_honeypots.add(ip)
-                    max_coverage[ip] = max(max_coverage.get(ip, 0), coverage['percentage'])
-            
+
             return {
                 "total_flags_captured": total_flags,
-                "unique_honeypots_touched": len(unique_honeypots),
-                "honeypots_fully_compromised": sum(1 for c in max_coverage.values() if c >= 100),
                 "average_epoch_duration": sum(e.end_time - e.start_time for e in epochs_data) / len(epochs_data),
                 "lockdown_triggered": any(e.lockdown_activated for e in epochs_data),
                 "lockdown_epoch": next((e.epoch_number for e in epochs_data if e.lockdown_activated), None),
-                "final_honeypots_exploitation": max_coverage,
+                "final_honeypots_exploitation": epochs_data[-1].honeypots_exploitation,
                 "final_inferred_attack_graph": epochs_data[-1].inferred_attack_graph 
             }
         except Exception as e:

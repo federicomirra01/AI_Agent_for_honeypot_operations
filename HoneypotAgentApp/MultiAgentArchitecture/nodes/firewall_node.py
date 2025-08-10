@@ -16,13 +16,13 @@ class AddAllowRule(BaseModel):
     source_ip: str = Field(..., description="Source IP address")
     dest_ip: str = Field(..., description="Destination IP address")
     port: Optional[int] = Field(None, description="Port Number (optional)")
-    protocol: Optional[int] = Field("tcp", description="Protocol (default: tcp)")
+    protocol: Optional[str] = Field("tcp", description="Protocol (default: tcp)")
 
 class AddBlockRule(BaseModel):
     source_ip: str = Field(..., description="Source IP address")
     dest_ip: str = Field(..., description="Destination IP address")
     port: Optional[int] = Field(None, description="Port Number (optional)")
-    protocol: Optional[int] = Field("tcp", description="Protocol (default: tcp)")
+    protocol: Optional[str] = Field("tcp", description="Protocol (default: tcp)")
 
 class RemoveFirewallRule(BaseModel):
     rule_numbers: List[int] = Field(..., description="List of firewall rule numbers to remove")
@@ -30,6 +30,12 @@ class RemoveFirewallRule(BaseModel):
 class StructuredOutput(BaseModel):
     reasoning: str
     action: List[Union[AddAllowRule, AddBlockRule, RemoveFirewallRule]] = []
+
+ACTION_PRIORITY = {
+    RemoveFirewallRule: 0,
+    AddAllowRule: 1,
+    AddBlockRule: 1
+}
 
 
 tools = [AddAllowRule, AddBlockRule, RemoveFirewallRule]
@@ -49,8 +55,10 @@ async def firewall_executor(state:state.HoneypotStateReact):
             response_model=StructuredOutput,
             messages=[messages]
         )
+        message = str(response.reasoning)
+        message += f"\n{str(response.action)}"
 
-        return {"firewall_resoning":response.reasoning, "firewall_action": response.action}
+        return {"messages":state.messages + [message], "firewall_resoning":response.reasoning, "firewall_action": response.action}
 
     except Exception as e:
         logger.error(f"Error splitting reasoning in firewall executor:\n{e}")
@@ -60,13 +68,18 @@ async def tools_firewall(state: state.HoneypotStateReact):
     """Execute pending tool calls and update state with enhanced threat data handling"""
     agent_output = state.firewall_action
 
+    agent_output_sorted = sorted(
+        agent_output,
+        key=lambda action : ACTION_PRIORITY.get(type(action), 99)
+    )
+
     rules_added = []
     rules_removed = []
     new_state = {}
     try:
-        if agent_output:
+        if agent_output_sorted:
     
-            for action in agent_output:
+            for action in agent_output_sorted:
                 if isinstance(action, AddAllowRule):
                     resp = await firewall_tools.add_allow_rule(
                         source_ip=action.source_ip,

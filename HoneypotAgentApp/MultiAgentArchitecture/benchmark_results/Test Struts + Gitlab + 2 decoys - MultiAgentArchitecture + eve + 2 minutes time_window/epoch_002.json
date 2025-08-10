@@ -1,0 +1,94 @@
+{
+  "epoch_number": 2,
+  "start_time": 1754668883.031929,
+  "end_time": 1754668984.9523158,
+  "phase_timings": {
+    "initialization": 1754668883.0319452,
+    "attack_execution": 1754668883.046247,
+    "monitoring_accumulation": 1754668888.1348789,
+    "agent_analysis": 1754668938.1364517,
+    "firewall_update_wait": 1754668982.9334126,
+    "metrics_collection": 1754668984.9352727,
+    "epoch_complete": 1754668984.9515276
+  },
+  "services_detected": [
+    "PATROL-SNMP(172.20.0.6:8161)",
+    "UNKNOWN(172.20.0.6:61616)"
+  ],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.2 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.2 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.6           192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.6"
+      ]
+    }
+  ],
+  "honeypots_exposed": {
+    "ip": "172.20.0.2",
+    "service": "struts2",
+    "current_level": 0
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.6",
+      "service": "activemq",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "POSSBL PORT SCAN (NMAP -sS): 2 events [no payload]",
+        "ET SCAN Suspicious inbound to mySQL port 3306: 1 event [no payload]",
+        "ET SCAN Suspicious inbound to MSSQL port 1433: 1 event [no payload]",
+        "ET INFO POSSIBLE Web Crawl using Curl: 1 event [command: GET /showcase]",
+        "SURICATA Applayer Detect protocol only one direction: 23 events [no payload]"
+      ]
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "nginx (gitlab-proxy)",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "No evidence found."
+      ]
+    },
+    {
+      "ip": "172.20.0.2",
+      "service": "struts2",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "No evidence found."
+      ]
+    },
+    {
+      "ip": "172.20.0.7",
+      "service": "bash-httpd (web)",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "No evidence found."
+      ]
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [],
+    "edges": []
+  },
+  "lockdown_activated": false
+}

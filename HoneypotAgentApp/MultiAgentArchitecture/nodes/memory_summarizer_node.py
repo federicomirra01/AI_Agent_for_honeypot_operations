@@ -21,7 +21,7 @@ async def memory_summarizer(state: state.HoneypotStateReact, config):
     else:
         last_epoch_summary, last_epoch_memory = get_last_epoch_fields(last_epochs[0].value)
 
-    prompt = memory_summarizer_prompt.MEMORY_SUMMARIZER_PROMPT.format(
+    prompt = memory_summarizer_prompt.MEMORY_PLAN_SUMMARIZER_PROMPT.format(
         episodic_memory=last_epoch_memory,
         previous_summary=last_epoch_summary
     )
@@ -42,25 +42,11 @@ async def memory_summarizer(state: state.HoneypotStateReact, config):
 
 def get_last_epoch_fields(last_epochs):
     last_epoch_summary = last_epochs.get('memory_context', "")
-    currently_exposed = last_epochs.get('currently_exposed', {})
-    rules_added = last_epochs.get('rules_added',[])
-    honeypots_exploitation = last_epochs.get('honeypots_exploitation', {})
-    lockdown_status = last_epochs.get('lockdown_status', False)
-    rules_removed = last_epochs.get('rules_removed', [])
-    firewall_reasoning = last_epochs.get('firewall_reasoning', "")
-    inferred_attack_graph = last_epochs.get('inferred_attack_graph', {})
-    reasoning_inference = last_epochs.get('reasoning_inference', "")
     reasoning_exploitation = last_epochs.get('reasoning_exploitation', "")
+    exploitation_strategy = last_epochs.get('exploitation_strategy', "")
 
     last_epoch_memory = {
-        "currently_exposed": currently_exposed,
-        "rules_added": rules_added,
-        "honeypots_exploitation": honeypots_exploitation,
-        "lockdown_status": lockdown_status,
-        "rules_removed": rules_removed,
-        "firewall_reasoning": firewall_reasoning,
-        "inferred_attack_graph": inferred_attack_graph,
-        "reasoning_inference": reasoning_inference,
+        "exploitation_strategy":exploitation_strategy,
         "reasoning_exploitation":reasoning_exploitation
     }
 

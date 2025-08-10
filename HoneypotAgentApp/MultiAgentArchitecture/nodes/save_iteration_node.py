@@ -27,7 +27,8 @@ def save_iteration(state: state.HoneypotStateReact, config) -> Dict[str, Any]:
         "firewall_reasoning": state.firewall_reasoning,
         "inferred_attack_graph": state.inferred_attack_graph,
         "reasoning_inference": state.reasoning_inference,
-        "reasoning_exploitation":state.reasoning_exploitation
+        "reasoning_exploitation":state.reasoning_exploitation,
+        "exploitation_strategy":state.exploitation_strategy
     }
 
     episodic_memory = config.get("configurable", {}).get("store")

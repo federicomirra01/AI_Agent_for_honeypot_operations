@@ -1,0 +1,80 @@
+{
+  "epoch_number": 1,
+  "start_time": 1754668766.0389059,
+  "end_time": 1754668882.0270684,
+  "phase_timings": {
+    "initialization": 1754668766.0389233,
+    "attack_execution": 1754668766.0553603,
+    "monitoring_accumulation": 1754668772.838397,
+    "agent_analysis": 1754668822.8399427,
+    "firewall_update_wait": 1754668880.0094616,
+    "metrics_collection": 1754668882.011971,
+    "epoch_complete": 1754668882.0262113
+  },
+  "services_detected": [],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.6 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.6 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.6",
+    "service": "activemq",
+    "current_level": 0
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.6",
+      "service": "activemq",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "No evidence found."
+      ]
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "nginx (gitlab-proxy)",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "No evidence found."
+      ]
+    },
+    {
+      "ip": "172.20.0.2",
+      "service": "struts2",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "No evidence found."
+      ]
+    },
+    {
+      "ip": "172.20.0.7",
+      "service": "bash-httpd (web)",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "No evidence found."
+      ]
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [],
+    "edges": []
+  },
+  "lockdown_activated": false
+}

@@ -1,0 +1,127 @@
+{
+  "epoch_number": 4,
+  "start_time": 1754669092.7648995,
+  "end_time": 1754669216.6736772,
+  "phase_timings": {
+    "initialization": 1754669092.7649114,
+    "attack_execution": 1754669092.7767344,
+    "monitoring_accumulation": 1754669110.5953777,
+    "agent_analysis": 1754669160.5961268,
+    "firewall_update_wait": 1754669214.653471,
+    "metrics_collection": 1754669216.6564465,
+    "epoch_complete": 1754669216.672863
+  },
+  "services_detected": [
+    "HTTP(172.20.0.10:80)"
+  ],
+  "services_successfully_exploited": [
+    "GITLAB"
+  ],
+  "exploits_attempted": [
+    "HTTP(172.20.0.10:80)"
+  ],
+  "flags_captured": [
+    {
+      "service": "GITLAB",
+      "flag": "flag{user_access}"
+    }
+  ],
+  "attack_success_rate": 100.0,
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.7 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.7 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10"
+      ]
+    }
+  ],
+  "honeypots_exposed": {
+    "ip": "172.20.0.7",
+    "service": "bash-httpd (web)",
+    "current_level": 0
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.6",
+      "service": "activemq",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "Targeted Services: No evidence found.",
+        "Honeypot Engagement: No evidence found."
+      ]
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "nginx (gitlab-proxy)",
+      "level_prev": 0,
+      "level_new": 100,
+      "changed": true,
+      "evidence_quotes": [
+        "Reverse Shell Detected - No Job Control",
+        "executing 'find / -type f -name 'user.txt'' and 'cat /home/ctf/user.txt'",
+        "interactive session for file discovery and exfiltration (e.g., executing \"find / -type f -name 'user.txt'\" and \"cat /home/ctf/user.txt\")"
+      ]
+    },
+    {
+      "ip": "172.20.0.2",
+      "service": "struts2",
+      "level_prev": 100,
+      "level_new": 100,
+      "changed": false,
+      "evidence_quotes": [
+        "No direct evidence (event captured within payload; minimal details)",
+        "Honeypot Engagement: No evidence found."
+      ]
+    },
+    {
+      "ip": "172.20.0.7",
+      "service": "bash-httpd (web)",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "Targeted Services: No evidence found.",
+        "Honeypot Engagement: No evidence found."
+      ]
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.2",
+        "service": "struts2",
+        "confidence": 1.0
+      },
+      {
+        "ip": "172.20.0.10",
+        "service": "nginx (gitlab-proxy)",
+        "confidence": 1.0
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.2",
+        "vector": "rce-priv-esc",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "vector": "rce-post-compromise",
+        "confidence": 1.0
+      }
+    ]
+  },
+  "lockdown_activated": false
+}

@@ -44,9 +44,14 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
         message = ""
         message += str(response.security_summary)
 
-    except BadRequestError as e:
-        logger.error(f"Error in calling Summarizer Agent: {e}")
-    return {
+        return {
         "messages": [message],
         "security_events_summary": response.security_summary
         }
+
+
+    except BadRequestError as e:
+        logger.error(f"Error in calling Summarizer Agent: {e}")
+        return {
+            "messages": state.messages
+            }

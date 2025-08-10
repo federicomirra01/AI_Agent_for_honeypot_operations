@@ -2,12 +2,6 @@ from typing import Dict,  Any
 import state
 from tools import network_tools, firewall_tools
 import logging
-import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

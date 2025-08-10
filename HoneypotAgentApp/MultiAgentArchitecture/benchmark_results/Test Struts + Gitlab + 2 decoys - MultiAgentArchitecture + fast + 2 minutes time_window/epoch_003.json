@@ -1,0 +1,134 @@
+{
+  "epoch_number": 3,
+  "start_time": 1754665231.4923928,
+  "end_time": 1754665351.7191525,
+  "phase_timings": {
+    "initialization": 1754665231.492405,
+    "attack_execution": 1754665231.5062418,
+    "monitoring_accumulation": 1754665244.381107,
+    "agent_analysis": 1754665274.3829176,
+    "firewall_update_wait": 1754665349.7028089,
+    "metrics_collection": 1754665351.7039735,
+    "epoch_complete": 1754665351.7184532
+  },
+  "services_detected": [
+    "HTTP-PROXY(172.20.0.2:8080)"
+  ],
+  "services_successfully_exploited": [
+    "STRUTS"
+  ],
+  "exploits_attempted": [
+    "HTTP-PROXY(172.20.0.2:8080)"
+  ],
+  "flags_captured": [
+    {
+      "service": "STRUTS",
+      "flag": "flag{privileged_struts}"
+    }
+  ],
+  "attack_success_rate": 100.0,
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.7 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.7 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.2           192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.2"
+      ]
+    }
+  ],
+  "honeypots_exposed": {
+    "ip": "172.20.0.7",
+    "service": "web-1 (110/tcp, 514/tcp, 2375/tcp, etc)",
+    "current_level": 0
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.6",
+      "service": "activemq-1 (61616/tcp, 1433/tcp, 3306/tcp, etc)",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "Port scan (NMAP -sS): multiple alerts",
+        "No direct exploit attempts observed"
+      ]
+    },
+    {
+      "ip": "172.20.0.2",
+      "service": "struts2-1 (22/tcp, 53/tcp, 135/tcp, etc)",
+      "level_prev": 0,
+      "level_new": 33,
+      "changed": true,
+      "evidence_quotes": [
+        "Apache Struts RCE (OGNL injection): 8 alerts",
+        "Related Struts exploit and privilege gain attempts: 8+ alerts",
+        "Web crawl/curl, python-requests User-Agent, and .exec detection: at least 4 alerts"
+      ]
+    },
+    {
+      "ip": "172.20.0.7",
+      "service": "web-1 (110/tcp, 514/tcp, 2375/tcp, etc)",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "Port scan (NMAP -sS): multiple alerts",
+        "No confirmed web exploit attempts"
+      ]
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "gitlab-1-proxy (80/tcp, 3389/tcp, etc)",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "Port scan (NMAP -sS): multiple alerts",
+        "No confirmed exploits on proxy"
+      ]
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.2",
+        "service": "struts2-1 (8080/tcp)",
+        "confidence": 1.0
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.2",
+        "vector": "rce",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.6",
+        "vector": "scan",
+        "confidence": 0.9
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.7",
+        "vector": "scan",
+        "confidence": 0.9
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "vector": "scan",
+        "confidence": 0.8
+      }
+    ]
+  },
+  "lockdown_activated": false
+}
