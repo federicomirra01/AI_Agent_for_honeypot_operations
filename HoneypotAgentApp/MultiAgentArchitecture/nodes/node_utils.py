@@ -1,6 +1,4 @@
-from langchain_openai import ChatOpenAI
-from tools import firewall_tools
-import state
+from configuration import state
 import logging
 import os
 from dotenv import load_dotenv

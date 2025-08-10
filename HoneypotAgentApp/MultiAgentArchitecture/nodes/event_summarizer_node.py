@@ -1,4 +1,4 @@
-import state
+from configuration import state
 from typing import Dict,  Any
 from prompts import eve_summary_prompt, fast_summary_prompt
 from .node_utils import OPEN_AI_KEY

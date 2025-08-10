@@ -1,6 +1,6 @@
 from prompts import memory_summarizer_prompt
 from .node_utils import OPEN_AI_KEY
-import state
+from configuration import state
 import logging
 from pydantic import BaseModel
 import instructor

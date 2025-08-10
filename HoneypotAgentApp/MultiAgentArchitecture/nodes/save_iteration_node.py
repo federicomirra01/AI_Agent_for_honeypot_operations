@@ -1,5 +1,5 @@
 from typing import Dict,  Any
-import state
+from configuration import state
 import logging
 
 # Configure logging

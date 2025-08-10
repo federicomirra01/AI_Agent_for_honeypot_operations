@@ -1,4 +1,4 @@
-import state
+from configuration import state
 from prompts import firewall_executor_prompt
 from .node_utils import OPEN_AI_KEY
 from tools import firewall_tools

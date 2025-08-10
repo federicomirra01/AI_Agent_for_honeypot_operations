@@ -1,5 +1,5 @@
 from typing import Dict,  Any
-import state
+from configuration import state
 from tools import network_tools, firewall_tools
 import logging
 
