@@ -51,6 +51,7 @@ class EpochMetrics:
     honeypots_exposed: List[Dict[str, Any]] = field(default_factory=list)
     honeypots_exploitation: Dict[str, float] = field(default_factory=dict)
     inferred_attack_graph: Dict[str, Any] = field(default_factory=dict)
+    service_epoch_context: List[Dict[str, Any]] = field(default_factory=list)
       
     lockdown_activated: bool = False
     
@@ -399,7 +400,8 @@ class MetricsCollector:
             "exploits_attempted": [],
             "services_successfully_exploited": [],
             "flags_captured": [],
-            "attack_success_rate": 0.0
+            "attack_success_rate": 0.0,
+            "service_epoch_context": []
         }
         
         try:
@@ -425,6 +427,12 @@ class MetricsCollector:
             
             self.logger.info(f"Attack metrics: {len(parsed_metrics["flags_captured"])} flags, {total_services} services attempted, {parsed_metrics['attack_success_rate']:.1f}% success rate")
             
+            parsed_metrics["service_epoch_context"] = attack_results.get('service_epoch_context', [])
+
+            self.logger.info(
+                f"Attack metrics: {len(parsed_metrics['flags_captured'])} flags, "
+                f"{total_services} services attempted, {parsed_metrics['attack_success_rate']:.1f}% success rate"
+            )
         except Exception as e:
             self.logger.error(f"Error parsing attack results: {e}")
         
@@ -505,7 +513,7 @@ class BenchmarkOrchestrator:
             epoch_metrics.exploits_attempted = attack_metrics["exploits_attempted"]
             epoch_metrics.flags_captured = attack_metrics["flags_captured"]
             epoch_metrics.attack_success_rate = attack_metrics["attack_success_rate"]
-                
+            epoch_metrics.service_epoch_context = attack_metrics.get("service_epoch_context", [])
             # Phase 3: Wait for monitoring data
             self._phase_transition(BenchmarkPhase.MONITOR_WAIT)
             self.logger.info(f"Accumulating monitoring data for {self.config.monitor_accumulation_wait}s...")
@@ -571,20 +579,6 @@ class BenchmarkOrchestrator:
             self.logger.info("Lockdown activated - stopping benchmark")
             return False
         
-        # # Check if all honeypots are fully compromised
-        # percentages = []
-        # for v in epoch_metrics.honeypots_exploitation.values():
-        #     percentages.append(v.get("precentage", 0))
-        # if epoch_metrics.honeypots_exploitation:
-        #     all_compromised = all(
-        #         coverage >= 100.0 
-        #         for coverage in percentages
-        #     )
-            
-        #     if all_compromised and not self.config.allow_full_compromise:
-        #         self.logger.info("All honeypots fully compromised - stopping benchmark")
-        #         return False
-        
         return True
     
     def stop(self):
@@ -611,7 +605,7 @@ class BenchmarkRunner:
             "firewall_update_wait": 10,
             "between_epoch_wait": 20,
             "stop_on_lockdown": True,
-            "results_dir": "./benchmark_results",
+            "results_dir": "./benchmark/benchmark_results",
             "dir_name": None
         }
         
