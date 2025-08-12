@@ -18,6 +18,7 @@ services:
       - ./config:/attacker/config:ro
       # Mount results directory
       - /tmp/benchmark_results:/tmp/benchmark_results:rw
+      - ./state:/state:rw
     environment:
       - TARGET_NETWORK=172.20.0.0/24
       - HONEYPOT_GATEWAY=172.20.0.1

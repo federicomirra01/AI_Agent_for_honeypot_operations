@@ -29,7 +29,7 @@ RUN python3 -m venv /attacker/.venv
 ENV PATH="/attacker/.venv/bin:$PATH"
 
 # Install Python dependencies inside venv
-RUN /attacker/.venv/bin/pip install --no-cache-dir colorama tabulate netifaces requests docker
+RUN /attacker/.venv/bin/pip install --no-cache-dir colorama tabulate netifaces requests docker pathlib
 
 # Create directories for scripts and logs
 RUN mkdir -p /attacker/scripts /attacker/logs /attacker/config
