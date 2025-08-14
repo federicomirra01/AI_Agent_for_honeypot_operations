@@ -55,8 +55,8 @@ async def firewall_executor(state:state.HoneypotStateReact):
             response_model=StructuredOutput,
             messages=[messages]
         )
-        message = str(response.reasoning)
-        message += f"\n{str(response.action)}"
+        message = f"Reasoning:" + str(response.reasoning)
+        message += f"\nAction: {str(response.action)}"
 
         return {"messages":state.messages + [message], "firewall_resoning":response.reasoning, "firewall_action": response.action}
 

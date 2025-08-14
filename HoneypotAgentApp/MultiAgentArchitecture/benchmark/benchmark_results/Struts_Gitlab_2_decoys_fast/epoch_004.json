@@ -1,0 +1,138 @@
+{
+  "epoch_number": 4,
+  "start_time": 1755091548.003072,
+  "end_time": 1755091680.7735,
+  "phase_timings": {
+    "initialization": 1755091548.003087,
+    "attack_execution": 1755091548.0188866,
+    "monitoring_accumulation": 1755091553.2614586,
+    "agent_analysis": 1755091603.2625697,
+    "firewall_update_wait": 1755091678.75649,
+    "metrics_collection": 1755091680.7581995,
+    "epoch_complete": 1755091680.7728035
+  },
+  "services_detected": [
+    "PATROL-SNMP(172.20.0.4:8161)",
+    "UNKNOWN(172.20.0.4:61616)"
+  ],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.4",
+    "service": "cve-2015-5254-activemq-1",
+    "current_level": 33,
+    "epoch": 4
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": [
+        "No evidence found."
+      ]
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 0,
+      "level_new": 33,
+      "changed": true,
+      "evidence_quotes": [
+        "Multiple scans/probes recorded to these ports",
+        "SURICATA Applayer Detect protocol only one direction on port 61616 (ActiveMQ)",
+        "Web crawling attempts detected on port 8161",
+        "Port scan (NMAP -sS): 2",
+        "Suspicious inbound to MySQL port 3306: 1",
+        "Suspicious inbound to MSSQL port 1433: 1",
+        "Port scan (NMAP -sS) on 27017: 1",
+        "Possible web crawl using Curl: 1",
+        "SURICATA Applayer Detect protocol only one direction: 20"
+      ]
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "No evidence found."
+      ]
+    },
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "No evidence found."
+      ]
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "vector": "scan",
+        "confidence": 0.33,
+        "edge_id": "2d124115e214",
+        "phases": [
+          {
+            "phase": "scan",
+            "current_phase": true,
+            "evidence_quotes": [
+              "ET SCAN Suspicious inbound to mySQL port 3306: 2",
+              "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
+              "POSSBL PORT SCAN (NMAP -sS): 2",
+              "ET INFO POSSIBLE Web Crawl using Curl: 1"
+            ],
+            "seen_in_epoch": 1,
+            "first_seen": 1,
+            "last_seen": 1,
+            "confidence": 0.33
+          }
+        ]
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "vector": "scan",
+        "confidence": 0.33,
+        "edge_id": "e0d2da2acad3",
+        "phases": [
+          {
+            "phase": "scan",
+            "current_phase": true,
+            "evidence_quotes": [
+              "Multiple scans/probes recorded to these ports",
+              "SURICATA Applayer Detect protocol only one direction on port 61616 (ActiveMQ)",
+              "Web crawling attempts detected on port 8161",
+              "Port scan (NMAP -sS): 2",
+              "Suspicious inbound to MySQL port 3306: 1",
+              "Suspicious inbound to MSSQL port 1433: 1",
+              "Port scan (NMAP -sS) on 27017: 1",
+              "Possible web crawl using Curl: 1",
+              "SURICATA Applayer Detect protocol only one direction: 20"
+            ],
+            "seen_in_epoch": 2,
+            "first_seen": 2,
+            "last_seen": 2,
+            "confidence": 0.33
+          }
+        ]
+      }
+    ]
+  },
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}

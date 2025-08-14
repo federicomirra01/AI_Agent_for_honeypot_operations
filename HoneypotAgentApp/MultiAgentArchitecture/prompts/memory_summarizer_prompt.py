@@ -5,6 +5,7 @@ MEMORY_PLAN_SUMMARIZER_PROMPT = Template("""
 
 ## ROLE
 You summarize the last epoch's exploitation plan specifically for the Exploitation Manager Agent, and maintain a compact, epoch-indexed history log.
+The previous summaries must be copied as history for the next epochs.
 
 ## INPUTS
 - Exploitation plan episodic memory of the last epoch: $episodic_memory
@@ -12,8 +13,8 @@ You summarize the last epoch's exploitation plan specifically for the Exploitati
 - Current epoch number: $epoch_num
 
 ## SUMMARY RULES
-1. PRIORITIZE (for the current epoch only):
-   a. Which honeypot was exposed (IP, service).
+1. PRIORITIZE:
+   a. Which honeypot was exposed (IP, service) and in which epoch there was **first exposure** (if newly exposed, state: "first exposed in epoch {epoch_num}").
    b. Exploitation level before → after (if changed).
    c. Whether policy rules were followed (e.g., single exposure, no re-exposure of 100%).
    d. Any rotation/diversity decisions.
@@ -51,4 +52,5 @@ Epoch {current_epoch-1}: <previous one-line>
   Epoch 6: Rotated to FTP; no exploitation progress; policy OK.
   Epoch 5: No change from previous epoch; same honeypot exposed.
   ...
+  Epoch 1: ...
 """)

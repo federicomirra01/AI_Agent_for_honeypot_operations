@@ -1,0 +1,100 @@
+{
+  "epoch_number": 4,
+  "start_time": 1755094901.9799447,
+  "end_time": 1755094999.5456386,
+  "phase_timings": {
+    "initialization": 1755094901.9799721,
+    "attack_execution": 1755094901.9929318,
+    "monitoring_accumulation": 1755094906.7344732,
+    "agent_analysis": 1755094956.7356439,
+    "firewall_update_wait": 1755094997.517946,
+    "metrics_collection": 1755094999.5191584,
+    "epoch_complete": 1755094999.5446925
+  },
+  "services_detected": [
+    "HTTP(172.20.0.5:80)"
+  ],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5"
+      ]
+    }
+  ],
+  "honeypots_exposed": {
+    "ip": "172.20.0.4",
+    "service": "cve-2015-5254-activemq-1",
+    "current_level": 0,
+    "epoch": 4
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": [
+        "ET SCAN Suspicious inbound to mySQL port 3306: 1",
+        "POSSBL PORT SCAN (NMAP -sS): 4",
+        "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
+        "ET INFO POSSIBLE Web Crawl using Curl [Command: curl GET /showcase]: 1"
+      ]
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "Targeted Services: No evidence found.",
+        "Honeypot Engagement: No evidence found.",
+        "Compromise Indicators: No evidence found."
+      ]
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "Targeted Services: No evidence found.",
+        "Honeypot Engagement: No evidence found.",
+        "Compromise Indicators: No evidence found."
+      ]
+    },
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "Targeted Services: No evidence found.",
+        "Honeypot Engagement: No evidence found.",
+        "Compromise Indicators: No evidence found."
+      ]
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "vector": "scan",
+        "confidence": 0.33
+      }
+    ]
+  },
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}
