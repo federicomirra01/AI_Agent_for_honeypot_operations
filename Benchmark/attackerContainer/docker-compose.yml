@@ -12,10 +12,6 @@ services:
     volumes:
       # Mount your attack scripts directory
       - ./attack_scripts:/attacker/scripts:rw
-      # Mount logs directory for output
-      - ./logs:/attacker/logs:rw
-      # Mount config if needed
-      - ./config:/attacker/config:ro
       # Mount results directory
       - /tmp/benchmark_results:/tmp/benchmark_results:rw
       - ./state:/state:rw

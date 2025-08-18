@@ -1,8 +1,4 @@
 #!/bin/bash
-
-# Script to configure attacker container routing and test firewall connectivity
-# Run this script on the attacker container
-
 echo "=== Configuring Attacker Container Routing ==="
 
 # Add route to honeypot network via VM4 firewall

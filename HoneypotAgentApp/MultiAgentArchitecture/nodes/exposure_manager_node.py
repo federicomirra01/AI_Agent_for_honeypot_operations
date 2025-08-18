@@ -30,7 +30,7 @@ def _extract_exposure_registry(last_epochs: List[Any]) -> Dict[str, Dict[str, An
     return registry
 
 
-async def exploitation_manager(state: state.HoneypotStateReact, config):
+async def exposure_manager(state: state.HoneypotStateReact, config):
     """
     Decides which honeypot(s) to expose next based on current attack graph
     """
