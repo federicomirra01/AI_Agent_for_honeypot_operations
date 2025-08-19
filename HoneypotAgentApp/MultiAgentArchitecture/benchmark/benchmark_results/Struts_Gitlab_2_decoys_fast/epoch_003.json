@@ -1,43 +1,27 @@
 {
   "epoch_number": 3,
-  "start_time": 1755091437.8626168,
-  "end_time": 1755091546.9995494,
+  "start_time": 1755610268.931219,
+  "end_time": 1755610553.173863,
   "phase_timings": {
-    "initialization": 1755091437.8626392,
-    "attack_execution": 1755091437.879005,
-    "monitoring_accumulation": 1755091442.6582677,
-    "agent_analysis": 1755091492.6590314,
-    "firewall_update_wait": 1755091544.9844825,
-    "metrics_collection": 1755091546.985599,
-    "epoch_complete": 1755091546.998864
+    "initialization": 1755610268.931236,
+    "attack_execution": 1755610268.9448652,
+    "monitoring_accumulation": 1755610429.0099435,
+    "agent_analysis": 1755610479.0117688,
+    "firewall_update_wait": 1755610551.1559074,
+    "metrics_collection": 1755610553.1575327,
+    "epoch_complete": 1755610553.173068
   },
-  "services_detected": [
-    "HTTP(172.20.0.5:80)"
-  ],
+  "services_detected": [],
   "services_successfully_exploited": [],
   "exploits_attempted": [],
   "flags_captured": [],
   "attack_success_rate": 0.0,
-  "firewall_rules_added": [
-    {
-      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.4 (tcp)"
-    },
-    {
-      "rules_added_current_epoch": "ALLOW 172.20.0.4 -> 192.168.100.0/24 (tcp)"
-    }
-  ],
-  "firewall_rules_removed": [
-    {
-      "rules_removed_current_epoch": [
-        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
-        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5"
-      ]
-    }
-  ],
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
   "honeypots_exposed": {
-    "ip": "172.20.0.4",
-    "service": "cve-2015-5254-activemq-1",
-    "current_level": 0,
+    "ip": "172.20.0.5",
+    "service": "cve-2014-6271-web-1",
+    "current_level": 33,
     "epoch": 3
   },
   "honeypots_exploitation": [
@@ -48,10 +32,7 @@
       "level_new": 33,
       "changed": false,
       "evidence_quotes": [
-        "POSSBL PORT SCAN (NMAP -sS): 3",
-        "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-        "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-        "ET INFO POSSIBLE Web Crawl using Curl: 1"
+        "No evidence found."
       ]
     },
     {
@@ -78,38 +59,119 @@
       "ip": "172.20.0.3",
       "service": "s2-057-struts2-1",
       "level_prev": 0,
-      "level_new": 0,
-      "changed": false,
+      "level_new": 66,
+      "changed": true,
       "evidence_quotes": [
-        "No evidence found."
+        "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
+        "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
+        "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
+        "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
+        "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2",
+        "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
       ]
     }
   ],
   "inferred_attack_graph": {
-    "interesting": [],
+    "interesting": [
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1",
+        "confidence": 1.0
+      }
+    ],
     "edges": [
       {
-        "from": "192.168.100.2",
+        "from": "attacker",
         "to": "172.20.0.5",
+        "edge_id": "e2f2449ff2e3",
         "vector": "scan",
-        "confidence": 0.33,
-        "edge_id": "2d124115e214",
         "phases": [
           {
             "phase": "scan",
-            "current_phase": true,
+            "confidence": 1.0,
             "evidence_quotes": [
-              "ET SCAN Suspicious inbound to mySQL port 3306: 2",
-              "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
+              "ET SCAN Suspicious inbound to mySQL port 3306: 1",
               "POSSBL PORT SCAN (NMAP -sS): 2",
+              "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
               "ET INFO POSSIBLE Web Crawl using Curl: 1"
             ],
             "seen_in_epoch": 1,
             "first_seen": 1,
-            "last_seen": 1,
-            "confidence": 0.33
+            "last_seen": 1
           }
-        ]
+        ],
+        "current_phase": "scan",
+        "confidence": 1.0
+      },
+      {
+        "from": "attacker",
+        "to": "172.20.0.3",
+        "edge_id": "1e0b9d3873e5",
+        "vector": "initial-access/rce",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
+            ],
+            "seen_in_epoch": 2,
+            "first_seen": 2,
+            "last_seen": 2
+          },
+          {
+            "phase": "initial-access/rce",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
+              "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
+              "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
+              "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
+              "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
+            ],
+            "seen_in_epoch": 2,
+            "first_seen": 2,
+            "last_seen": 2
+          }
+        ],
+        "current_phase": "initial-access/rce",
+        "confidence": 1.0
+      }
+    ],
+    "edge_updates": [
+      {
+        "from": "attacker",
+        "to": "172.20.0.3",
+        "edge_id": "1e0b9d3873e5",
+        "vector": "initial-access/rce",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
+            ],
+            "seen_in_epoch": 2,
+            "first_seen": 2,
+            "last_seen": 2
+          },
+          {
+            "phase": "initial-access/rce",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
+              "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
+              "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
+              "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
+              "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
+            ],
+            "seen_in_epoch": 2,
+            "first_seen": 2,
+            "last_seen": 2
+          }
+        ],
+        "current_phase": "initial-access/rce",
+        "confidence": 1.0
       }
     ]
   },

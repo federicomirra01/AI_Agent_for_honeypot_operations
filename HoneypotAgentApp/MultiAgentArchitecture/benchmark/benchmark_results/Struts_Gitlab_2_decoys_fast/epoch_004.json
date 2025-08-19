@@ -1,30 +1,40 @@
 {
   "epoch_number": 4,
-  "start_time": 1755091548.003072,
-  "end_time": 1755091680.7735,
+  "start_time": 1755610554.1781926,
+  "end_time": 1755610848.1632814,
   "phase_timings": {
-    "initialization": 1755091548.003087,
-    "attack_execution": 1755091548.0188866,
-    "monitoring_accumulation": 1755091553.2614586,
-    "agent_analysis": 1755091603.2625697,
-    "firewall_update_wait": 1755091678.75649,
-    "metrics_collection": 1755091680.7581995,
-    "epoch_complete": 1755091680.7728035
+    "initialization": 1755610554.1782105,
+    "attack_execution": 1755610554.1916273,
+    "monitoring_accumulation": 1755610697.9697104,
+    "agent_analysis": 1755610747.9707336,
+    "firewall_update_wait": 1755610846.144103,
+    "metrics_collection": 1755610848.1454499,
+    "epoch_complete": 1755610848.1623852
   },
   "services_detected": [
+    "HTTP(172.20.0.10:80)",
     "PATROL-SNMP(172.20.0.4:8161)",
-    "UNKNOWN(172.20.0.4:61616)"
+    "HTTP-PROXY(172.20.0.3:8080)",
+    "UNKNOWN(172.20.0.4:61616)",
+    "HTTP(172.20.0.5:80)"
   ],
   "services_successfully_exploited": [],
   "exploits_attempted": [],
   "flags_captured": [],
   "attack_success_rate": 0.0,
   "firewall_rules_added": [],
-  "firewall_rules_removed": [],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #4:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+        "REMOVED rule #5:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5"
+      ]
+    }
+  ],
   "honeypots_exposed": {
     "ip": "172.20.0.4",
     "service": "cve-2015-5254-activemq-1",
-    "current_level": 33,
+    "current_level": 0,
     "epoch": 4
   },
   "honeypots_exploitation": [
@@ -42,18 +52,10 @@
       "ip": "172.20.0.4",
       "service": "cve-2015-5254-activemq-1",
       "level_prev": 0,
-      "level_new": 33,
-      "changed": true,
+      "level_new": 0,
+      "changed": false,
       "evidence_quotes": [
-        "Multiple scans/probes recorded to these ports",
-        "SURICATA Applayer Detect protocol only one direction on port 61616 (ActiveMQ)",
-        "Web crawling attempts detected on port 8161",
-        "Port scan (NMAP -sS): 2",
-        "Suspicious inbound to MySQL port 3306: 1",
-        "Suspicious inbound to MSSQL port 1433: 1",
-        "Port scan (NMAP -sS) on 27017: 1",
-        "Possible web crawl using Curl: 1",
-        "SURICATA Applayer Detect protocol only one direction: 20"
+        "No evidence found."
       ]
     },
     {
@@ -69,69 +71,89 @@
     {
       "ip": "172.20.0.3",
       "service": "s2-057-struts2-1",
-      "level_prev": 0,
-      "level_new": 0,
+      "level_prev": 66,
+      "level_new": 66,
       "changed": false,
       "evidence_quotes": [
-        "No evidence found."
+        "Targeted Services: Web service on port 8080 (all alerts involved this port)",
+        "Honeypot Engagement: Attack patterns suggest automated exploitation attempts; no clear evidence of post-exploit interaction",
+        "Compromise Indicators: ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
+        "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
+        "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
+        "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
+        "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2",
+        "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
       ]
     }
   ],
   "inferred_attack_graph": {
-    "interesting": [],
+    "interesting": [
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1",
+        "confidence": 1.0
+      }
+    ],
     "edges": [
       {
-        "from": "192.168.100.2",
+        "from": "attacker",
         "to": "172.20.0.5",
+        "edge_id": "e2f2449ff2e3",
         "vector": "scan",
-        "confidence": 0.33,
-        "edge_id": "2d124115e214",
         "phases": [
           {
             "phase": "scan",
-            "current_phase": true,
+            "confidence": 1.0,
             "evidence_quotes": [
-              "ET SCAN Suspicious inbound to mySQL port 3306: 2",
-              "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
+              "ET SCAN Suspicious inbound to mySQL port 3306: 1",
               "POSSBL PORT SCAN (NMAP -sS): 2",
+              "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
               "ET INFO POSSIBLE Web Crawl using Curl: 1"
             ],
             "seen_in_epoch": 1,
             "first_seen": 1,
-            "last_seen": 1,
-            "confidence": 0.33
+            "last_seen": 1
           }
-        ]
+        ],
+        "current_phase": "scan",
+        "confidence": 1.0
       },
       {
-        "from": "192.168.100.2",
-        "to": "172.20.0.4",
-        "vector": "scan",
-        "confidence": 0.33,
-        "edge_id": "e0d2da2acad3",
+        "from": "attacker",
+        "to": "172.20.0.3",
+        "edge_id": "1e0b9d3873e5",
+        "vector": "initial-access/rce",
         "phases": [
           {
             "phase": "scan",
-            "current_phase": true,
+            "confidence": 1.0,
             "evidence_quotes": [
-              "Multiple scans/probes recorded to these ports",
-              "SURICATA Applayer Detect protocol only one direction on port 61616 (ActiveMQ)",
-              "Web crawling attempts detected on port 8161",
-              "Port scan (NMAP -sS): 2",
-              "Suspicious inbound to MySQL port 3306: 1",
-              "Suspicious inbound to MSSQL port 1433: 1",
-              "Port scan (NMAP -sS) on 27017: 1",
-              "Possible web crawl using Curl: 1",
-              "SURICATA Applayer Detect protocol only one direction: 20"
+              "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
             ],
             "seen_in_epoch": 2,
             "first_seen": 2,
-            "last_seen": 2,
-            "confidence": 0.33
+            "last_seen": 2
+          },
+          {
+            "phase": "initial-access/rce",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
+              "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
+              "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
+              "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
+              "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
+            ],
+            "seen_in_epoch": 2,
+            "first_seen": 2,
+            "last_seen": 2
           }
-        ]
+        ],
+        "current_phase": "initial-access/rce",
+        "confidence": 1.0
       }
-    ]
+    ],
+    "edge_updates": []
   },
   "service_epoch_context": [],
   "lockdown_activated": false

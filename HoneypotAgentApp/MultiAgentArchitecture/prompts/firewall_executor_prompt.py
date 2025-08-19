@@ -18,17 +18,23 @@ num  target     prot opt source               destination
 
 To expose an honeypot is only required to add the bidirectional flow, without changing the initial posture.
 ## RULES
-- Only make changes necessary to match the desired exposure plan.
-- Always ensure bidirectional rules.
-- Ensure that traffic is allowed from exposed honeypot to all attacker ports.
-- Do NOT modify initial firewall settings.
-- Apply the plan rules in the same response.
+- Always verify the **proposed plan** and the **current firewall configuration** before applying changes.  
+- Ensure the correct honeypot is exposed as per the plan.  
+- Ensure existing rules remain consistent and correct (do not break previously configured exposures or baseline rules).  
+- Only make changes necessary to match the desired exposure plan.  
+- Always ensure bidirectional rules.  
+- Ensure that traffic is allowed from the exposed honeypot to all attacker ports.  
+- Do NOT modify initial firewall settings.  
+- Apply the plan rules in the same response.  
 
 ## FIREWALL EXPOSURE TEMPLATE
+Allowing traffic:
 AddAllowRule(source_ip=attacker_ip, dest_ip=honeypot_ip, port, protocol)
 AddAllowRule(source_ip=honeypot_ip, dest_ip=attacker_ip) # allow traffic to all attackers port
-
-
+Block Traffic:
+AddBlockRule(source_ip=attacker_ip, dest_ip=honeypot_ip, port, protocol)
+AddBlockRule(source_ip=honeypot_ip, dest_ip=attacker_ip) # allow traffic to all attackers port
+Lockdown can be enforced by adding a block rule for all the traffic from the attacker to the honeypot network, or by removing allow rules and return to the initial firewall state.
 ## INPUTS
 - Proposed plan: {exposure_plan}
 - Current firewall rules: {firewall_config}

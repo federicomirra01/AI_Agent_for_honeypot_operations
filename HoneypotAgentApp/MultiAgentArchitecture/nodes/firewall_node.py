@@ -13,12 +13,14 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class AddAllowRule(BaseModel):
+    """Model for adding an allow rule to the firewall."""
     source_ip: str = Field(..., description="Source IP address")
     dest_ip: str = Field(..., description="Destination IP address")
     port: Optional[int] = Field(None, description="Port Number (optional)")
     protocol: Optional[str] = Field("tcp", description="Protocol (default: tcp)")
 
 class AddBlockRule(BaseModel):
+    """Model for adding a block rule to the firewall."""
     source_ip: str = Field(..., description="Source IP address")
     dest_ip: str = Field(..., description="Destination IP address")
     port: Optional[int] = Field(None, description="Port Number (optional)")
@@ -34,7 +36,7 @@ class StructuredOutput(BaseModel):
 ACTION_PRIORITY = {
     RemoveFirewallRule: 0,
     AddAllowRule: 1,
-    AddBlockRule: 1
+    AddBlockRule: 2
 }
 
 

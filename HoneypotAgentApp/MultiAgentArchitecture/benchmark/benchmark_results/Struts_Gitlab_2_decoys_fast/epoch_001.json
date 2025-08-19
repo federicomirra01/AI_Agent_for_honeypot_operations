@@ -1,15 +1,15 @@
 {
   "epoch_number": 1,
-  "start_time": 1755091249.4331944,
-  "end_time": 1755091340.0853665,
+  "start_time": 1755610050.5021179,
+  "end_time": 1755610154.1691236,
   "phase_timings": {
-    "initialization": 1755091249.4332168,
-    "attack_execution": 1755091249.4512556,
-    "monitoring_accumulation": 1755091256.3434093,
-    "agent_analysis": 1755091306.3442214,
-    "firewall_update_wait": 1755091338.0680833,
-    "metrics_collection": 1755091340.0690324,
-    "epoch_complete": 1755091340.0846305
+    "initialization": 1755610050.5021348,
+    "attack_execution": 1755610050.5181475,
+    "monitoring_accumulation": 1755610057.40705,
+    "agent_analysis": 1755610107.4087348,
+    "firewall_update_wait": 1755610152.151792,
+    "metrics_collection": 1755610154.152965,
+    "epoch_complete": 1755610154.1681058
   },
   "services_detected": [],
   "services_successfully_exploited": [],
@@ -75,7 +75,8 @@
   ],
   "inferred_attack_graph": {
     "interesting": [],
-    "edges": []
+    "edges": [],
+    "edge_updates": []
   },
   "service_epoch_context": [],
   "lockdown_activated": false

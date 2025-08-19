@@ -1,15 +1,15 @@
 {
   "epoch_number": 1,
-  "start_time": 1755094604.7003062,
-  "end_time": 1755094700.3895946,
+  "start_time": 1755602136.3621342,
+  "end_time": 1755602233.442156,
   "phase_timings": {
-    "initialization": 1755094604.7003374,
-    "attack_execution": 1755094604.7231605,
-    "monitoring_accumulation": 1755094616.7532678,
-    "agent_analysis": 1755094666.7556663,
-    "firewall_update_wait": 1755094698.3697252,
-    "metrics_collection": 1755094700.3706696,
-    "epoch_complete": 1755094700.3888707
+    "initialization": 1755602136.3621604,
+    "attack_execution": 1755602136.3800595,
+    "monitoring_accumulation": 1755602143.1747227,
+    "agent_analysis": 1755602193.1766777,
+    "firewall_update_wait": 1755602231.423954,
+    "metrics_collection": 1755602233.4257057,
+    "epoch_complete": 1755602233.441337
   },
   "services_detected": [],
   "services_successfully_exploited": [],
@@ -39,8 +39,7 @@
       "level_new": 0,
       "changed": false,
       "evidence_quotes": [
-        "Honeypot Engagement: No evidence found.",
-        "Compromise Indicators: No evidence found."
+        "No evidence found."
       ]
     },
     {
@@ -50,8 +49,7 @@
       "level_new": 0,
       "changed": false,
       "evidence_quotes": [
-        "Honeypot Engagement: No evidence found.",
-        "Compromise Indicators: No evidence found."
+        "No evidence found."
       ]
     },
     {
@@ -61,8 +59,7 @@
       "level_new": 0,
       "changed": false,
       "evidence_quotes": [
-        "Honeypot Engagement: No evidence found.",
-        "Compromise Indicators: No evidence found."
+        "No evidence found."
       ]
     },
     {
@@ -72,8 +69,7 @@
       "level_new": 0,
       "changed": false,
       "evidence_quotes": [
-        "Honeypot Engagement: No evidence found.",
-        "Compromise Indicators: No evidence found."
+        "No evidence found."
       ]
     }
   ],

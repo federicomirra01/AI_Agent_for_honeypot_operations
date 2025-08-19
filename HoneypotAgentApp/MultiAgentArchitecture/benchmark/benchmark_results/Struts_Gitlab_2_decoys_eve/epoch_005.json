@@ -1,34 +1,30 @@
 {
   "epoch_number": 5,
-  "start_time": 1755095000.54966,
-  "end_time": 1755095095.7845054,
+  "start_time": 1755602581.1475484,
+  "end_time": 1755602702.1010191,
   "phase_timings": {
-    "initialization": 1755095000.5496714,
-    "attack_execution": 1755095000.567035,
-    "monitoring_accumulation": 1755095007.3762383,
-    "agent_analysis": 1755095057.377984,
-    "firewall_update_wait": 1755095093.7522552,
-    "metrics_collection": 1755095095.7537189,
-    "epoch_complete": 1755095095.7836175
+    "initialization": 1755602581.147575,
+    "attack_execution": 1755602581.1649795,
+    "monitoring_accumulation": 1755602586.3090508,
+    "agent_analysis": 1755602636.310045,
+    "firewall_update_wait": 1755602700.085606,
+    "metrics_collection": 1755602702.0869296,
+    "epoch_complete": 1755602702.1000688
   },
-  "services_detected": [],
+  "services_detected": [
+    "UNKNOWN(172.20.0.4:61616)",
+    "PATROL-SNMP(172.20.0.4:8161)"
+  ],
   "services_successfully_exploited": [],
   "exploits_attempted": [],
   "flags_captured": [],
   "attack_success_rate": 0.0,
-  "firewall_rules_added": [
-    {
-      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.4 (tcp)"
-    },
-    {
-      "rules_added_current_epoch": "ALLOW 172.20.0.4 -> 192.168.100.0/24 (tcp)"
-    }
-  ],
+  "firewall_rules_added": [],
   "firewall_rules_removed": [],
   "honeypots_exposed": {
     "ip": "172.20.0.4",
     "service": "cve-2015-5254-activemq-1",
-    "current_level": 0,
+    "current_level": 33,
     "epoch": 5
   },
   "honeypots_exploitation": [
@@ -39,22 +35,21 @@
       "level_new": 33,
       "changed": false,
       "evidence_quotes": [
-        "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-        "POSSBL PORT SCAN (NMAP -sS): 4",
-        "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-        "ET INFO POSSIBLE Web Crawl using Curl [Command: curl GET /showcase]: 1"
+        "No evidence found."
       ]
     },
     {
       "ip": "172.20.0.4",
       "service": "cve-2015-5254-activemq-1",
-      "level_prev": 0,
-      "level_new": 0,
+      "level_prev": 33,
+      "level_new": 33,
       "changed": false,
       "evidence_quotes": [
-        "Targeted Services: No evidence found.",
-        "Honeypot Engagement: No evidence found.",
-        "Compromise Indicators: No evidence found."
+        "SURICATA Applayer Detect protocol only one direction: 20",
+        "ET INFO POSSIBLE Web Crawl using Curl: 1 (key: GET /showcase)",
+        "ET SCAN Suspicious inbound to MySQL port 3306: 1",
+        "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
+        "POSSBL PORT SCAN (NMAP -sS): 3"
       ]
     },
     {
@@ -64,9 +59,7 @@
       "level_new": 0,
       "changed": false,
       "evidence_quotes": [
-        "Targeted Services: No evidence found.",
-        "Honeypot Engagement: No evidence found.",
-        "Compromise Indicators: No evidence found."
+        "No evidence found."
       ]
     },
     {
@@ -76,9 +69,7 @@
       "level_new": 0,
       "changed": false,
       "evidence_quotes": [
-        "Targeted Services: No evidence found.",
-        "Honeypot Engagement: No evidence found.",
-        "Compromise Indicators: No evidence found."
+        "No evidence found."
       ]
     }
   ],
@@ -86,10 +77,52 @@
     "interesting": [],
     "edges": [
       {
-        "from": "192.168.100.2",
+        "from": "attacker",
         "to": "172.20.0.5",
+        "edge_id": "8ee70111e82308cd",
         "vector": "scan",
-        "confidence": 0.33
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET SCAN Suspicious inbound to mySQL port 3306",
+              "ET SCAN Suspicious inbound to MSSQL port 1433",
+              "POSSBL PORT SCAN (NMAP -sS): 2 (on ports 3306 and 51820)",
+              "ET INFO POSSIBLE Web Crawl using Curl"
+            ],
+            "seen_in_epoch": 1,
+            "first_seen": 1,
+            "last_seen": 1
+          }
+        ],
+        "current_phase": "scan",
+        "confidence": 1.0
+      },
+      {
+        "from": "attacker",
+        "to": "172.20.0.4",
+        "edge_id": "7c4502e6c8d9a037",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "TCP/3306 (MySQL): port scan detected",
+              "TCP/1433 (MSSQL): port scan detected",
+              "TCP/27017 (MongoDB): port scan detected",
+              "TCP/139: NMAP scan detected",
+              "TCP/8161: HTTP GET crawl attempt with curl (\"GET /showcase\")",
+              "TCP/61616: Multiple probing attempts, Suricata signature indicates protocol detection attempts from one direction (application protocol probing)"
+            ],
+            "seen_in_epoch": 2,
+            "first_seen": 2,
+            "last_seen": 2
+          }
+        ],
+        "current_phase": "scan",
+        "confidence": 1.0
       }
     ]
   },

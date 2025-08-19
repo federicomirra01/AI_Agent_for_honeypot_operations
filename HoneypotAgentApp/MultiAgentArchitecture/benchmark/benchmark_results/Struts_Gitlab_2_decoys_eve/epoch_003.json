@@ -1,15 +1,15 @@
 {
   "epoch_number": 3,
-  "start_time": 1755094796.8046825,
-  "end_time": 1755094900.9746675,
+  "start_time": 1755602338.2505655,
+  "end_time": 1755602457.1299002,
   "phase_timings": {
-    "initialization": 1755094796.8046925,
-    "attack_execution": 1755094796.8148124,
-    "monitoring_accumulation": 1755094806.63836,
-    "agent_analysis": 1755094856.6394224,
-    "firewall_update_wait": 1755094898.957498,
-    "metrics_collection": 1755094900.9586585,
-    "epoch_complete": 1755094900.9738448
+    "initialization": 1755602338.2505825,
+    "attack_execution": 1755602338.267408,
+    "monitoring_accumulation": 1755602343.029326,
+    "agent_analysis": 1755602393.0307715,
+    "firewall_update_wait": 1755602455.1127107,
+    "metrics_collection": 1755602457.114199,
+    "epoch_complete": 1755602457.1288652
   },
   "services_detected": [
     "HTTP(172.20.0.5:80)"
@@ -18,12 +18,26 @@
   "exploits_attempted": [],
   "flags_captured": [],
   "attack_success_rate": 0.0,
-  "firewall_rules_added": [],
-  "firewall_rules_removed": [],
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.4 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.4 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5"
+      ]
+    }
+  ],
   "honeypots_exposed": {
-    "ip": "172.20.0.5",
-    "service": "cve-2014-6271-web-1",
-    "current_level": 33,
+    "ip": "172.20.0.4",
+    "service": "cve-2015-5254-activemq-1",
+    "current_level": 0,
     "epoch": 3
   },
   "honeypots_exploitation": [
@@ -34,10 +48,10 @@
       "level_new": 33,
       "changed": false,
       "evidence_quotes": [
-        "POSSBL PORT SCAN (NMAP -sS): 4",
-        "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-        "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-        "ET INFO POSSIBLE Web Crawl using Curl [Command: curl GET /showcase]: 1"
+        "POSSBL PORT SCAN (NMAP -sS): 3 events",
+        "ET SCAN Suspicious inbound to mySQL port 3306: 1 event",
+        "ET SCAN Suspicious inbound to MSSQL port 1433: 1 event",
+        "ET INFO POSSIBLE Web Crawl using Curl: 1 event (Key command: GET /showcase)"
       ]
     },
     {
@@ -47,9 +61,7 @@
       "level_new": 0,
       "changed": false,
       "evidence_quotes": [
-        "Targeted Services: No evidence found.",
-        "Honeypot Engagement: No evidence found.",
-        "Compromise Indicators: No evidence found."
+        "No evidence found."
       ]
     },
     {
@@ -59,9 +71,7 @@
       "level_new": 0,
       "changed": false,
       "evidence_quotes": [
-        "Targeted Services: No evidence found.",
-        "Honeypot Engagement: No evidence found.",
-        "Compromise Indicators: No evidence found."
+        "No evidence found."
       ]
     },
     {
@@ -71,9 +81,7 @@
       "level_new": 0,
       "changed": false,
       "evidence_quotes": [
-        "Targeted Services: No evidence found.",
-        "Honeypot Engagement: No evidence found.",
-        "Compromise Indicators: No evidence found."
+        "No evidence found."
       ]
     }
   ],
@@ -81,25 +89,27 @@
     "interesting": [],
     "edges": [
       {
-        "from": "192.168.100.2",
+        "from": "attacker",
         "to": "172.20.0.5",
-        "edge_id": "7e831a9c3f30",
+        "edge_id": "8ee70111e82308cd",
+        "vector": "scan",
         "phases": [
           {
             "phase": "scan",
-            "current_phase": "scan",
+            "confidence": 1.0,
             "evidence_quotes": [
-              "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-              "POSSBL PORT SCAN (NMAP -sS): 2 (on ports 3306, 11211)",
-              "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-              "ET INFO POSSIBLE Web Crawl using Curl: 1 (key command: GET /showcase)"
+              "ET SCAN Suspicious inbound to mySQL port 3306",
+              "ET SCAN Suspicious inbound to MSSQL port 1433",
+              "POSSBL PORT SCAN (NMAP -sS): 2 (on ports 3306 and 51820)",
+              "ET INFO POSSIBLE Web Crawl using Curl"
             ],
             "seen_in_epoch": 1,
             "first_seen": 1,
-            "last_seen": 1,
-            "confidence": 0.33
+            "last_seen": 1
           }
-        ]
+        ],
+        "current_phase": "scan",
+        "confidence": 1.0
       }
     ]
   },
