@@ -18,22 +18,22 @@
     "save_detailed_logs": true,
     "log_level": "INFO"
   },
-  "start_time": 1755610050.5021179,
-  "end_time": 1755611938.3424902,
-  "total_epochs": 10,
+  "start_time": 1755873911.3294613,
+  "end_time": 1755875750.3728986,
+  "total_epochs": 11,
   "epochs": [
     {
       "epoch_number": 1,
-      "start_time": 1755610050.5021179,
-      "end_time": 1755610154.1691236,
+      "start_time": 1755873911.3294613,
+      "end_time": 1755874042.8169913,
       "phase_timings": {
-        "initialization": 1755610050.5021348,
-        "attack_execution": 1755610050.5181475,
-        "monitoring_accumulation": 1755610057.40705,
-        "agent_analysis": 1755610107.4087348,
-        "firewall_update_wait": 1755610152.151792,
-        "metrics_collection": 1755610154.152965,
-        "epoch_complete": 1755610154.1681058
+        "initialization": 1755873911.329476,
+        "attack_execution": 1755873911.3448644,
+        "monitoring_accumulation": 1755873918.1652048,
+        "agent_analysis": 1755873968.1660597,
+        "firewall_update_wait": 1755874040.7964175,
+        "metrics_collection": 1755874042.7976198,
+        "epoch_complete": 1755874042.816176
       },
       "services_detected": [],
       "services_successfully_exploited": [],
@@ -52,7 +52,7 @@
       "honeypots_exposed": {
         "ip": "172.20.0.5",
         "service": "cve-2014-6271-web-1",
-        "current_level": 0,
+        "current_level": 33,
         "epoch": 1
       },
       "honeypots_exploitation": [
@@ -60,63 +60,187 @@
           "ip": "172.20.0.5",
           "service": "cve-2014-6271-web-1",
           "level_prev": 0,
-          "level_new": 0,
-          "changed": false,
+          "level_new": 33,
+          "changed": true,
           "evidence_quotes": [
-            "No evidence found."
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to mySQL port 3306"
           ]
         },
         {
           "ip": "172.20.0.4",
           "service": "cve-2015-5254-activemq-1",
           "level_prev": 0,
-          "level_new": 0,
-          "changed": false,
+          "level_new": 33,
+          "changed": true,
           "evidence_quotes": [
-            "No evidence found."
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to MSSQL port 1433"
           ]
         },
         {
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
           "level_prev": 0,
-          "level_new": 0,
-          "changed": false,
+          "level_new": 33,
+          "changed": true,
           "evidence_quotes": [
-            "No evidence found."
+            "ET SCAN Suspicious inbound to mySQL port 3306",
+            "ET SCAN Suspicious inbound to MSSQL port 1433",
+            "POSSBL PORT SCAN (NMAP -sS)"
           ]
         },
         {
           "ip": "172.20.0.3",
           "service": "s2-057-struts2-1",
           "level_prev": 0,
-          "level_new": 0,
-          "changed": false,
+          "level_new": 33,
+          "changed": true,
           "evidence_quotes": [
-            "No evidence found."
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to mySQL port 3306",
+            "ET SCAN Suspicious inbound to MSSQL port 1433",
+            "Potential SSH Scan"
           ]
         }
       ],
       "inferred_attack_graph": {
         "interesting": [],
-        "edges": [],
-        "edge_updates": []
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "3127cafe50c2",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "b29e16b1f858",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "b3c7251fb993",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "c65c49d61ebf",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "Potential SSH Scan"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan",
+            "confidence": 1.0
+          }
+        ],
+        "edge_updates": [
+          {
+            "edge_id": "3127cafe50c2",
+            "added_phases": [
+              "scan"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "edge_id": "b29e16b1f858",
+            "added_phases": [
+              "scan"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "edge_id": "b3c7251fb993",
+            "added_phases": [
+              "scan"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "edge_id": "c65c49d61ebf",
+            "added_phases": [
+              "scan"
+            ],
+            "seen_in_epoch": 1
+          }
+        ]
       },
       "service_epoch_context": [],
       "lockdown_activated": false
     },
     {
       "epoch_number": 2,
-      "start_time": 1755610155.1730042,
-      "end_time": 1755610267.9260533,
+      "start_time": 1755874043.8225424,
+      "end_time": 1755874183.9708338,
       "phase_timings": {
-        "initialization": 1755610155.1730146,
-        "attack_execution": 1755610155.186538,
-        "monitoring_accumulation": 1755610159.9851196,
-        "agent_analysis": 1755610209.9861343,
-        "firewall_update_wait": 1755610265.906322,
-        "metrics_collection": 1755610267.9079285,
-        "epoch_complete": 1755610267.9250834
+        "initialization": 1755874043.8225586,
+        "attack_execution": 1755874043.837627,
+        "monitoring_accumulation": 1755874048.7005374,
+        "agent_analysis": 1755874098.7019155,
+        "firewall_update_wait": 1755874181.942543,
+        "metrics_collection": 1755874183.9444637,
+        "epoch_complete": 1755874183.9699457
       },
       "services_detected": [
         "HTTP(172.20.0.5:80)"
@@ -130,10 +254,19 @@
           "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.4 (tcp)"
         },
         {
+          "rules_added_current_epoch": "ALLOW 172.20.0.4 -> 192.168.100.0/24 (tcp)"
+        },
+        {
           "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.10 (tcp)"
         },
         {
+          "rules_added_current_epoch": "ALLOW 172.20.0.10 -> 192.168.100.0/24 (tcp)"
+        },
+        {
           "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.3 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
         }
       ],
       "firewall_rules_removed": [],
@@ -147,44 +280,48 @@
         {
           "ip": "172.20.0.5",
           "service": "cve-2014-6271-web-1",
-          "level_prev": 0,
+          "level_prev": 33,
           "level_new": 33,
-          "changed": true,
+          "changed": false,
           "evidence_quotes": [
-            "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-            "POSSBL PORT SCAN (NMAP -sS): 2",
-            "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-            "ET INFO POSSIBLE Web Crawl using Curl: 1"
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to mySQL port 3306"
           ]
         },
         {
           "ip": "172.20.0.4",
           "service": "cve-2015-5254-activemq-1",
-          "level_prev": 0,
-          "level_new": 0,
+          "level_prev": 33,
+          "level_new": 33,
           "changed": false,
           "evidence_quotes": [
-            "No evidence found."
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to MSSQL port 1433"
           ]
         },
         {
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 0,
-          "level_new": 0,
+          "level_prev": 33,
+          "level_new": 33,
           "changed": false,
           "evidence_quotes": [
-            "No evidence found."
+            "ET SCAN Suspicious inbound to mySQL port 3306",
+            "ET SCAN Suspicious inbound to MSSQL port 1433",
+            "POSSBL PORT SCAN (NMAP -sS)"
           ]
         },
         {
           "ip": "172.20.0.3",
           "service": "s2-057-struts2-1",
-          "level_prev": 0,
-          "level_new": 0,
+          "level_prev": 33,
+          "level_new": 33,
           "changed": false,
           "evidence_quotes": [
-            "No evidence found."
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to mySQL port 3306",
+            "ET SCAN Suspicious inbound to MSSQL port 1433",
+            "Potential SSH Scan"
           ]
         }
       ],
@@ -192,78 +329,135 @@
         "interesting": [],
         "edges": [
           {
-            "from": "attacker",
+            "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "e2f2449ff2e3",
+            "edge_id": "3127cafe50c2",
             "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1"
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
                 ],
-                "seen_in_epoch": 1,
-                "first_seen": 1,
-                "last_seen": 1
+                "seen_in_epoch": 1
               }
             ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "b29e16b1f858",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "b3c7251fb993",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "c65c49d61ebf",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "Potential SSH Scan"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
             "current_phase": "scan",
             "confidence": 1.0
           }
         ],
-        "edge_updates": [
-          {
-            "from": "attacker",
-            "to": "172.20.0.5",
-            "edge_id": "e2f2449ff2e3",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1"
-                ],
-                "seen_in_epoch": 1,
-                "first_seen": 1,
-                "last_seen": 1
-              }
-            ],
-            "current_phase": "scan",
-            "confidence": 1.0
-          }
-        ]
+        "edge_updates": []
       },
       "service_epoch_context": [],
       "lockdown_activated": false
     },
     {
       "epoch_number": 3,
-      "start_time": 1755610268.931219,
-      "end_time": 1755610553.173863,
+      "start_time": 1755874184.9756594,
+      "end_time": 1755874341.973093,
       "phase_timings": {
-        "initialization": 1755610268.931236,
-        "attack_execution": 1755610268.9448652,
-        "monitoring_accumulation": 1755610429.0099435,
-        "agent_analysis": 1755610479.0117688,
-        "firewall_update_wait": 1755610551.1559074,
-        "metrics_collection": 1755610553.1575327,
-        "epoch_complete": 1755610553.173068
+        "initialization": 1755874184.975674,
+        "attack_execution": 1755874184.9908352,
+        "monitoring_accumulation": 1755874198.2248287,
+        "agent_analysis": 1755874248.225664,
+        "firewall_update_wait": 1755874339.9541774,
+        "metrics_collection": 1755874341.9558387,
+        "epoch_complete": 1755874341.9721096
       },
-      "services_detected": [],
+      "services_detected": [
+        "UNKNOWN(172.20.0.4:61616)",
+        "HTTP(172.20.0.10:80)",
+        "HTTP-PROXY(172.20.0.3:8080)",
+        "HTTP(172.20.0.5:80)",
+        "PATROL-SNMP(172.20.0.4:8161)"
+      ],
       "services_successfully_exploited": [],
       "exploits_attempted": [],
       "flags_captured": [],
       "attack_success_rate": 0.0,
       "firewall_rules_added": [],
-      "firewall_rules_removed": [],
+      "firewall_rules_removed": [
+        {
+          "rules_removed_current_epoch": [
+            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.3           192.168.100.0/24",
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3",
+            "REMOVED rule #3:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
+            "REMOVED rule #4:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10",
+            "REMOVED rule #5:    ACCEPT     tcp  --  172.20.0.4           192.168.100.0/24",
+            "REMOVED rule #6:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4"
+          ]
+        }
+      ],
       "honeypots_exposed": {
         "ip": "172.20.0.5",
         "service": "cve-2014-6271-web-1",
@@ -278,42 +472,43 @@
           "level_new": 33,
           "changed": false,
           "evidence_quotes": [
-            "No evidence found."
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to mySQL port 3306"
           ]
         },
         {
           "ip": "172.20.0.4",
           "service": "cve-2015-5254-activemq-1",
-          "level_prev": 0,
-          "level_new": 0,
+          "level_prev": 33,
+          "level_new": 33,
           "changed": false,
           "evidence_quotes": [
-            "No evidence found."
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to MSSQL port 1433"
           ]
         },
         {
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 0,
-          "level_new": 0,
-          "changed": false,
+          "level_prev": 33,
+          "level_new": 66,
+          "changed": true,
           "evidence_quotes": [
-            "No evidence found."
+            "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
           ]
         },
         {
           "ip": "172.20.0.3",
           "service": "s2-057-struts2-1",
-          "level_prev": 0,
+          "level_prev": 33,
           "level_new": 66,
           "changed": true,
           "evidence_quotes": [
-            "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-            "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-            "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-            "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-            "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2",
-            "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
+            "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+            "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+            "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+            "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+            "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
           ]
         }
       ],
@@ -323,101 +518,136 @@
             "ip": "172.20.0.3",
             "service": "s2-057-struts2-1",
             "confidence": 1.0
+          },
+          {
+            "ip": "172.20.0.10",
+            "service": "cve-2021-22205-gitlab-1-proxy",
+            "confidence": 1.0
           }
         ],
         "edges": [
           {
-            "from": "attacker",
+            "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "e2f2449ff2e3",
+            "edge_id": "3127cafe50c2",
             "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1"
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
                 ],
-                "seen_in_epoch": 1,
-                "first_seen": 1,
-                "last_seen": 1
+                "seen_in_epoch": 2
               }
             ],
+            "first_seen": 1,
+            "last_seen": 2,
             "current_phase": "scan",
             "confidence": 1.0
           },
           {
-            "from": "attacker",
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "b29e16b1f858",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "b3c7251fb993",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)"
+                ],
+                "seen_in_epoch": 2
+              },
+              {
+                "phase": "initial-access/rce",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
             "to": "172.20.0.3",
-            "edge_id": "1e0b9d3873e5",
+            "edge_id": "c65c49d61ebf",
             "vector": "initial-access/rce",
             "phases": [
               {
                 "phase": "scan",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "Potential SSH Scan"
                 ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
+                "seen_in_epoch": 2
               },
               {
                 "phase": "initial-access/rce",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
+                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
                 ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
+                "seen_in_epoch": 2
               }
             ],
+            "first_seen": 1,
+            "last_seen": 2,
             "current_phase": "initial-access/rce",
             "confidence": 1.0
           }
         ],
         "edge_updates": [
           {
-            "from": "attacker",
-            "to": "172.20.0.3",
-            "edge_id": "1e0b9d3873e5",
-            "vector": "initial-access/rce",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
-                ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
-              },
-              {
-                "phase": "initial-access/rce",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
-                ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
-              }
+            "edge_id": "b3c7251fb993",
+            "added_phases": [
+              "initial-access/rce"
             ],
-            "current_phase": "initial-access/rce",
-            "confidence": 1.0
+            "seen_in_epoch": 2
+          },
+          {
+            "edge_id": "c65c49d61ebf",
+            "added_phases": [
+              "initial-access/rce"
+            ],
+            "seen_in_epoch": 2
           }
         ]
       },
@@ -426,739 +656,25 @@
     },
     {
       "epoch_number": 4,
-      "start_time": 1755610554.1781926,
-      "end_time": 1755610848.1632814,
+      "start_time": 1755874342.9848323,
+      "end_time": 1755874478.924078,
       "phase_timings": {
-        "initialization": 1755610554.1782105,
-        "attack_execution": 1755610554.1916273,
-        "monitoring_accumulation": 1755610697.9697104,
-        "agent_analysis": 1755610747.9707336,
-        "firewall_update_wait": 1755610846.144103,
-        "metrics_collection": 1755610848.1454499,
-        "epoch_complete": 1755610848.1623852
+        "initialization": 1755874342.9848492,
+        "attack_execution": 1755874343.0026283,
+        "monitoring_accumulation": 1755874347.8618166,
+        "agent_analysis": 1755874397.8629646,
+        "firewall_update_wait": 1755874476.902731,
+        "metrics_collection": 1755874478.9044766,
+        "epoch_complete": 1755874478.9232357
       },
       "services_detected": [
-        "HTTP(172.20.0.10:80)",
-        "PATROL-SNMP(172.20.0.4:8161)",
-        "HTTP-PROXY(172.20.0.3:8080)",
-        "UNKNOWN(172.20.0.4:61616)",
         "HTTP(172.20.0.5:80)"
       ],
       "services_successfully_exploited": [],
       "exploits_attempted": [],
       "flags_captured": [],
       "attack_success_rate": 0.0,
-      "firewall_rules_added": [],
-      "firewall_rules_removed": [
-        {
-          "rules_removed_current_epoch": [
-            "REMOVED rule #4:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
-            "REMOVED rule #5:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5"
-          ]
-        }
-      ],
-      "honeypots_exposed": {
-        "ip": "172.20.0.4",
-        "service": "cve-2015-5254-activemq-1",
-        "current_level": 0,
-        "epoch": 4
-      },
-      "honeypots_exploitation": [
-        {
-          "ip": "172.20.0.5",
-          "service": "cve-2014-6271-web-1",
-          "level_prev": 33,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": [
-            "No evidence found."
-          ]
-        },
-        {
-          "ip": "172.20.0.4",
-          "service": "cve-2015-5254-activemq-1",
-          "level_prev": 0,
-          "level_new": 0,
-          "changed": false,
-          "evidence_quotes": [
-            "No evidence found."
-          ]
-        },
-        {
-          "ip": "172.20.0.10",
-          "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 0,
-          "level_new": 0,
-          "changed": false,
-          "evidence_quotes": [
-            "No evidence found."
-          ]
-        },
-        {
-          "ip": "172.20.0.3",
-          "service": "s2-057-struts2-1",
-          "level_prev": 66,
-          "level_new": 66,
-          "changed": false,
-          "evidence_quotes": [
-            "Targeted Services: Web service on port 8080 (all alerts involved this port)",
-            "Honeypot Engagement: Attack patterns suggest automated exploitation attempts; no clear evidence of post-exploit interaction",
-            "Compromise Indicators: ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-            "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-            "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-            "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-            "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2",
-            "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
-          ]
-        }
-      ],
-      "inferred_attack_graph": {
-        "interesting": [
-          {
-            "ip": "172.20.0.3",
-            "service": "s2-057-struts2-1",
-            "confidence": 1.0
-          }
-        ],
-        "edges": [
-          {
-            "from": "attacker",
-            "to": "172.20.0.5",
-            "edge_id": "e2f2449ff2e3",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1"
-                ],
-                "seen_in_epoch": 1,
-                "first_seen": 1,
-                "last_seen": 1
-              }
-            ],
-            "current_phase": "scan",
-            "confidence": 1.0
-          },
-          {
-            "from": "attacker",
-            "to": "172.20.0.3",
-            "edge_id": "1e0b9d3873e5",
-            "vector": "initial-access/rce",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
-                ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
-              },
-              {
-                "phase": "initial-access/rce",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
-                ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
-              }
-            ],
-            "current_phase": "initial-access/rce",
-            "confidence": 1.0
-          }
-        ],
-        "edge_updates": []
-      },
-      "service_epoch_context": [],
-      "lockdown_activated": false
-    },
-    {
-      "epoch_number": 5,
-      "start_time": 1755610849.1672044,
-      "end_time": 1755611138.4480717,
-      "phase_timings": {
-        "initialization": 1755610849.1672144,
-        "attack_execution": 1755610849.1837733,
-        "monitoring_accumulation": 1755611009.2436962,
-        "agent_analysis": 1755611059.2450051,
-        "firewall_update_wait": 1755611136.431594,
-        "metrics_collection": 1755611138.433639,
-        "epoch_complete": 1755611138.447121
-      },
-      "services_detected": [],
-      "services_successfully_exploited": [],
-      "exploits_attempted": [],
-      "flags_captured": [],
-      "attack_success_rate": 0.0,
-      "firewall_rules_added": [],
-      "firewall_rules_removed": [
-        {
-          "rules_removed_current_epoch": [
-            "REMOVED rule #1:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3",
-            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10"
-          ]
-        }
-      ],
-      "honeypots_exposed": {
-        "ip": "172.20.0.4",
-        "service": "cve-2015-5254-activemq-1",
-        "current_level": 0,
-        "epoch": 5
-      },
-      "honeypots_exploitation": [
-        {
-          "ip": "172.20.0.5",
-          "service": "cve-2014-6271-web-1",
-          "level_prev": 33,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": [
-            "No evidence found."
-          ]
-        },
-        {
-          "ip": "172.20.0.4",
-          "service": "cve-2015-5254-activemq-1",
-          "level_prev": 0,
-          "level_new": 0,
-          "changed": false,
-          "evidence_quotes": [
-            "No evidence found."
-          ]
-        },
-        {
-          "ip": "172.20.0.10",
-          "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 0,
-          "level_new": 0,
-          "changed": false,
-          "evidence_quotes": [
-            "No evidence found."
-          ]
-        },
-        {
-          "ip": "172.20.0.3",
-          "service": "s2-057-struts2-1",
-          "level_prev": 66,
-          "level_new": 66,
-          "changed": false,
-          "evidence_quotes": [
-            "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-            "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-            "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-            "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-            "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2",
-            "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
-          ]
-        }
-      ],
-      "inferred_attack_graph": {
-        "interesting": [
-          {
-            "ip": "172.20.0.3",
-            "service": "s2-057-struts2-1",
-            "confidence": 1.0
-          }
-        ],
-        "edges": [
-          {
-            "from": "attacker",
-            "to": "172.20.0.5",
-            "edge_id": "e2f2449ff2e3",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1"
-                ],
-                "seen_in_epoch": 1,
-                "first_seen": 1,
-                "last_seen": 1
-              }
-            ],
-            "current_phase": "scan",
-            "confidence": 1.0
-          },
-          {
-            "from": "attacker",
-            "to": "172.20.0.3",
-            "edge_id": "1e0b9d3873e5",
-            "vector": "initial-access/rce",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
-                ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
-              },
-              {
-                "phase": "initial-access/rce",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
-                ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
-              }
-            ],
-            "current_phase": "initial-access/rce",
-            "confidence": 1.0
-          }
-        ],
-        "edge_updates": []
-      },
-      "service_epoch_context": [],
-      "lockdown_activated": false
-    },
-    {
-      "epoch_number": 6,
-      "start_time": 1755611139.4531317,
-      "end_time": 1755611268.851339,
-      "phase_timings": {
-        "initialization": 1755611139.4531434,
-        "attack_execution": 1755611139.4676366,
-        "monitoring_accumulation": 1755611144.5646033,
-        "agent_analysis": 1755611194.5652454,
-        "firewall_update_wait": 1755611266.8336747,
-        "metrics_collection": 1755611268.8348358,
-        "epoch_complete": 1755611268.8504202
-      },
-      "services_detected": [
-        "PATROL-SNMP(172.20.0.4:8161)",
-        "UNKNOWN(172.20.0.4:61616)"
-      ],
-      "services_successfully_exploited": [],
-      "exploits_attempted": [],
-      "flags_captured": [],
-      "attack_success_rate": 0.0,
-      "firewall_rules_added": [],
-      "firewall_rules_removed": [],
-      "honeypots_exposed": {
-        "ip": "172.20.0.4",
-        "service": "cve-2015-5254-activemq-1",
-        "current_level": 33,
-        "epoch": 6
-      },
-      "honeypots_exploitation": [
-        {
-          "ip": "172.20.0.5",
-          "service": "cve-2014-6271-web-1",
-          "level_prev": 33,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": [
-            "No evidence found."
-          ]
-        },
-        {
-          "ip": "172.20.0.4",
-          "service": "cve-2015-5254-activemq-1",
-          "level_prev": 0,
-          "level_new": 33,
-          "changed": true,
-          "evidence_quotes": [
-            "Multiple unique signatures and protocol detection events suggest active probing and interaction attempts",
-            "ET SCAN Suspicious inbound to mySQL port 3306: 2",
-            "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-            "POSSBL PORT SCAN (NMAP -sS): 2",
-            "ET INFO POSSIBLE Web Crawl using Curl: 1",
-            "SURICATA Applayer Detect protocol only one direction: 22"
-          ]
-        },
-        {
-          "ip": "172.20.0.10",
-          "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 0,
-          "level_new": 0,
-          "changed": false,
-          "evidence_quotes": [
-            "No evidence found."
-          ]
-        },
-        {
-          "ip": "172.20.0.3",
-          "service": "s2-057-struts2-1",
-          "level_prev": 66,
-          "level_new": 66,
-          "changed": false,
-          "evidence_quotes": [
-            "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-            "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-            "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-            "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-            "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2",
-            "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
-          ]
-        }
-      ],
-      "inferred_attack_graph": {
-        "interesting": [
-          {
-            "ip": "172.20.0.3",
-            "service": "s2-057-struts2-1",
-            "confidence": 1.0
-          }
-        ],
-        "edges": [
-          {
-            "from": "attacker",
-            "to": "172.20.0.5",
-            "edge_id": "e2f2449ff2e3",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1"
-                ],
-                "seen_in_epoch": 1,
-                "first_seen": 1,
-                "last_seen": 1
-              }
-            ],
-            "current_phase": "scan",
-            "confidence": 1.0
-          },
-          {
-            "from": "attacker",
-            "to": "172.20.0.3",
-            "edge_id": "1e0b9d3873e5",
-            "vector": "initial-access/rce",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
-                ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
-              },
-              {
-                "phase": "initial-access/rce",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
-                ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
-              }
-            ],
-            "current_phase": "initial-access/rce",
-            "confidence": 1.0
-          },
-          {
-            "from": "attacker",
-            "to": "172.20.0.4",
-            "edge_id": "af519bf54db6",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "Multiple unique signatures and protocol detection events suggest active probing and interaction attempts",
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1",
-                  "SURICATA Applayer Detect protocol only one direction: 22"
-                ],
-                "seen_in_epoch": 3,
-                "first_seen": 3,
-                "last_seen": 3
-              }
-            ],
-            "current_phase": "scan",
-            "confidence": 1.0
-          }
-        ],
-        "edge_updates": [
-          {
-            "from": "attacker",
-            "to": "172.20.0.4",
-            "edge_id": "af519bf54db6",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "Multiple unique signatures and protocol detection events suggest active probing and interaction attempts",
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1",
-                  "SURICATA Applayer Detect protocol only one direction: 22"
-                ],
-                "seen_in_epoch": 3,
-                "first_seen": 3,
-                "last_seen": 3
-              }
-            ],
-            "current_phase": "scan",
-            "confidence": 1.0
-          }
-        ]
-      },
-      "service_epoch_context": [],
-      "lockdown_activated": false
-    },
-    {
-      "epoch_number": 7,
-      "start_time": 1755611269.8559587,
-      "end_time": 1755611414.1084554,
-      "phase_timings": {
-        "initialization": 1755611269.8559709,
-        "attack_execution": 1755611269.8709126,
-        "monitoring_accumulation": 1755611274.9716706,
-        "agent_analysis": 1755611324.973119,
-        "firewall_update_wait": 1755611412.0915353,
-        "metrics_collection": 1755611414.0929685,
-        "epoch_complete": 1755611414.1075597
-      },
-      "services_detected": [
-        "PATROL-SNMP(172.20.0.4:8161)",
-        "UNKNOWN(172.20.0.4:61616)"
-      ],
-      "services_successfully_exploited": [],
-      "exploits_attempted": [],
-      "flags_captured": [],
-      "attack_success_rate": 0.0,
       "firewall_rules_added": [
-        {
-          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.10 (tcp)"
-        },
-        {
-          "rules_added_current_epoch": "ALLOW 172.20.0.10 -> 192.168.100.0/24 (tcp)"
-        }
-      ],
-      "firewall_rules_removed": [
-        {
-          "rules_removed_current_epoch": [
-            "REMOVED rule #1:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4"
-          ]
-        }
-      ],
-      "honeypots_exposed": {
-        "ip": "172.20.0.10",
-        "service": "cve-2021-22205-gitlab-1-proxy",
-        "current_level": 0,
-        "epoch": 7
-      },
-      "honeypots_exploitation": [
-        {
-          "ip": "172.20.0.5",
-          "service": "cve-2014-6271-web-1",
-          "level_prev": 33,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": [
-            "No evidence found."
-          ]
-        },
-        {
-          "ip": "172.20.0.4",
-          "service": "cve-2015-5254-activemq-1",
-          "level_prev": 33,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": [
-            "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-            "POSSBL PORT SCAN (NMAP -sS): 3",
-            "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-            "ET INFO POSSIBLE Web Crawl using Curl: 1",
-            "SURICATA Applayer Detect protocol only one direction: 20"
-          ]
-        },
-        {
-          "ip": "172.20.0.10",
-          "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 0,
-          "level_new": 0,
-          "changed": false,
-          "evidence_quotes": [
-            "No evidence found."
-          ]
-        },
-        {
-          "ip": "172.20.0.3",
-          "service": "s2-057-struts2-1",
-          "level_prev": 66,
-          "level_new": 66,
-          "changed": false,
-          "evidence_quotes": [
-            "No new exploitation or escalation events; prior OGNL exploit evidence holds."
-          ]
-        }
-      ],
-      "inferred_attack_graph": {
-        "interesting": [
-          {
-            "ip": "172.20.0.3",
-            "service": "s2-057-struts2-1",
-            "confidence": 1.0
-          }
-        ],
-        "edges": [
-          {
-            "from": "attacker",
-            "to": "172.20.0.5",
-            "edge_id": "e2f2449ff2e3",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1"
-                ],
-                "seen_in_epoch": 1,
-                "first_seen": 1,
-                "last_seen": 1
-              }
-            ],
-            "current_phase": "scan",
-            "confidence": 1.0
-          },
-          {
-            "from": "attacker",
-            "to": "172.20.0.3",
-            "edge_id": "1e0b9d3873e5",
-            "vector": "initial-access/rce",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
-                ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
-              },
-              {
-                "phase": "initial-access/rce",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
-                ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
-              }
-            ],
-            "current_phase": "initial-access/rce",
-            "confidence": 1.0
-          },
-          {
-            "from": "attacker",
-            "to": "172.20.0.4",
-            "edge_id": "af519bf54db6",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "Multiple unique signatures and protocol detection events suggest active probing and interaction attempts",
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1",
-                  "SURICATA Applayer Detect protocol only one direction: 22"
-                ],
-                "seen_in_epoch": 3,
-                "first_seen": 3,
-                "last_seen": 3
-              }
-            ],
-            "current_phase": "scan",
-            "confidence": 1.0
-          }
-        ],
-        "edge_updates": []
-      },
-      "service_epoch_context": [],
-      "lockdown_activated": false
-    },
-    {
-      "epoch_number": 8,
-      "start_time": 1755611415.1125557,
-      "end_time": 1755611577.8853743,
-      "phase_timings": {
-        "initialization": 1755611415.1125693,
-        "attack_execution": 1755611415.126748,
-        "monitoring_accumulation": 1755611435.8815546,
-        "agent_analysis": 1755611485.8822196,
-        "firewall_update_wait": 1755611575.8698065,
-        "metrics_collection": 1755611577.871915,
-        "epoch_complete": 1755611577.8847027
-      },
-      "services_detected": [
-        "HTTP(172.20.0.10:80)"
-      ],
-      "services_successfully_exploited": [
-        "GITLAB"
-      ],
-      "exploits_attempted": [],
-      "flags_captured": [
-        {
-          "service": "GITLAB",
-          "flag": "flag{privileged_access}"
-        }
-      ],
-      "attack_success_rate": 0.0,
-      "firewall_rules_added": [
-        {
-          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.3 (tcp)"
-        },
-        {
-          "rules_added_current_epoch": "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
-        },
         {
           "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.4 (tcp)"
         },
@@ -1176,13 +692,964 @@
         },
         {
           "rules_added_current_epoch": "ALLOW 172.20.0.10 -> 192.168.100.0/24 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.3 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
         }
       ],
       "firewall_rules_removed": [
         {
           "rules_removed_current_epoch": [
-            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
-            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10"
+            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5"
+          ]
+        }
+      ],
+      "honeypots_exposed": {
+        "ip": "172.20.0.4",
+        "service": "cve-2015-5254-activemq-1",
+        "current_level": 33,
+        "epoch": 4
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": [
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to mySQL port 3306"
+          ]
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": [
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to MSSQL port 1433"
+          ]
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 66,
+          "level_new": 66,
+          "changed": false,
+          "evidence_quotes": [
+            "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+          ]
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 66,
+          "level_new": 66,
+          "changed": false,
+          "evidence_quotes": [
+            "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+            "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+            "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+            "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+            "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
+          ]
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [
+          {
+            "ip": "172.20.0.3",
+            "service": "s2-057-struts2-1",
+            "confidence": 1.0
+          },
+          {
+            "ip": "172.20.0.10",
+            "service": "cve-2021-22205-gitlab-1-proxy",
+            "confidence": 1.0
+          }
+        ],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "3127cafe50c2",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "b29e16b1f858",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "b3c7251fb993",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)"
+                ],
+                "seen_in_epoch": 2
+              },
+              {
+                "phase": "initial-access/rce",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "c65c49d61ebf",
+            "vector": "initial-access/rce",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "Potential SSH Scan"
+                ],
+                "seen_in_epoch": 2
+              },
+              {
+                "phase": "initial-access/rce",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
+            "confidence": 1.0
+          }
+        ],
+        "edge_updates": []
+      },
+      "service_epoch_context": [],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 5,
+      "start_time": 1755874479.9340572,
+      "end_time": 1755874634.1340647,
+      "phase_timings": {
+        "initialization": 1755874479.9341016,
+        "attack_execution": 1755874479.9532092,
+        "monitoring_accumulation": 1755874502.0789483,
+        "agent_analysis": 1755874552.0799015,
+        "firewall_update_wait": 1755874632.1137116,
+        "metrics_collection": 1755874634.1155868,
+        "epoch_complete": 1755874634.1329958
+      },
+      "services_detected": [
+        "HTTP-PROXY(172.20.0.3:8080)",
+        "HTTP(172.20.0.10:80)",
+        "HTTP(172.20.0.5:80)",
+        "UNKNOWN(172.20.0.4:61616)",
+        "PATROL-SNMP(172.20.0.4:8161)"
+      ],
+      "services_successfully_exploited": [
+        "GITLAB",
+        "STRUTS"
+      ],
+      "exploits_attempted": [],
+      "flags_captured": [
+        {
+          "service": "STRUTS",
+          "flag": "flag{privileged_access_struts}"
+        },
+        {
+          "service": "GITLAB",
+          "flag": "flag{privileged_access_gitlab}"
+        }
+      ],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [],
+      "firewall_rules_removed": [
+        {
+          "rules_removed_current_epoch": [
+            "REMOVED rule #5:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+            "REMOVED rule #6:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5",
+            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.3           192.168.100.0/24",
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3",
+            "REMOVED rule #3:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
+            "REMOVED rule #4:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10"
+          ]
+        }
+      ],
+      "honeypots_exposed": {
+        "ip": "172.20.0.4",
+        "service": "cve-2015-5254-activemq-1",
+        "current_level": 33,
+        "epoch": 5
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": [
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to mySQL port 3306"
+          ]
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": [
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to MSSQL port 1433"
+          ]
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 66,
+          "level_new": 66,
+          "changed": false,
+          "evidence_quotes": [
+            "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+          ]
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 66,
+          "level_new": 66,
+          "changed": false,
+          "evidence_quotes": [
+            "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+            "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+            "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+            "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+            "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
+          ]
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [
+          {
+            "ip": "172.20.0.3",
+            "service": "s2-057-struts2-1",
+            "confidence": 1.0
+          },
+          {
+            "ip": "172.20.0.10",
+            "service": "cve-2021-22205-gitlab-1-proxy",
+            "confidence": 1.0
+          }
+        ],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "3127cafe50c2",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "b29e16b1f858",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "b3c7251fb993",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)"
+                ],
+                "seen_in_epoch": 2
+              },
+              {
+                "phase": "initial-access/rce",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "c65c49d61ebf",
+            "vector": "initial-access/rce",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "Potential SSH Scan"
+                ],
+                "seen_in_epoch": 2
+              },
+              {
+                "phase": "initial-access/rce",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
+            "confidence": 1.0
+          }
+        ],
+        "edge_updates": []
+      },
+      "service_epoch_context": [],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 6,
+      "start_time": 1755874635.1397347,
+      "end_time": 1755874770.684214,
+      "phase_timings": {
+        "initialization": 1755874635.1397495,
+        "attack_execution": 1755874635.159655,
+        "monitoring_accumulation": 1755874640.4415417,
+        "agent_analysis": 1755874690.4425316,
+        "firewall_update_wait": 1755874768.6649518,
+        "metrics_collection": 1755874770.6666656,
+        "epoch_complete": 1755874770.6830697
+      },
+      "services_detected": [
+        "PATROL-SNMP(172.20.0.4:8161)",
+        "UNKNOWN(172.20.0.4:61616)"
+      ],
+      "services_successfully_exploited": [],
+      "exploits_attempted": [],
+      "flags_captured": [],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.5 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.5 -> 192.168.100.0/24 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.10 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.10 -> 192.168.100.0/24 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.3 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
+        }
+      ],
+      "firewall_rules_removed": [],
+      "honeypots_exposed": {
+        "ip": "172.20.0.4",
+        "service": "cve-2015-5254-activemq-1",
+        "current_level": 33,
+        "epoch": 6
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": [
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to mySQL port 3306"
+          ]
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": [
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to MSSQL port 1433"
+          ]
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 66,
+          "level_new": 66,
+          "changed": false,
+          "evidence_quotes": [
+            "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+          ]
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 66,
+          "level_new": 66,
+          "changed": false,
+          "evidence_quotes": [
+            "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+            "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+            "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+            "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+            "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
+          ]
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [
+          {
+            "ip": "172.20.0.3",
+            "service": "s2-057-struts2-1",
+            "confidence": 1.0
+          },
+          {
+            "ip": "172.20.0.10",
+            "service": "cve-2021-22205-gitlab-1-proxy",
+            "confidence": 1.0
+          }
+        ],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "3127cafe50c2",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "b29e16b1f858",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "b3c7251fb993",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)"
+                ],
+                "seen_in_epoch": 2
+              },
+              {
+                "phase": "initial-access/rce",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "c65c49d61ebf",
+            "vector": "initial-access/rce",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "Potential SSH Scan"
+                ],
+                "seen_in_epoch": 2
+              },
+              {
+                "phase": "initial-access/rce",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
+            "confidence": 1.0
+          }
+        ],
+        "edge_updates": []
+      },
+      "service_epoch_context": [],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 7,
+      "start_time": 1755874771.6895485,
+      "end_time": 1755874978.5857065,
+      "phase_timings": {
+        "initialization": 1755874771.6895745,
+        "attack_execution": 1755874771.7089145,
+        "monitoring_accumulation": 1755874793.1398072,
+        "agent_analysis": 1755874843.1410112,
+        "firewall_update_wait": 1755874976.5660424,
+        "metrics_collection": 1755874978.5673716,
+        "epoch_complete": 1755874978.584603
+      },
+      "services_detected": [
+        "UNKNOWN(172.20.0.4:61616)",
+        "HTTP(172.20.0.5:80)",
+        "HTTP-PROXY(172.20.0.3:8080)",
+        "HTTP(172.20.0.10:80)",
+        "PATROL-SNMP(172.20.0.4:8161)"
+      ],
+      "services_successfully_exploited": [
+        "GITLAB",
+        "STRUTS"
+      ],
+      "exploits_attempted": [],
+      "flags_captured": [
+        {
+          "service": "STRUTS",
+          "flag": "flag{privileged_access_struts}"
+        },
+        {
+          "service": "GITLAB",
+          "flag": "flag{privileged_access_gitlab}"
+        }
+      ],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.5 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.5 -> 192.168.100.0/24 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.4 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.4 -> 192.168.100.0/24 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.3 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
+        }
+      ],
+      "firewall_rules_removed": [
+        {
+          "rules_removed_current_epoch": [
+            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.3           192.168.100.0/24",
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3",
+            "REMOVED rule #5:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+            "REMOVED rule #6:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5",
+            "REMOVED rule #7:    ACCEPT     tcp  --  172.20.0.4           192.168.100.0/24",
+            "REMOVED rule #8:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4"
+          ]
+        }
+      ],
+      "honeypots_exposed": {
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy",
+        "current_level": 66,
+        "epoch": 7
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": [
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to mySQL port 3306"
+          ]
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": [
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to MSSQL port 1433"
+          ]
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 66,
+          "level_new": 66,
+          "changed": false,
+          "evidence_quotes": [
+            "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+          ]
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 66,
+          "level_new": 66,
+          "changed": false,
+          "evidence_quotes": [
+            "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+            "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+            "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+            "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+            "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
+          ]
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [
+          {
+            "ip": "172.20.0.3",
+            "service": "s2-057-struts2-1",
+            "confidence": 1.0
+          },
+          {
+            "ip": "172.20.0.10",
+            "service": "cve-2021-22205-gitlab-1-proxy",
+            "confidence": 1.0
+          }
+        ],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "3127cafe50c2",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "b29e16b1f858",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "b3c7251fb993",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)"
+                ],
+                "seen_in_epoch": 2
+              },
+              {
+                "phase": "initial-access/rce",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "c65c49d61ebf",
+            "vector": "initial-access/rce",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "Potential SSH Scan"
+                ],
+                "seen_in_epoch": 2
+              },
+              {
+                "phase": "initial-access/rce",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
+            "confidence": 1.0
+          }
+        ],
+        "edge_updates": []
+      },
+      "service_epoch_context": [],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 8,
+      "start_time": 1755874979.5907266,
+      "end_time": 1755875168.544619,
+      "phase_timings": {
+        "initialization": 1755874979.590741,
+        "attack_execution": 1755874979.607845,
+        "monitoring_accumulation": 1755875001.2600627,
+        "agent_analysis": 1755875051.2609441,
+        "firewall_update_wait": 1755875166.52533,
+        "metrics_collection": 1755875168.5274801,
+        "epoch_complete": 1755875168.543613
+      },
+      "services_detected": [
+        "HTTP(172.20.0.10:80)",
+        "HTTP-PROXY(172.20.0.3:8080)",
+        "HTTP(172.20.0.5:80)",
+        "UNKNOWN(172.20.0.4:61616)",
+        "PATROL-SNMP(172.20.0.4:8161)"
+      ],
+      "services_successfully_exploited": [
+        "GITLAB",
+        "STRUTS"
+      ],
+      "exploits_attempted": [],
+      "flags_captured": [
+        {
+          "service": "STRUTS",
+          "flag": "flag{privileged_access_struts}"
+        },
+        {
+          "service": "GITLAB",
+          "flag": "flag{privileged_access_gitlab}"
+        }
+      ],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.5 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.5 -> 192.168.100.0/24 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.4 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.4 -> 192.168.100.0/24 (tcp)"
+        }
+      ],
+      "firewall_rules_removed": [
+        {
+          "rules_removed_current_epoch": [
+            "REMOVED rule #7:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
+            "REMOVED rule #8:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10",
+            "REMOVED rule #3:    ACCEPT     tcp  --  172.20.0.4           192.168.100.0/24",
+            "REMOVED rule #4:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4",
+            "REMOVED rule #5:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+            "REMOVED rule #6:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5"
           ]
         }
       ],
@@ -1200,7 +1667,9 @@
           "level_new": 33,
           "changed": false,
           "evidence_quotes": [
-            "No evidence found."
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to mySQL port 3306",
+            "ET SCAN Suspicious inbound to MSSQL port 1433"
           ]
         },
         {
@@ -1210,20 +1679,19 @@
           "level_new": 33,
           "changed": false,
           "evidence_quotes": [
-            "No evidence found."
+            "ET INFO POSSIBLE Web Crawl using Curl",
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "SURICATA Applayer Detect protocol only one direction"
           ]
         },
         {
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 0,
-          "level_new": 100,
-          "changed": true,
+          "level_prev": 66,
+          "level_new": 66,
+          "changed": false,
           "evidence_quotes": [
-            "ET WEB_SERVER Possible bash shell piped to dev tcp: 1",
-            "SUID Binary Enumeration Detected: 2",
-            "Privilege Escalation Attempt - bash -p: 2",
-            "Reverse Shell Detected - No Job Control: 1"
+            "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
           ]
         },
         {
@@ -1233,7 +1701,11 @@
           "level_new": 66,
           "changed": false,
           "evidence_quotes": [
-            "No evidence found."
+            "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+            "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+            "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+            "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+            "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
           ]
         }
       ],
@@ -1252,218 +1724,145 @@
         ],
         "edges": [
           {
-            "from": "attacker",
+            "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "e2f2449ff2e3",
+            "edge_id": "3127cafe50c2",
             "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1"
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
                 ],
-                "seen_in_epoch": 1,
-                "first_seen": 1,
-                "last_seen": 1
+                "seen_in_epoch": 2
               }
             ],
+            "first_seen": 1,
+            "last_seen": 2,
             "current_phase": "scan",
             "confidence": 1.0
           },
           {
-            "from": "attacker",
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "b29e16b1f858",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "b3c7251fb993",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)"
+                ],
+                "seen_in_epoch": 2
+              },
+              {
+                "phase": "initial-access/rce",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
             "to": "172.20.0.3",
-            "edge_id": "1e0b9d3873e5",
+            "edge_id": "c65c49d61ebf",
             "vector": "initial-access/rce",
             "phases": [
               {
                 "phase": "scan",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "Potential SSH Scan"
                 ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
+                "seen_in_epoch": 2
               },
               {
                 "phase": "initial-access/rce",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
+                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
                 ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
+                "seen_in_epoch": 2
               }
             ],
+            "first_seen": 1,
+            "last_seen": 2,
             "current_phase": "initial-access/rce",
-            "confidence": 1.0
-          },
-          {
-            "from": "attacker",
-            "to": "172.20.0.4",
-            "edge_id": "af519bf54db6",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "Multiple unique signatures and protocol detection events suggest active probing and interaction attempts",
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1",
-                  "SURICATA Applayer Detect protocol only one direction: 22"
-                ],
-                "seen_in_epoch": 3,
-                "first_seen": 3,
-                "last_seen": 3
-              }
-            ],
-            "current_phase": "scan",
-            "confidence": 1.0
-          },
-          {
-            "from": "attacker",
-            "to": "172.20.0.10",
-            "edge_id": "5c98b860d3a8",
-            "vector": "privilege-escalation",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS): 3",
-                  "ET SCAN Suspicious inbound to MySQL port 3306: 1",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1",
-                  "ET INFO User-Agent (python-requests) Inbound to Webserver: 2",
-                  "SURICATA IPv4 truncated packet: 20",
-                  "SURICATA AF-PACKET truncated packet: 20"
-                ],
-                "seen_in_epoch": 4,
-                "first_seen": 4,
-                "last_seen": 4
-              },
-              {
-                "phase": "initial-access/rce",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET WEB_SERVER Possible bash shell piped to dev tcp: 1",
-                  "Reverse Shell Detected - No Job Control: 1"
-                ],
-                "seen_in_epoch": 4,
-                "first_seen": 4,
-                "last_seen": 4
-              },
-              {
-                "phase": "privilege-escalation",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "SUID Binary Enumeration Detected: 2",
-                  "Privilege Escalation Attempt - bash -p: 2"
-                ],
-                "seen_in_epoch": 4,
-                "first_seen": 4,
-                "last_seen": 4
-              }
-            ],
-            "current_phase": "privilege-escalation",
             "confidence": 1.0
           }
         ],
-        "edge_updates": [
-          {
-            "from": "attacker",
-            "to": "172.20.0.10",
-            "edge_id": "5c98b860d3a8",
-            "vector": "privilege-escalation",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS): 3",
-                  "ET SCAN Suspicious inbound to MySQL port 3306: 1",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1",
-                  "ET INFO User-Agent (python-requests) Inbound to Webserver: 2",
-                  "SURICATA IPv4 truncated packet: 20",
-                  "SURICATA AF-PACKET truncated packet: 20"
-                ],
-                "seen_in_epoch": 4,
-                "first_seen": 4,
-                "last_seen": 4
-              },
-              {
-                "phase": "initial-access/rce",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET WEB_SERVER Possible bash shell piped to dev tcp: 1",
-                  "Reverse Shell Detected - No Job Control: 1"
-                ],
-                "seen_in_epoch": 4,
-                "first_seen": 4,
-                "last_seen": 4
-              },
-              {
-                "phase": "privilege-escalation",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "SUID Binary Enumeration Detected: 2",
-                  "Privilege Escalation Attempt - bash -p: 2"
-                ],
-                "seen_in_epoch": 4,
-                "first_seen": 4,
-                "last_seen": 4
-              }
-            ],
-            "current_phase": "privilege-escalation",
-            "confidence": 1.0
-          }
-        ]
+        "edge_updates": []
       },
       "service_epoch_context": [],
       "lockdown_activated": false
     },
     {
       "epoch_number": 9,
-      "start_time": 1755611578.891254,
-      "end_time": 1755611756.7258475,
+      "start_time": 1755875169.5551653,
+      "end_time": 1755875336.3568993,
       "phase_timings": {
-        "initialization": 1755611578.8912714,
-        "attack_execution": 1755611578.9047675,
-        "monitoring_accumulation": 1755611600.2627392,
-        "agent_analysis": 1755611650.26365,
-        "firewall_update_wait": 1755611754.7091365,
-        "metrics_collection": 1755611756.7105026,
-        "epoch_complete": 1755611756.7248085
+        "initialization": 1755875169.5551786,
+        "attack_execution": 1755875169.5700114,
+        "monitoring_accumulation": 1755875183.3885458,
+        "agent_analysis": 1755875233.3907068,
+        "firewall_update_wait": 1755875334.3374104,
+        "metrics_collection": 1755875336.338256,
+        "epoch_complete": 1755875336.3558238
       },
       "services_detected": [
-        "HTTP(172.20.0.10:80)",
-        "UNKNOWN(172.20.0.4:61616)",
-        "PATROL-SNMP(172.20.0.4:8161)",
         "HTTP-PROXY(172.20.0.3:8080)",
-        "HTTP(172.20.0.5:80)"
+        "PATROL-SNMP(172.20.0.4:8161)",
+        "HTTP(172.20.0.5:80)",
+        "UNKNOWN(172.20.0.4:61616)"
       ],
       "services_successfully_exploited": [
-        "GITLAB"
+        "STRUTS"
       ],
       "exploits_attempted": [],
       "flags_captured": [
         {
-          "service": "GITLAB",
-          "flag": "flag{privileged_access}"
+          "service": "STRUTS",
+          "flag": "flag{privileged_access_struts}"
         }
       ],
       "attack_success_rate": 0.0,
@@ -1471,12 +1870,10 @@
       "firewall_rules_removed": [
         {
           "rules_removed_current_epoch": [
-            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
-            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10",
+            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.4           192.168.100.0/24",
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4",
             "REMOVED rule #3:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
-            "REMOVED rule #4:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5",
-            "REMOVED rule #5:    ACCEPT     tcp  --  172.20.0.4           192.168.100.0/24",
-            "REMOVED rule #6:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4"
+            "REMOVED rule #4:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5"
           ]
         }
       ],
@@ -1494,9 +1891,9 @@
           "level_new": 33,
           "changed": false,
           "evidence_quotes": [
-            "POSSBL PORT SCAN (NMAP -sS): 3",
-            "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-            "ET SCAN Suspicious inbound to MSSQL port 1433: 1"
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to mySQL port 3306",
+            "ET SCAN Suspicious inbound to MSSQL port 1433"
           ]
         },
         {
@@ -1506,24 +1903,19 @@
           "level_new": 33,
           "changed": false,
           "evidence_quotes": [
-            "POSSBL PORT SCAN (NMAP -sS): 2",
-            "SURICATA Applayer Detect protocol only one direction: 24",
-            "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-            "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-            "ET INFO POSSIBLE Web Crawl using Curl: 1"
+            "ET INFO POSSIBLE Web Crawl using Curl",
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "SURICATA Applayer Detect protocol only one direction"
           ]
         },
         {
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 100,
-          "level_new": 100,
+          "level_prev": 66,
+          "level_new": 66,
           "changed": false,
           "evidence_quotes": [
-            "ET WEB_SERVER Possible bash shell piped to dev tcp: 1",
-            "SUID Binary Enumeration Detected: 2",
-            "Privilege Escalation Attempt - bash -p: 2",
-            "Reverse Shell Detected - No Job Control: 1"
+            "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
           ]
         },
         {
@@ -1533,11 +1925,11 @@
           "level_new": 66,
           "changed": false,
           "evidence_quotes": [
-            "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-            "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-            "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-            "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-            "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
+            "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+            "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+            "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+            "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+            "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
           ]
         }
       ],
@@ -1556,133 +1948,110 @@
         ],
         "edges": [
           {
-            "from": "attacker",
+            "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "e2f2449ff2e3",
+            "edge_id": "3127cafe50c2",
             "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1"
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
                 ],
-                "seen_in_epoch": 1,
-                "first_seen": 1,
-                "last_seen": 1
+                "seen_in_epoch": 2
               }
             ],
+            "first_seen": 1,
+            "last_seen": 2,
             "current_phase": "scan",
             "confidence": 1.0
           },
           {
-            "from": "attacker",
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "b29e16b1f858",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "b3c7251fb993",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)"
+                ],
+                "seen_in_epoch": 2
+              },
+              {
+                "phase": "initial-access/rce",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
             "to": "172.20.0.3",
-            "edge_id": "1e0b9d3873e5",
+            "edge_id": "c65c49d61ebf",
             "vector": "initial-access/rce",
             "phases": [
               {
                 "phase": "scan",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "Potential SSH Scan"
                 ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
+                "seen_in_epoch": 2
               },
               {
                 "phase": "initial-access/rce",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
+                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
                 ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
+                "seen_in_epoch": 2
               }
             ],
+            "first_seen": 1,
+            "last_seen": 2,
             "current_phase": "initial-access/rce",
-            "confidence": 1.0
-          },
-          {
-            "from": "attacker",
-            "to": "172.20.0.4",
-            "edge_id": "af519bf54db6",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "Multiple unique signatures and protocol detection events suggest active probing and interaction attempts",
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1",
-                  "SURICATA Applayer Detect protocol only one direction: 22"
-                ],
-                "seen_in_epoch": 3,
-                "first_seen": 3,
-                "last_seen": 3
-              }
-            ],
-            "current_phase": "scan",
-            "confidence": 1.0
-          },
-          {
-            "from": "attacker",
-            "to": "172.20.0.10",
-            "edge_id": "5c98b860d3a8",
-            "vector": "privilege-escalation",
-            "phases": [
-              {
-                "phase": "scan",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS): 3",
-                  "ET SCAN Suspicious inbound to MySQL port 3306: 1",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1",
-                  "ET INFO User-Agent (python-requests) Inbound to Webserver: 2",
-                  "SURICATA IPv4 truncated packet: 20",
-                  "SURICATA AF-PACKET truncated packet: 20"
-                ],
-                "seen_in_epoch": 4,
-                "first_seen": 4,
-                "last_seen": 4
-              },
-              {
-                "phase": "initial-access/rce",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "ET WEB_SERVER Possible bash shell piped to dev tcp: 1",
-                  "Reverse Shell Detected - No Job Control: 1"
-                ],
-                "seen_in_epoch": 4,
-                "first_seen": 4,
-                "last_seen": 4
-              },
-              {
-                "phase": "privilege-escalation",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "SUID Binary Enumeration Detected: 2",
-                  "Privilege Escalation Attempt - bash -p: 2"
-                ],
-                "seen_in_epoch": 4,
-                "first_seen": 4,
-                "last_seen": 4
-              }
-            ],
-            "current_phase": "privilege-escalation",
             "confidence": 1.0
           }
         ],
@@ -1693,16 +2062,16 @@
     },
     {
       "epoch_number": 10,
-      "start_time": 1755611757.7294374,
-      "end_time": 1755611938.3424902,
+      "start_time": 1755875337.3685327,
+      "end_time": 1755875516.3107293,
       "phase_timings": {
-        "initialization": 1755611757.729454,
-        "attack_execution": 1755611757.7470515,
-        "monitoring_accumulation": 1755611770.6954226,
-        "agent_analysis": 1755611820.696413,
-        "firewall_update_wait": 1755611936.323095,
-        "metrics_collection": 1755611938.324558,
-        "epoch_complete": 1755611938.341444
+        "initialization": 1755875337.368546,
+        "attack_execution": 1755875337.3842776,
+        "monitoring_accumulation": 1755875350.326009,
+        "agent_analysis": 1755875400.3271377,
+        "firewall_update_wait": 1755875514.294896,
+        "metrics_collection": 1755875516.2963967,
+        "epoch_complete": 1755875516.309891
       },
       "services_detected": [
         "HTTP-PROXY(172.20.0.3:8080)"
@@ -1714,7 +2083,7 @@
       "flags_captured": [
         {
           "service": "STRUTS",
-          "flag": "flag{privileged_struts}"
+          "flag": "flag{privileged_access_struts}"
         }
       ],
       "attack_success_rate": 0.0,
@@ -1753,9 +2122,9 @@
         }
       ],
       "honeypots_exposed": {
-        "ip": "",
-        "service": "",
-        "current_level": 0,
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy",
+        "current_level": 66,
         "epoch": 10
       },
       "honeypots_exploitation": [
@@ -1766,9 +2135,8 @@
           "level_new": 33,
           "changed": false,
           "evidence_quotes": [
-            "POSSBL PORT SCAN (NMAP -sS): 3",
-            "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-            "ET SCAN Suspicious inbound to MSSQL port 1433: 1"
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Potential SSH Scan"
           ]
         },
         {
@@ -1778,34 +2146,32 @@
           "level_new": 33,
           "changed": false,
           "evidence_quotes": [
-            "POSSBL PORT SCAN (NMAP -sS): 2",
-            "SURICATA Applayer Detect protocol only one direction: 24",
-            "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-            "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-            "ET INFO POSSIBLE Web Crawl using Curl: 1"
+            "POSSBL PORT SCAN (NMAP -sS)",
+            "ET SCAN Suspicious inbound to MSSQL port 1433"
           ]
         },
         {
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 100,
-          "level_new": 100,
+          "level_prev": 66,
+          "level_new": 66,
           "changed": false,
           "evidence_quotes": [
-            "ET WEB_SERVER Possible bash shell piped to dev tcp: 1",
-            "SUID Binary Enumeration Detected: 2",
-            "Privilege Escalation Attempt - bash -p: 2",
-            "Reverse Shell Detected - No Job Control: 1"
+            "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
           ]
         },
         {
           "ip": "172.20.0.3",
           "service": "s2-057-struts2-1",
           "level_prev": 66,
-          "level_new": 100,
-          "changed": true,
+          "level_new": 66,
+          "changed": false,
           "evidence_quotes": [
-            "Reverse Shell Detected - No Job Control [1]"
+            "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+            "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+            "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt",
+            "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt",
+            "ET HUNTING .exec in HTTP URI Inbound"
           ]
         }
       ],
@@ -1824,166 +2190,368 @@
         ],
         "edges": [
           {
-            "from": "attacker",
+            "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "e2f2449ff2e3",
+            "edge_id": "3127cafe50c2",
             "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1"
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
                 ],
-                "seen_in_epoch": 1,
-                "first_seen": 1,
-                "last_seen": 1
+                "seen_in_epoch": 2
               }
             ],
+            "first_seen": 1,
+            "last_seen": 2,
             "current_phase": "scan",
             "confidence": 1.0
           },
           {
-            "from": "attacker",
-            "to": "172.20.0.3",
-            "edge_id": "1e0b9d3873e5",
-            "vector": "data-exfil-user",
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "b29e16b1f858",
+            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433"
                 ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "b3c7251fb993",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)"
+                ],
+                "seen_in_epoch": 2
               },
               {
                 "phase": "initial-access/rce",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
                 ],
-                "seen_in_epoch": 2,
-                "first_seen": 2,
-                "last_seen": 2
-              },
-              {
-                "phase": "data-exfil-user",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "Reverse Shell Detected - No Job Control [1]"
-                ],
-                "seen_in_epoch": 5,
-                "first_seen": 5,
-                "last_seen": 5
+                "seen_in_epoch": 2
               }
             ],
-            "current_phase": "data-exfil-user",
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
             "confidence": 1.0
           },
           {
-            "from": "attacker",
-            "to": "172.20.0.4",
-            "edge_id": "af519bf54db6",
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "c65c49d61ebf",
+            "vector": "initial-access/rce",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "Potential SSH Scan"
+                ],
+                "seen_in_epoch": 2
+              },
+              {
+                "phase": "initial-access/rce",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
+                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
+                  "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
+            "confidence": 1.0
+          }
+        ],
+        "edge_updates": []
+      },
+      "service_epoch_context": [],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 11,
+      "start_time": 1755875517.3159177,
+      "end_time": 1755875750.3728986,
+      "phase_timings": {
+        "initialization": 1755875517.3159342,
+        "attack_execution": 1755875517.332519,
+        "monitoring_accumulation": 1755875538.87306,
+        "agent_analysis": 1755875588.8742535,
+        "firewall_update_wait": 1755875748.351598,
+        "metrics_collection": 1755875750.3528717,
+        "epoch_complete": 1755875750.3719773
+      },
+      "services_detected": [
+        "HTTP(172.20.0.10:80)",
+        "PATROL-SNMP(172.20.0.4:8161)",
+        "HTTP-PROXY(172.20.0.3:8080)",
+        "UNKNOWN(172.20.0.4:61616)",
+        "HTTP(172.20.0.5:80)"
+      ],
+      "services_successfully_exploited": [
+        "STRUTS",
+        "GITLAB"
+      ],
+      "exploits_attempted": [],
+      "flags_captured": [
+        {
+          "service": "STRUTS",
+          "flag": "flag{privileged_access_struts}"
+        },
+        {
+          "service": "GITLAB",
+          "flag": "flag{privileged_access_gitlab}"
+        }
+      ],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [],
+      "firewall_rules_removed": [
+        {
+          "rules_removed_current_epoch": [
+            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10",
+            "REMOVED rule #3:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+            "REMOVED rule #4:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5",
+            "REMOVED rule #5:    ACCEPT     tcp  --  172.20.0.4           192.168.100.0/24",
+            "REMOVED rule #6:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4",
+            "REMOVED rule #7:    ACCEPT     tcp  --  172.20.0.3           192.168.100.0/24",
+            "REMOVED rule #8:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3"
+          ]
+        }
+      ],
+      "honeypots_exposed": {
+        "ip": "none",
+        "service": "none",
+        "current_level": 0,
+        "epoch": 11
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": [
+            "ET SCAN Suspicious inbound to mySQL port 3306: 1",
+            "ET SCAN Suspicious inbound to MSSQL port 1433: 1"
+          ]
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": [
+            "SURICATA Applayer Detect protocol only one direction: 22",
+            "POSSBL PORT SCAN (NMAP -sS): 6",
+            "ET SCAN Suspicious inbound to mySQL port 3306: 1",
+            "ET SCAN Suspicious inbound to MSSQL port 1433: 1"
+          ]
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 66,
+          "level_new": 66,
+          "changed": false,
+          "evidence_quotes": [
+            "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3: 1"
+          ]
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 66,
+          "level_new": 100,
+          "changed": true,
+          "evidence_quotes": [
+            "Privilege Escalation Attempt - bash -p",
+            "Reverse Shell Detected"
+          ]
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [
+          {
+            "ip": "172.20.0.3",
+            "service": "s2-057-struts2-1",
+            "confidence": 1.0
+          },
+          {
+            "ip": "172.20.0.10",
+            "service": "cve-2021-22205-gitlab-1-proxy",
+            "confidence": 1.0
+          }
+        ],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "3127cafe50c2",
             "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "Multiple unique signatures and protocol detection events suggest active probing and interaction attempts",
-                  "ET SCAN Suspicious inbound to mySQL port 3306: 2",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "POSSBL PORT SCAN (NMAP -sS): 2",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1",
-                  "SURICATA Applayer Detect protocol only one direction: 22"
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
                 ],
-                "seen_in_epoch": 3,
-                "first_seen": 3,
-                "last_seen": 3
+                "seen_in_epoch": 2
               }
             ],
+            "first_seen": 1,
+            "last_seen": 2,
             "current_phase": "scan",
             "confidence": 1.0
           },
           {
-            "from": "attacker",
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "b29e16b1f858",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "scan",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
             "to": "172.20.0.10",
-            "edge_id": "5c98b860d3a8",
+            "edge_id": "b3c7251fb993",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)"
+                ],
+                "seen_in_epoch": 2
+              },
+              {
+                "phase": "initial-access/rce",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ],
+                "seen_in_epoch": 2
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 2,
+            "current_phase": "initial-access/rce",
+            "confidence": 1.0
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "c65c49d61ebf",
             "vector": "privilege-escalation",
             "phases": [
               {
                 "phase": "scan",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS): 3",
-                  "ET SCAN Suspicious inbound to MySQL port 3306: 1",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                  "ET INFO POSSIBLE Web Crawl using Curl: 1",
-                  "ET INFO User-Agent (python-requests) Inbound to Webserver: 2",
-                  "SURICATA IPv4 truncated packet: 20",
-                  "SURICATA AF-PACKET truncated packet: 20"
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "Potential SSH Scan"
                 ],
-                "seen_in_epoch": 4,
-                "first_seen": 4,
-                "last_seen": 4
+                "seen_in_epoch": 2
               },
               {
                 "phase": "initial-access/rce",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "ET WEB_SERVER Possible bash shell piped to dev tcp: 1",
-                  "Reverse Shell Detected - No Job Control: 1"
+                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE",
+                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE",
+                  "ET HUNTING .exec in HTTP URI Inbound"
                 ],
-                "seen_in_epoch": 4,
-                "first_seen": 4,
-                "last_seen": 4
+                "seen_in_epoch": 2
               },
               {
                 "phase": "privilege-escalation",
                 "confidence": 1.0,
                 "evidence_quotes": [
-                  "SUID Binary Enumeration Detected: 2",
-                  "Privilege Escalation Attempt - bash -p: 2"
+                  "Privilege Escalation Attempt - bash -p"
                 ],
-                "seen_in_epoch": 4,
-                "first_seen": 4,
-                "last_seen": 4
+                "seen_in_epoch": 3
+              },
+              {
+                "phase": "data-exfil-user",
+                "confidence": 1.0,
+                "evidence_quotes": [
+                  "Reverse Shell Detected"
+                ],
+                "seen_in_epoch": 3
               }
             ],
+            "first_seen": 1,
+            "last_seen": 3,
             "current_phase": "privilege-escalation",
             "confidence": 1.0
           }
         ],
         "edge_updates": [
           {
-            "from": "attacker",
-            "to": "172.20.0.3",
-            "edge_id": "1e0b9d3873e5",
-            "vector": "data-exfil-user",
-            "phases": [
-              {
-                "phase": "data-exfil-user",
-                "confidence": 1.0,
-                "evidence_quotes": [
-                  "Reverse Shell Detected - No Job Control [1]"
-                ],
-                "seen_in_epoch": 5,
-                "first_seen": 5,
-                "last_seen": 5
-              }
+            "edge_id": "c65c49d61ebf",
+            "added_phases": [
+              "privilege-escalation",
+              "data-exfil-user"
             ],
-            "current_phase": "data-exfil-user",
-            "confidence": 1.0
+            "seen_in_epoch": 3
           }
         ]
       },
@@ -1992,10 +2560,10 @@
     }
   ],
   "summary": {
-    "total_flags_captured": 3,
-    "average_epoch_duration": 187.8799823999405,
+    "total_flags_captured": 10,
+    "average_epoch_duration": 166.26981358094648,
     "lockdown_triggered": true,
-    "lockdown_epoch": 10,
+    "lockdown_epoch": 11,
     "final_honeypots_exploitation": [
       {
         "ip": "172.20.0.5",
@@ -2004,7 +2572,6 @@
         "level_new": 33,
         "changed": false,
         "evidence_quotes": [
-          "POSSBL PORT SCAN (NMAP -sS): 3",
           "ET SCAN Suspicious inbound to mySQL port 3306: 1",
           "ET SCAN Suspicious inbound to MSSQL port 1433: 1"
         ]
@@ -2016,24 +2583,20 @@
         "level_new": 33,
         "changed": false,
         "evidence_quotes": [
-          "POSSBL PORT SCAN (NMAP -sS): 2",
-          "SURICATA Applayer Detect protocol only one direction: 24",
+          "SURICATA Applayer Detect protocol only one direction: 22",
+          "POSSBL PORT SCAN (NMAP -sS): 6",
           "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-          "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-          "ET INFO POSSIBLE Web Crawl using Curl: 1"
+          "ET SCAN Suspicious inbound to MSSQL port 1433: 1"
         ]
       },
       {
         "ip": "172.20.0.10",
         "service": "cve-2021-22205-gitlab-1-proxy",
-        "level_prev": 100,
-        "level_new": 100,
+        "level_prev": 66,
+        "level_new": 66,
         "changed": false,
         "evidence_quotes": [
-          "ET WEB_SERVER Possible bash shell piped to dev tcp: 1",
-          "SUID Binary Enumeration Detected: 2",
-          "Privilege Escalation Attempt - bash -p: 2",
-          "Reverse Shell Detected - No Job Control: 1"
+          "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3: 1"
         ]
       },
       {
@@ -2043,7 +2606,8 @@
         "level_new": 100,
         "changed": true,
         "evidence_quotes": [
-          "Reverse Shell Detected - No Job Control [1]"
+          "Privilege Escalation Attempt - bash -p",
+          "Reverse Shell Detected"
         ]
       }
     ],
@@ -2062,166 +2626,137 @@
       ],
       "edges": [
         {
-          "from": "attacker",
+          "from": "192.168.100.2",
           "to": "172.20.0.5",
-          "edge_id": "e2f2449ff2e3",
+          "edge_id": "3127cafe50c2",
           "vector": "scan",
           "phases": [
             {
               "phase": "scan",
               "confidence": 1.0,
               "evidence_quotes": [
-                "ET SCAN Suspicious inbound to mySQL port 3306: 1",
-                "POSSBL PORT SCAN (NMAP -sS): 2",
-                "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                "ET INFO POSSIBLE Web Crawl using Curl: 1"
+                "POSSBL PORT SCAN (NMAP -sS)",
+                "ET SCAN Suspicious inbound to mySQL port 3306"
               ],
-              "seen_in_epoch": 1,
-              "first_seen": 1,
-              "last_seen": 1
+              "seen_in_epoch": 2
             }
           ],
+          "first_seen": 1,
+          "last_seen": 2,
           "current_phase": "scan",
           "confidence": 1.0
         },
         {
-          "from": "attacker",
-          "to": "172.20.0.3",
-          "edge_id": "1e0b9d3873e5",
-          "vector": "data-exfil-user",
+          "from": "192.168.100.2",
+          "to": "172.20.0.4",
+          "edge_id": "b29e16b1f858",
+          "vector": "scan",
           "phases": [
             {
               "phase": "scan",
               "confidence": 1.0,
               "evidence_quotes": [
-                "ET INFO User-Agent (python-requests) Inbound to Webserver: 2"
+                "POSSBL PORT SCAN (NMAP -sS)",
+                "ET SCAN Suspicious inbound to MSSQL port 1433"
               ],
-              "seen_in_epoch": 2,
-              "first_seen": 2,
-              "last_seen": 2
+              "seen_in_epoch": 2
+            }
+          ],
+          "first_seen": 1,
+          "last_seen": 2,
+          "current_phase": "scan",
+          "confidence": 1.0
+        },
+        {
+          "from": "192.168.100.2",
+          "to": "172.20.0.10",
+          "edge_id": "b3c7251fb993",
+          "vector": "scan",
+          "phases": [
+            {
+              "phase": "scan",
+              "confidence": 1.0,
+              "evidence_quotes": [
+                "ET SCAN Suspicious inbound to mySQL port 3306",
+                "ET SCAN Suspicious inbound to MSSQL port 1433",
+                "POSSBL PORT SCAN (NMAP -sS)"
+              ],
+              "seen_in_epoch": 2
             },
             {
               "phase": "initial-access/rce",
               "confidence": 1.0,
               "evidence_quotes": [
-                "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI: 2",
-                "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action: 2",
-                "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt: 2",
-                "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt: 2",
-                "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity: 2"
+                "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
               ],
-              "seen_in_epoch": 2,
-              "first_seen": 2,
-              "last_seen": 2
-            },
-            {
-              "phase": "data-exfil-user",
-              "confidence": 1.0,
-              "evidence_quotes": [
-                "Reverse Shell Detected - No Job Control [1]"
-              ],
-              "seen_in_epoch": 5,
-              "first_seen": 5,
-              "last_seen": 5
+              "seen_in_epoch": 2
             }
           ],
-          "current_phase": "data-exfil-user",
+          "first_seen": 1,
+          "last_seen": 2,
+          "current_phase": "initial-access/rce",
           "confidence": 1.0
         },
         {
-          "from": "attacker",
-          "to": "172.20.0.4",
-          "edge_id": "af519bf54db6",
-          "vector": "scan",
-          "phases": [
-            {
-              "phase": "scan",
-              "confidence": 1.0,
-              "evidence_quotes": [
-                "Multiple unique signatures and protocol detection events suggest active probing and interaction attempts",
-                "ET SCAN Suspicious inbound to mySQL port 3306: 2",
-                "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                "POSSBL PORT SCAN (NMAP -sS): 2",
-                "ET INFO POSSIBLE Web Crawl using Curl: 1",
-                "SURICATA Applayer Detect protocol only one direction: 22"
-              ],
-              "seen_in_epoch": 3,
-              "first_seen": 3,
-              "last_seen": 3
-            }
-          ],
-          "current_phase": "scan",
-          "confidence": 1.0
-        },
-        {
-          "from": "attacker",
-          "to": "172.20.0.10",
-          "edge_id": "5c98b860d3a8",
+          "from": "192.168.100.2",
+          "to": "172.20.0.3",
+          "edge_id": "c65c49d61ebf",
           "vector": "privilege-escalation",
           "phases": [
             {
               "phase": "scan",
               "confidence": 1.0,
               "evidence_quotes": [
-                "POSSBL PORT SCAN (NMAP -sS): 3",
-                "ET SCAN Suspicious inbound to MySQL port 3306: 1",
-                "ET SCAN Suspicious inbound to MSSQL port 1433: 1",
-                "ET INFO POSSIBLE Web Crawl using Curl: 1",
-                "ET INFO User-Agent (python-requests) Inbound to Webserver: 2",
-                "SURICATA IPv4 truncated packet: 20",
-                "SURICATA AF-PACKET truncated packet: 20"
+                "POSSBL PORT SCAN (NMAP -sS)",
+                "ET SCAN Suspicious inbound to mySQL port 3306",
+                "ET SCAN Suspicious inbound to MSSQL port 1433",
+                "Potential SSH Scan"
               ],
-              "seen_in_epoch": 4,
-              "first_seen": 4,
-              "last_seen": 4
+              "seen_in_epoch": 2
             },
             {
               "phase": "initial-access/rce",
               "confidence": 1.0,
               "evidence_quotes": [
-                "ET WEB_SERVER Possible bash shell piped to dev tcp: 1",
-                "Reverse Shell Detected - No Job Control: 1"
+                "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE",
+                "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE",
+                "ET HUNTING .exec in HTTP URI Inbound"
               ],
-              "seen_in_epoch": 4,
-              "first_seen": 4,
-              "last_seen": 4
+              "seen_in_epoch": 2
             },
             {
               "phase": "privilege-escalation",
               "confidence": 1.0,
               "evidence_quotes": [
-                "SUID Binary Enumeration Detected: 2",
-                "Privilege Escalation Attempt - bash -p: 2"
+                "Privilege Escalation Attempt - bash -p"
               ],
-              "seen_in_epoch": 4,
-              "first_seen": 4,
-              "last_seen": 4
+              "seen_in_epoch": 3
+            },
+            {
+              "phase": "data-exfil-user",
+              "confidence": 1.0,
+              "evidence_quotes": [
+                "Reverse Shell Detected"
+              ],
+              "seen_in_epoch": 3
             }
           ],
+          "first_seen": 1,
+          "last_seen": 3,
           "current_phase": "privilege-escalation",
           "confidence": 1.0
         }
       ],
       "edge_updates": [
         {
-          "from": "attacker",
-          "to": "172.20.0.3",
-          "edge_id": "1e0b9d3873e5",
-          "vector": "data-exfil-user",
-          "phases": [
-            {
-              "phase": "data-exfil-user",
-              "confidence": 1.0,
-              "evidence_quotes": [
-                "Reverse Shell Detected - No Job Control [1]"
-              ],
-              "seen_in_epoch": 5,
-              "first_seen": 5,
-              "last_seen": 5
-            }
+          "edge_id": "c65c49d61ebf",
+          "added_phases": [
+            "privilege-escalation",
+            "data-exfil-user"
           ],
-          "current_phase": "data-exfil-user",
-          "confidence": 1.0
+          "seen_in_epoch": 3
         }
       ]
     }

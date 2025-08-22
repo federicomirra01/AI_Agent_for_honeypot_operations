@@ -1,69 +1,59 @@
 {
-  "epoch_number": 10,
-  "start_time": 1755875337.3685327,
-  "end_time": 1755875516.3107293,
+  "epoch_number": 11,
+  "start_time": 1755875517.3159177,
+  "end_time": 1755875750.3728986,
   "phase_timings": {
-    "initialization": 1755875337.368546,
-    "attack_execution": 1755875337.3842776,
-    "monitoring_accumulation": 1755875350.326009,
-    "agent_analysis": 1755875400.3271377,
-    "firewall_update_wait": 1755875514.294896,
-    "metrics_collection": 1755875516.2963967,
-    "epoch_complete": 1755875516.309891
+    "initialization": 1755875517.3159342,
+    "attack_execution": 1755875517.332519,
+    "monitoring_accumulation": 1755875538.87306,
+    "agent_analysis": 1755875588.8742535,
+    "firewall_update_wait": 1755875748.351598,
+    "metrics_collection": 1755875750.3528717,
+    "epoch_complete": 1755875750.3719773
   },
   "services_detected": [
-    "HTTP-PROXY(172.20.0.3:8080)"
+    "HTTP(172.20.0.10:80)",
+    "PATROL-SNMP(172.20.0.4:8161)",
+    "HTTP-PROXY(172.20.0.3:8080)",
+    "UNKNOWN(172.20.0.4:61616)",
+    "HTTP(172.20.0.5:80)"
   ],
   "services_successfully_exploited": [
-    "STRUTS"
+    "STRUTS",
+    "GITLAB"
   ],
   "exploits_attempted": [],
   "flags_captured": [
     {
       "service": "STRUTS",
       "flag": "flag{privileged_access_struts}"
+    },
+    {
+      "service": "GITLAB",
+      "flag": "flag{privileged_access_gitlab}"
     }
   ],
   "attack_success_rate": 0.0,
-  "firewall_rules_added": [
-    {
-      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.3 (tcp)"
-    },
-    {
-      "rules_added_current_epoch": "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
-    },
-    {
-      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.4 (tcp)"
-    },
-    {
-      "rules_added_current_epoch": "ALLOW 172.20.0.4 -> 192.168.100.0/24 (tcp)"
-    },
-    {
-      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.5 (tcp)"
-    },
-    {
-      "rules_added_current_epoch": "ALLOW 172.20.0.5 -> 192.168.100.0/24 (tcp)"
-    },
-    {
-      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.10 (tcp)"
-    },
-    {
-      "rules_added_current_epoch": "ALLOW 172.20.0.10 -> 192.168.100.0/24 (tcp)"
-    }
-  ],
+  "firewall_rules_added": [],
   "firewall_rules_removed": [
     {
       "rules_removed_current_epoch": [
-        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.3           192.168.100.0/24",
-        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3"
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10",
+        "REMOVED rule #3:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+        "REMOVED rule #4:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5",
+        "REMOVED rule #5:    ACCEPT     tcp  --  172.20.0.4           192.168.100.0/24",
+        "REMOVED rule #6:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4",
+        "REMOVED rule #7:    ACCEPT     tcp  --  172.20.0.3           192.168.100.0/24",
+        "REMOVED rule #8:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3"
       ]
     }
   ],
   "honeypots_exposed": {
-    "ip": "172.20.0.10",
-    "service": "cve-2021-22205-gitlab-1-proxy",
-    "current_level": 66,
-    "epoch": 10
+    "ip": "none",
+    "service": "none",
+    "current_level": 0,
+    "epoch": 11
   },
   "honeypots_exploitation": [
     {
@@ -73,8 +63,8 @@
       "level_new": 33,
       "changed": false,
       "evidence_quotes": [
-        "POSSBL PORT SCAN (NMAP -sS)",
-        "ET SCAN Potential SSH Scan"
+        "ET SCAN Suspicious inbound to mySQL port 3306: 1",
+        "ET SCAN Suspicious inbound to MSSQL port 1433: 1"
       ]
     },
     {
@@ -84,8 +74,10 @@
       "level_new": 33,
       "changed": false,
       "evidence_quotes": [
-        "POSSBL PORT SCAN (NMAP -sS)",
-        "ET SCAN Suspicious inbound to MSSQL port 1433"
+        "SURICATA Applayer Detect protocol only one direction: 22",
+        "POSSBL PORT SCAN (NMAP -sS): 6",
+        "ET SCAN Suspicious inbound to mySQL port 3306: 1",
+        "ET SCAN Suspicious inbound to MSSQL port 1433: 1"
       ]
     },
     {
@@ -95,21 +87,18 @@
       "level_new": 66,
       "changed": false,
       "evidence_quotes": [
-        "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+        "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3: 1"
       ]
     },
     {
       "ip": "172.20.0.3",
       "service": "s2-057-struts2-1",
       "level_prev": 66,
-      "level_new": 66,
-      "changed": false,
+      "level_new": 100,
+      "changed": true,
       "evidence_quotes": [
-        "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
-        "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
-        "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt",
-        "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt",
-        "ET HUNTING .exec in HTTP URI Inbound"
+        "Privilege Escalation Attempt - bash -p",
+        "Reverse Shell Detected"
       ]
     }
   ],
@@ -203,7 +192,7 @@
         "from": "192.168.100.2",
         "to": "172.20.0.3",
         "edge_id": "c65c49d61ebf",
-        "vector": "initial-access/rce",
+        "vector": "privilege-escalation",
         "phases": [
           {
             "phase": "scan",
@@ -222,21 +211,46 @@
             "evidence_quotes": [
               "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
               "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
-              "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE attempt",
-              "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE attempt",
-              "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity"
+              "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection RCE",
+              "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection RCE",
+              "ET HUNTING .exec in HTTP URI Inbound"
             ],
             "seen_in_epoch": 2
+          },
+          {
+            "phase": "privilege-escalation",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "Privilege Escalation Attempt - bash -p"
+            ],
+            "seen_in_epoch": 3
+          },
+          {
+            "phase": "data-exfil-user",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "Reverse Shell Detected"
+            ],
+            "seen_in_epoch": 3
           }
         ],
         "first_seen": 1,
-        "last_seen": 2,
-        "current_phase": "initial-access/rce",
+        "last_seen": 3,
+        "current_phase": "privilege-escalation",
         "confidence": 1.0
       }
     ],
-    "edge_updates": []
+    "edge_updates": [
+      {
+        "edge_id": "c65c49d61ebf",
+        "added_phases": [
+          "privilege-escalation",
+          "data-exfil-user"
+        ],
+        "seen_in_epoch": 3
+      }
+    ]
   },
   "service_epoch_context": [],
-  "lockdown_activated": false
+  "lockdown_activated": true
 }

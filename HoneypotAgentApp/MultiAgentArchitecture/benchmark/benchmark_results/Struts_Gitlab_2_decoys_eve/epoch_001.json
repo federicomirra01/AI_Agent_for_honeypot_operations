@@ -1,15 +1,15 @@
 {
   "epoch_number": 1,
-  "start_time": 1755602136.3621342,
-  "end_time": 1755602233.442156,
+  "start_time": 1755872366.867798,
+  "end_time": 1755872519.39255,
   "phase_timings": {
-    "initialization": 1755602136.3621604,
-    "attack_execution": 1755602136.3800595,
-    "monitoring_accumulation": 1755602143.1747227,
-    "agent_analysis": 1755602193.1766777,
-    "firewall_update_wait": 1755602231.423954,
-    "metrics_collection": 1755602233.4257057,
-    "epoch_complete": 1755602233.441337
+    "initialization": 1755872366.8678267,
+    "attack_execution": 1755872366.8879952,
+    "monitoring_accumulation": 1755872373.8001184,
+    "agent_analysis": 1755872423.801361,
+    "firewall_update_wait": 1755872517.3610826,
+    "metrics_collection": 1755872519.3627517,
+    "epoch_complete": 1755872519.3915198
   },
   "services_detected": [],
   "services_successfully_exploited": [],
@@ -28,7 +28,7 @@
   "honeypots_exposed": {
     "ip": "172.20.0.5",
     "service": "cve-2014-6271-web-1",
-    "current_level": 0,
+    "current_level": 33,
     "epoch": 1
   },
   "honeypots_exploitation": [
@@ -36,46 +36,171 @@
       "ip": "172.20.0.5",
       "service": "cve-2014-6271-web-1",
       "level_prev": 0,
-      "level_new": 0,
-      "changed": false,
+      "level_new": 33,
+      "changed": true,
       "evidence_quotes": [
-        "No evidence found."
+        "POSSBL PORT SCAN (NMAP -sS)",
+        "ET SCAN Suspicious inbound to mySQL port 3306",
+        "ET SCAN Suspicious inbound to MSSQL port 1433"
       ]
     },
     {
       "ip": "172.20.0.4",
       "service": "cve-2015-5254-activemq-1",
       "level_prev": 0,
-      "level_new": 0,
-      "changed": false,
+      "level_new": 33,
+      "changed": true,
       "evidence_quotes": [
-        "No evidence found."
+        "POSSBL PORT SCAN (NMAP -sS)"
       ]
     },
     {
       "ip": "172.20.0.10",
       "service": "cve-2021-22205-gitlab-1-proxy",
       "level_prev": 0,
-      "level_new": 0,
-      "changed": false,
+      "level_new": 33,
+      "changed": true,
       "evidence_quotes": [
-        "No evidence found."
+        "ET SCAN Suspicious inbound to mySQL port 3306",
+        "ET SCAN Suspicious inbound to MSSQL port 1433",
+        "POSSBL PORT SCAN (NMAP -sS)"
       ]
     },
     {
       "ip": "172.20.0.3",
       "service": "s2-057-struts2-1",
       "level_prev": 0,
-      "level_new": 0,
-      "changed": false,
+      "level_new": 33,
+      "changed": true,
       "evidence_quotes": [
-        "No evidence found."
+        "POSSBL PORT SCAN (NMAP -sS)",
+        "ET SCAN Potential SSH Scan",
+        "ET SCAN Suspicious inbound to mySQL port 3306",
+        "ET SCAN Suspicious inbound to MSSQL port 1433"
       ]
     }
   ],
   "inferred_attack_graph": {
     "interesting": [],
-    "edges": []
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "c99e98f27042",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)",
+              "ET SCAN Suspicious inbound to mySQL port 3306",
+              "ET SCAN Suspicious inbound to MSSQL port 1433"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "de43ae179be7",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "37e86c92435b",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET SCAN Suspicious inbound to mySQL port 3306",
+              "ET SCAN Suspicious inbound to MSSQL port 1433",
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "4b579f6c3e86",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)",
+              "ET SCAN Potential SSH Scan",
+              "ET SCAN Suspicious inbound to mySQL port 3306",
+              "ET SCAN Suspicious inbound to MSSQL port 1433"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan",
+        "confidence": 1.0
+      }
+    ],
+    "edge_updates": [
+      {
+        "edge_id": "c99e98f27042",
+        "added_phases": [
+          "scan"
+        ],
+        "seen_in_epoch": 1
+      },
+      {
+        "edge_id": "de43ae179be7",
+        "added_phases": [
+          "scan"
+        ],
+        "seen_in_epoch": 1
+      },
+      {
+        "edge_id": "37e86c92435b",
+        "added_phases": [
+          "scan"
+        ],
+        "seen_in_epoch": 1
+      },
+      {
+        "edge_id": "4b579f6c3e86",
+        "added_phases": [
+          "scan"
+        ],
+        "seen_in_epoch": 1
+      }
+    ]
   },
   "service_epoch_context": [],
   "lockdown_activated": false

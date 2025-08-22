@@ -1,26 +1,48 @@
 {
   "epoch_number": 4,
-  "start_time": 1755602458.1343331,
-  "end_time": 1755602580.142864,
+  "start_time": 1755872861.4963737,
+  "end_time": 1755873022.6901202,
   "phase_timings": {
-    "initialization": 1755602458.1343484,
-    "attack_execution": 1755602458.1503143,
-    "monitoring_accumulation": 1755602463.274361,
-    "agent_analysis": 1755602513.275243,
-    "firewall_update_wait": 1755602578.1238742,
-    "metrics_collection": 1755602580.1259868,
-    "epoch_complete": 1755602580.1421165
+    "initialization": 1755872861.4963958,
+    "attack_execution": 1755872861.5229409,
+    "monitoring_accumulation": 1755872882.6308181,
+    "agent_analysis": 1755872932.6337953,
+    "firewall_update_wait": 1755873020.6663537,
+    "metrics_collection": 1755873022.66736,
+    "epoch_complete": 1755873022.6895056
   },
   "services_detected": [
     "PATROL-SNMP(172.20.0.4:8161)",
-    "UNKNOWN(172.20.0.4:61616)"
+    "HTTP-PROXY(172.20.0.3:8080)",
+    "HTTP(172.20.0.5:80)",
+    "UNKNOWN(172.20.0.4:61616)",
+    "HTTP(172.20.0.10:80)"
   ],
-  "services_successfully_exploited": [],
+  "services_successfully_exploited": [
+    "GITLAB",
+    "STRUTS"
+  ],
   "exploits_attempted": [],
-  "flags_captured": [],
+  "flags_captured": [
+    {
+      "service": "STRUTS",
+      "flag": "flag{privileged_access_struts}"
+    },
+    {
+      "service": "GITLAB",
+      "flag": "flag{user_access_gitlab}"
+    }
+  ],
   "attack_success_rate": 0.0,
   "firewall_rules_added": [],
-  "firewall_rules_removed": [],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #7:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+        "REMOVED rule #8:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5"
+      ]
+    }
+  ],
   "honeypots_exposed": {
     "ip": "172.20.0.4",
     "service": "cve-2015-5254-activemq-1",
@@ -35,95 +57,206 @@
       "level_new": 33,
       "changed": false,
       "evidence_quotes": [
-        "No evidence found."
+        "POSSBL PORT SCAN (NMAP -sS)",
+        "ET SCAN Potential SSH Scan"
       ]
     },
     {
       "ip": "172.20.0.4",
       "service": "cve-2015-5254-activemq-1",
-      "level_prev": 0,
+      "level_prev": 33,
       "level_new": 33,
-      "changed": true,
+      "changed": false,
       "evidence_quotes": [
-        "TCP/3306 (MySQL): port scan detected",
-        "TCP/1433 (MSSQL): port scan detected",
-        "TCP/27017 (MongoDB): port scan detected",
-        "TCP/139: NMAP scan detected",
-        "TCP/8161: HTTP GET crawl attempt with curl (\"GET /showcase\")",
-        "TCP/61616: Multiple probing attempts, Suricata signature indicates protocol detection attempts from one direction (application protocol probing)"
+        "POSSBL PORT SCAN (NMAP -sS)",
+        "SURICATA Applayer Detect protocol only one direction"
       ]
     },
     {
       "ip": "172.20.0.10",
       "service": "cve-2021-22205-gitlab-1-proxy",
-      "level_prev": 0,
-      "level_new": 0,
+      "level_prev": 66,
+      "level_new": 66,
       "changed": false,
       "evidence_quotes": [
-        "No evidence found."
+        "Reverse Shell Detected - No Job Control",
+        "cat /home/ctf/user.txt"
       ]
     },
     {
       "ip": "172.20.0.3",
       "service": "s2-057-struts2-1",
-      "level_prev": 0,
-      "level_new": 0,
-      "changed": false,
+      "level_prev": 66,
+      "level_new": 100,
+      "changed": true,
       "evidence_quotes": [
-        "No evidence found."
+        "cat /root/root.txt",
+        "flag{privileged_access_struts}",
+        "Reverse Shell Detected - No Job Control"
       ]
     }
   ],
   "inferred_attack_graph": {
-    "interesting": [],
+    "interesting": [
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1",
+        "confidence": 1.0
+      },
+      {
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy",
+        "confidence": 1.0
+      }
+    ],
     "edges": [
       {
-        "from": "attacker",
+        "from": "192.168.100.2",
         "to": "172.20.0.5",
-        "edge_id": "8ee70111e82308cd",
+        "edge_id": "c99e98f27042",
         "vector": "scan",
         "phases": [
           {
             "phase": "scan",
             "confidence": 1.0,
             "evidence_quotes": [
-              "ET SCAN Suspicious inbound to mySQL port 3306",
-              "ET SCAN Suspicious inbound to MSSQL port 1433",
-              "POSSBL PORT SCAN (NMAP -sS): 2 (on ports 3306 and 51820)",
-              "ET INFO POSSIBLE Web Crawl using Curl"
+              "POSSBL PORT SCAN (NMAP -sS)",
+              "ET SCAN Potential SSH Scan"
             ],
-            "seen_in_epoch": 1,
-            "first_seen": 1,
-            "last_seen": 1
+            "seen_in_epoch": 4
           }
         ],
+        "first_seen": 1,
+        "last_seen": 4,
         "current_phase": "scan",
         "confidence": 1.0
       },
       {
-        "from": "attacker",
+        "from": "192.168.100.2",
         "to": "172.20.0.4",
-        "edge_id": "7c4502e6c8d9a037",
+        "edge_id": "de43ae179be7",
         "vector": "scan",
         "phases": [
           {
             "phase": "scan",
             "confidence": 1.0,
             "evidence_quotes": [
-              "TCP/3306 (MySQL): port scan detected",
-              "TCP/1433 (MSSQL): port scan detected",
-              "TCP/27017 (MongoDB): port scan detected",
-              "TCP/139: NMAP scan detected",
-              "TCP/8161: HTTP GET crawl attempt with curl (\"GET /showcase\")",
-              "TCP/61616: Multiple probing attempts, Suricata signature indicates protocol detection attempts from one direction (application protocol probing)"
+              "POSSBL PORT SCAN (NMAP -sS)",
+              "SURICATA Applayer Detect protocol only one direction"
             ],
-            "seen_in_epoch": 2,
-            "first_seen": 2,
-            "last_seen": 2
+            "seen_in_epoch": 4
           }
         ],
+        "first_seen": 1,
+        "last_seen": 4,
         "current_phase": "scan",
         "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "37e86c92435b",
+        "vector": "initial-access/rce",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET INFO User-Agent (python-requests) Inbound to Webserver"
+            ],
+            "seen_in_epoch": 4
+          },
+          {
+            "phase": "initial-access/rce",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "Reverse Shell Detected - No Job Control"
+            ],
+            "seen_in_epoch": 4
+          },
+          {
+            "phase": "data-exfil-user",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "cat /home/ctf/user.txt"
+            ],
+            "seen_in_epoch": 4
+          }
+        ],
+        "first_seen": 3,
+        "last_seen": 4,
+        "current_phase": "data-exfil-user",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "4b579f6c3e86",
+        "vector": "privilege-escalation",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET SCAN Potential SSH Scan"
+            ],
+            "seen_in_epoch": 4
+          },
+          {
+            "phase": "initial-access/rce",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET WEB_SPECIFIC_APPS Apache Struts OGNL/javalang RCE attempt",
+              "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI"
+            ],
+            "seen_in_epoch": 4
+          },
+          {
+            "phase": "data-exfil-user",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "find / -type f -name 'root.txt'"
+            ],
+            "seen_in_epoch": 4
+          },
+          {
+            "phase": "privilege-escalation",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "cat /root/root.txt"
+            ],
+            "seen_in_epoch": 4
+          },
+          {
+            "phase": "data-exfil-root",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "flag{privileged_access_struts}"
+            ],
+            "seen_in_epoch": 4
+          }
+        ],
+        "first_seen": 3,
+        "last_seen": 4,
+        "current_phase": "data-exfil-root",
+        "confidence": 1.0
+      }
+    ],
+    "edge_updates": [
+      {
+        "edge_id": "4b579f6c3e86",
+        "added_phases": [
+          "privilege-escalation",
+          "data-exfil-root"
+        ],
+        "seen_in_epoch": 4
+      },
+      {
+        "edge_id": "37e86c92435b",
+        "added_phases": [
+          "data-exfil-user"
+        ],
+        "seen_in_epoch": 4
       }
     ]
   },
