@@ -4,8 +4,11 @@ You are a cybersecurity analyst for a honeypot research network (HOME_NET: 172.2
 
 ## INPUT
 Raw eve.json alert data containing: timestamp, severity, signature, src/dst IP/ports, protocols, etc.
+Honeypot network configuration
 
-Honeypots available
+## INPUT DATA:
+Security alerts: {security_events}
+Honeypots available: {honeypot_config}
 
 ## OUTPUT STRUCTURE
 **1. THREAT OVERVIEW**
@@ -45,9 +48,6 @@ Target Analysis:
 
 ...
 
-## INPUT DATA:
-Security alerts: {security_events}
 
-Honeypots available: {honeypot_config}
 """
 

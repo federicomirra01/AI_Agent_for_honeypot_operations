@@ -1,5 +1,5 @@
 from configuration import state
-from prompts import exploitation_plan_prompt
+from prompts import exposure_manager_prompt
 from .node_utils import OPEN_AI_KEY
 from openai import BadRequestError
 import logging
@@ -12,7 +12,6 @@ class StructuredOutput(BaseModel):
     reasoning: str
     selected_honeypot: dict
     why_not_expose: List[Dict]
-    plan: dict
     lockdown: bool
 
 # Configure logging
@@ -37,10 +36,12 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
     logger.info("Exploitation Agent")
 
     episodic_memory = config.get("configurable", {}).get("store")
+    model_name = config.get("configurable", {}).get("model_name", "gpt-4.1")
+
     last_epochs = episodic_memory.get_recent_iterations(limit=10)
     exposure_registry = _extract_exposure_registry(last_epochs)
 
-    prompt = exploitation_plan_prompt.EXPLOITATION_PLAN_PROMPT.substitute(
+    prompt = exposure_manager_prompt.EXPLOITATION_PLAN_PROMPT.substitute(
         available_honeypots=state.honeypot_config,
         firewall_config=state.firewall_config,
         honeypots_exploitations=state.honeypots_exploitation,
@@ -54,7 +55,7 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
         messages = {"role":"system", "content": prompt}
         agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
         response = agent.chat.completions.create(
-            model='gpt-4.1',
+            model=model_name,
             response_model=StructuredOutput,
             messages=[messages]
         )
@@ -62,12 +63,10 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
         message += f"Reasoning: {str(response.reasoning)}" + "\n"
         message += f"Selected Honeypot: {str(response.selected_honeypot)}" + "\n"
         message += f"Why not expose: {str(response.why_not_expose)}" + "\n"
-        message += f"Plan: {str(response.plan)}" + "\n"
         message += f"Lockdown: {str(response.lockdown)}"
 
         return {
             "messages":state.messages + [message],
-            "exploitation_strategy": response.plan,
             "reasoning_exploitation": response.reasoning,
             "currently_exposed":response.selected_honeypot,
             "lockdown_status":response.lockdown
@@ -75,7 +74,7 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
     except BadRequestError as e:
         logger.error(f"Error: {e}")
     except Exception as e:
-        logger.error(f"Error during json parsing of response in Exploitation Manager\n{e}")
+        logger.error(f"Error during json parsing of response in Exposure Manager\n{e}")
 
     return {
         "messages":state.messages + [message],

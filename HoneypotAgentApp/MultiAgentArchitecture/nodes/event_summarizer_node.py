@@ -21,6 +21,7 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
     """
     logger.info("Summarizer Agent")
     configuration = config.get("configurable", {}).get("prompt", "Default")
+    model_name = config.get("configurable", {}).get("model_name", "gpt-4.1")
     # Initialize the prompt from configuration: eve.json or fast.log analysis
     if "fast" in configuration:
         prompt = fast_summary_prompt.SUMMARY_PROMPT_FAST.format(
@@ -37,7 +38,7 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
     try:
         agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
         response = agent.chat.completions.create(
-            model='gpt-4.1',
+            model=model_name,
             response_model=StructuredOutput,
             messages=[messages]
         )
