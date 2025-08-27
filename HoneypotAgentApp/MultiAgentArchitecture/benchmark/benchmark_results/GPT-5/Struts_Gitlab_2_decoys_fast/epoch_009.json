@@ -1,0 +1,220 @@
+{
+  "epoch_number": 9,
+  "start_time": 1756224470.2741141,
+  "end_time": 1756224759.1704245,
+  "phase_timings": {
+    "initialization": 1756224470.2741263,
+    "attack_execution": 1756224470.2944493,
+    "monitoring_accumulation": 1756224484.14992,
+    "agent_analysis": 1756224534.1507225,
+    "firewall_update_wait": 1756224757.1488764,
+    "metrics_collection": 1756224759.1501546,
+    "epoch_complete": 1756224759.1694167
+  },
+  "services_detected": [
+    "HTTP-PROXY(172.20.0.3:8080)"
+  ],
+  "services_successfully_exploited": [
+    "STRUTS"
+  ],
+  "exploits_attempted": [],
+  "flags_captured": [
+    {
+      "service": "STRUTS",
+      "flag": "flag{privileged_access_struts}"
+    }
+  ],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.3",
+    "service": "s2-057-struts2-1",
+    "current_level": 66,
+    "epoch": 9
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 100,
+      "level_new": 100,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 0,
+      "level_new": 66,
+      "changed": true,
+      "evidence_quotes": [
+        "Apache Struts Possible OGNL Java Exec In URI",
+        "Possible Apache Struts OGNL in Dynamic Action",
+        "inbound OGNL injection remote code execution attempt",
+        "java.lang inbound OGNL injection remote code execution attempt",
+        ".exec in HTTP URI Inbound",
+        "Reverse Shell Detected - No Job Control"
+      ]
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy",
+        "confidence": 1.0
+      },
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1",
+        "confidence": 1.0
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "9c2f5b0ab3d1",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET INFO POSSIBLE Web Crawl using Curl",
+              "Evidence of HTTP probing; no further interaction detected"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "a5e0b1c2d3e4",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "SURICATA Applayer Detect protocol only one direction",
+              "ET INFO POSSIBLE Web Crawl using Curl"
+            ],
+            "seen_in_epoch": 2
+          }
+        ],
+        "first_seen": 2,
+        "last_seen": 2,
+        "current_phase": "scan",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "49a7e8c2d1f3",
+        "vector": "privilege-escalation",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "POSSIBLE Web Crawl using Curl",
+              "User-Agent (python-requests)"
+            ],
+            "seen_in_epoch": 3
+          },
+          {
+            "phase": "initial-access/rce",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "Reverse Shell Detected - No Job Control",
+              "bash shell piped to dev tcp"
+            ],
+            "seen_in_epoch": 3
+          },
+          {
+            "phase": "privilege-escalation",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "bash -p",
+              "SUID Binary Enumeration"
+            ],
+            "seen_in_epoch": 3
+          }
+        ],
+        "first_seen": 3,
+        "last_seen": 3,
+        "current_phase": "privilege-escalation",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "c7f3a9b2d4e1",
+        "vector": "initial-access/rce",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "User-Agent (python-requests)",
+              "curl User-Agent to Dotted Quad"
+            ],
+            "seen_in_epoch": 4
+          },
+          {
+            "phase": "initial-access/rce",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "Apache Struts Possible OGNL Java Exec In URI",
+              "Possible Apache Struts OGNL in Dynamic Action",
+              "inbound OGNL injection remote code execution attempt",
+              "java.lang inbound OGNL injection remote code execution attempt",
+              ".exec in HTTP URI Inbound",
+              "Reverse Shell Detected - No Job Control"
+            ],
+            "seen_in_epoch": 4
+          }
+        ],
+        "first_seen": 4,
+        "last_seen": 4,
+        "current_phase": "initial-access/rce",
+        "confidence": 1.0
+      }
+    ],
+    "edge_updates": [
+      {
+        "edge_id": "c7f3a9b2d4e1",
+        "added_phases": [
+          "scan",
+          "initial-access/rce"
+        ],
+        "seen_in_epoch": 4
+      }
+    ]
+  },
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}

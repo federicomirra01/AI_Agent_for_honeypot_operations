@@ -40,11 +40,8 @@ ACTION_PRIORITY = {
 }
 
 
-#tools = [AddAllowRule, AddBlockRule, RemoveFirewallRule]
-
-async def firewall_executor(state:state.HoneypotStateReact, config):
+async def firewall_executor(state:state.HoneypotStateReact):
     logger.info("Firewall Agent")
-    model_name = config.get("configurable", {}).get("model_name", "gpt-4.1")
     prompt = firewall_executor_prompt.FIREWALL_EXECUTOR_PROMPT.format(
         selected_honeypot=state.currently_exposed,
         firewall_config=state.firewall_config,
@@ -54,7 +51,7 @@ async def firewall_executor(state:state.HoneypotStateReact, config):
     try:
         agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
         response = agent.chat.completions.create(
-            model=model_name,
+            model="gpt-4.1",
             response_model=StructuredOutput,
             messages=[messages]
         )

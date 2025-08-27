@@ -36,7 +36,6 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
     logger.info("Exploitation Agent")
 
     episodic_memory = config.get("configurable", {}).get("store")
-    model_name = config.get("configurable", {}).get("model_name", "gpt-4.1")
 
     last_epochs = episodic_memory.get_recent_iterations(limit=10)
     exposure_registry = _extract_exposure_registry(last_epochs)
@@ -55,7 +54,7 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
         messages = {"role":"system", "content": prompt}
         agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
         response = agent.chat.completions.create(
-            model=model_name,
+            model='gpt-4.1',
             response_model=StructuredOutput,
             messages=[messages]
         )

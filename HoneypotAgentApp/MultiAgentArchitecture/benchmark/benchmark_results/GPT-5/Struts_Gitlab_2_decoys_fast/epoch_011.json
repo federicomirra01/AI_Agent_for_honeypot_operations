@@ -1,0 +1,47 @@
+{
+  "epoch_number": 11,
+  "start_time": 1756225051.3278217,
+  "end_time": 1756225290.5271883,
+  "phase_timings": {
+    "initialization": 1756225051.3278408,
+    "attack_execution": 1756225051.369507,
+    "monitoring_accumulation": 1756225057.0068657,
+    "agent_analysis": 1756225107.0093873,
+    "firewall_update_wait": 1756225288.4879467,
+    "metrics_collection": 1756225290.4922426,
+    "epoch_complete": 1756225290.5263152
+  },
+  "services_detected": [
+    "HTTP(172.20.0.5:80)"
+  ],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.10:80 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.10 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5           tcp dpt:80"
+      ]
+    }
+  ],
+  "honeypots_exposed": {
+    "ip": "172.20.0.10",
+    "service": "cve-2021-22205-gitlab-1-proxy",
+    "current_level": 0,
+    "epoch": 11
+  },
+  "honeypots_exploitation": {},
+  "inferred_attack_graph": {},
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}

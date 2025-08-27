@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 async def memory_summarizer(state: state.HoneypotStateReact, config):
     logger.info("Memory Agent")
     episodic_memory = config.get("configurable", {}).get("store")
-    model_name = config.get("configurable", {}).get("model_name", "gpt-4.1")
     epoch_num = config.get("configurable", {}).get("epoch_num")
     last_epochs = episodic_memory.get_recent_iterations(limit=1)
     logger.info(epoch_num)

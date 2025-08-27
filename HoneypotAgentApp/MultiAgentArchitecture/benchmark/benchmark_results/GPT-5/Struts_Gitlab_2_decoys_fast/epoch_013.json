@@ -1,0 +1,188 @@
+{
+  "epoch_number": 13,
+  "start_time": 1756225575.4790232,
+  "end_time": 1756225936.864148,
+  "phase_timings": {
+    "initialization": 1756225575.4790385,
+    "attack_execution": 1756225575.501513,
+    "monitoring_accumulation": 1756225589.018664,
+    "agent_analysis": 1756225639.0202527,
+    "firewall_update_wait": 1756225934.820341,
+    "metrics_collection": 1756225936.8226511,
+    "epoch_complete": 1756225936.8625715
+  },
+  "services_detected": [
+    "HTTP-PROXY(172.20.0.3:8080)"
+  ],
+  "services_successfully_exploited": [
+    "STRUTS"
+  ],
+  "exploits_attempted": [],
+  "flags_captured": [
+    {
+      "service": "STRUTS",
+      "flag": "flag{privileged_access_struts}"
+    }
+  ],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.3",
+    "service": "s2-057-struts2-1",
+    "current_level": 66,
+    "epoch": 13
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 100,
+      "level_new": 100,
+      "changed": false,
+      "evidence_quotes": [
+        "reverse shell detected",
+        "bash shell to /dev/tcp",
+        "bash -p",
+        "Privilege escalation attempt",
+        "SUID Binary Enumeration"
+      ]
+    },
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 0,
+      "level_new": 66,
+      "changed": true,
+      "evidence_quotes": [
+        "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+        "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+        "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt",
+        "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt",
+        "ET INFO User-Agent (python-requests) Inbound to Webserver",
+        "ET HUNTING curl User-Agent to Dotted Quad",
+        "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity",
+        "Reverse Shell Detected - No Job Control"
+      ]
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.10",
+        "service": "HTTP (80/tcp)",
+        "confidence": 1.0
+      },
+      {
+        "ip": "172.20.0.3",
+        "service": "HTTP (8080/tcp)",
+        "confidence": 1.0
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "3e2c4c51d5b3",
+        "vector": "privilege-escalation",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "curl",
+              "python-requests",
+              "truncated packet"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "initial-access/rce",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "reverse shell detected",
+              "bash shell to /dev/tcp"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "privilege-escalation",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "bash -p",
+              "Privilege escalation attempt",
+              "SUID Binary Enumeration"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "privilege-escalation",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "6f2c6e9b1a3d",
+        "vector": "initial-access/rce",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET INFO User-Agent (python-requests) Inbound to Webserver",
+              "ET HUNTING curl User-Agent to Dotted Quad"
+            ],
+            "seen_in_epoch": 2
+          },
+          {
+            "phase": "initial-access/rce",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+              "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+              "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt",
+              "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt",
+              "ET HUNTING .exec in HTTP URI Inbound - Possible Exploit Activity",
+              "Reverse Shell Detected - No Job Control"
+            ],
+            "seen_in_epoch": 2
+          }
+        ],
+        "first_seen": 2,
+        "last_seen": 2,
+        "current_phase": "initial-access/rce",
+        "confidence": 1.0
+      }
+    ],
+    "edge_updates": [
+      {
+        "edge_id": "6f2c6e9b1a3d",
+        "added_phases": [
+          "scan",
+          "initial-access/rce"
+        ],
+        "seen_in_epoch": 2
+      }
+    ]
+  },
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}

@@ -1,0 +1,293 @@
+{
+  "epoch_number": 10,
+  "start_time": 1756290846.7155225,
+  "end_time": 1756291128.5639951,
+  "phase_timings": {
+    "initialization": 1756290846.715557,
+    "attack_execution": 1756290846.7577307,
+    "monitoring_accumulation": 1756290861.477356,
+    "agent_analysis": 1756290911.4803307,
+    "firewall_update_wait": 1756291126.5430787,
+    "metrics_collection": 1756291128.5443306,
+    "epoch_complete": 1756291128.5630898
+  },
+  "services_detected": [
+    "HTTP-PROXY(172.20.0.3:8080)"
+  ],
+  "services_successfully_exploited": [
+    "STRUTS"
+  ],
+  "exploits_attempted": [],
+  "flags_captured": [
+    {
+      "service": "STRUTS",
+      "flag": "flag{privileged_access_struts}"
+    }
+  ],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.5:80 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.5 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.3           192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3           tcp dpt:8080"
+      ]
+    }
+  ],
+  "honeypots_exposed": {
+    "ip": "172.20.0.5",
+    "service": "cve-2014-6271-web-1",
+    "current_level": 33,
+    "epoch": 10
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 100,
+      "level_new": 100,
+      "changed": false,
+      "evidence_quotes": [
+        "Apache Struts Possible OGNL Java Exec In URI",
+        "Apache Struts ognl inbound OGNL injection remote code execution",
+        "Reverse Shell Detected \u2013 No Job Control",
+        "cat /root/root.txt",
+        "User-Agent (python-requests)",
+        "curl User-Agent detection to Dotted Quad IP"
+      ]
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 100,
+      "level_new": 100,
+      "changed": false,
+      "evidence_quotes": [
+        "Reverse Shell Detected - No Job Control",
+        "find / -perm -4000 -type f",
+        "SUID Binary Enumeration Detected",
+        "/bin/bash -p",
+        "capture of flag indicating privileged access"
+      ]
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": [
+        "GET /showcase",
+        "user-agent: curl",
+        "SURICATA Applayer Detect protocol only one direction",
+        "61616/tcp"
+      ]
+    },
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": [
+        "ET INFO POSSIBLE Web Crawl using Curl",
+        "GET /showcase"
+      ]
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy",
+        "confidence": 1.0
+      },
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1",
+        "confidence": 1.0
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "a2f6b07d3c9e",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET INFO POSSIBLE Web Crawl using Curl",
+              "GET /showcase"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "0f6a2d9c1b7e",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "HTTP GET /showcase",
+              "ET INFO POSSIBLE Web Crawl using Curl",
+              "SURICATA Applayer Detect protocol only one direction",
+              "Multiple distinct connections to broker port"
+            ],
+            "seen_in_epoch": 2
+          },
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET INFO POSSIBLE Web Crawl using Curl",
+              "GET /showcase",
+              "SURICATA Applayer Detect protocol only one direction"
+            ],
+            "seen_in_epoch": 3
+          },
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "SURICATA Applayer Detect protocol only one direction",
+              "TCP/61616",
+              "ET INFO POSSIBLE Web Crawl using Curl",
+              "GET /showcase"
+            ],
+            "seen_in_epoch": 4
+          },
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "GET /showcase",
+              "user-agent: curl",
+              "SURICATA Applayer Detect protocol only one direction",
+              "61616/tcp"
+            ],
+            "seen_in_epoch": 5
+          }
+        ],
+        "first_seen": 2,
+        "last_seen": 5,
+        "current_phase": "scan",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "5d7f3a8c2b1e",
+        "vector": "privilege-escalation",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET INFO POSSIBLE Web Crawl using Curl",
+              "User-Agent (python-requests) Inbound to Webserver"
+            ],
+            "seen_in_epoch": 6
+          },
+          {
+            "phase": "initial-access/rce",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "Possible bash shell piped to dev tcp",
+              "Reverse Shell Detected - No Job Control"
+            ],
+            "seen_in_epoch": 6
+          },
+          {
+            "phase": "data-exfil-user",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "capture of flag indicating privileged access"
+            ],
+            "seen_in_epoch": 6
+          },
+          {
+            "phase": "privilege-escalation",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "find / -perm -4000 -type f",
+              "SUID Binary Enumeration Detected",
+              "/bin/bash -p"
+            ],
+            "seen_in_epoch": 6
+          }
+        ],
+        "first_seen": 6,
+        "last_seen": 6,
+        "current_phase": "privilege-escalation",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "9b1c3f2a7d4e",
+        "vector": "data-exfil-root",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "User-Agent (python-requests)"
+            ],
+            "seen_in_epoch": 7
+          },
+          {
+            "phase": "initial-access/rce",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "Apache Struts Possible OGNL Java Exec In URI",
+              "Reverse Shell Detected - No Job Control"
+            ],
+            "seen_in_epoch": 7
+          },
+          {
+            "phase": "data-exfil-user",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "reading host files"
+            ],
+            "seen_in_epoch": 7
+          },
+          {
+            "phase": "data-exfil-root",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "/root/root.txt"
+            ],
+            "seen_in_epoch": 7
+          }
+        ],
+        "first_seen": 7,
+        "last_seen": 8,
+        "current_phase": "data-exfil-root",
+        "confidence": 1.0
+      }
+    ],
+    "edge_updates": []
+  },
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}

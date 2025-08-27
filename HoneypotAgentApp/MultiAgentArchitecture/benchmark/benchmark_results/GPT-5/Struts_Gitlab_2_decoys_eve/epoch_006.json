@@ -1,0 +1,161 @@
+{
+  "epoch_number": 6,
+  "start_time": 1756289506.0278182,
+  "end_time": 1756289874.7843993,
+  "phase_timings": {
+    "initialization": 1756289506.027838,
+    "attack_execution": 1756289506.0446794,
+    "monitoring_accumulation": 1756289512.6893802,
+    "agent_analysis": 1756289562.6911585,
+    "firewall_update_wait": 1756289872.7667377,
+    "metrics_collection": 1756289874.7679837,
+    "epoch_complete": 1756289874.7834527
+  },
+  "services_detected": [
+    "UNKNOWN(172.20.0.4:61616)",
+    "PATROL-SNMP(172.20.0.4:8161)"
+  ],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.4",
+    "service": "cve-2015-5254-activemq-1",
+    "current_level": 33,
+    "epoch": 6
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": [
+        "ET INFO POSSIBLE Web Crawl using Curl",
+        "GET /showcase"
+      ]
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": [
+        "SURICATA Applayer Detect protocol only one direction",
+        "TCP/61616",
+        "ET INFO POSSIBLE Web Crawl using Curl",
+        "GET /showcase"
+      ]
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "Targeted Services: No evidence found.",
+        "Honeypot Engagement: No evidence found.",
+        "Compromise Indicators: No evidence found."
+      ]
+    },
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": [
+        "Targeted Services: No evidence found.",
+        "Honeypot Engagement: No evidence found.",
+        "Compromise Indicators: No evidence found."
+      ]
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "a2f6b07d3c9e",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET INFO POSSIBLE Web Crawl using Curl",
+              "GET /showcase"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "0f6a2d9c1b7e",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "HTTP GET /showcase",
+              "ET INFO POSSIBLE Web Crawl using Curl",
+              "SURICATA Applayer Detect protocol only one direction",
+              "Multiple distinct connections to broker port"
+            ],
+            "seen_in_epoch": 2
+          },
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET INFO POSSIBLE Web Crawl using Curl",
+              "GET /showcase",
+              "SURICATA Applayer Detect protocol only one direction"
+            ],
+            "seen_in_epoch": 3
+          },
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "SURICATA Applayer Detect protocol only one direction",
+              "TCP/61616",
+              "ET INFO POSSIBLE Web Crawl using Curl",
+              "GET /showcase"
+            ],
+            "seen_in_epoch": 4
+          }
+        ],
+        "first_seen": 2,
+        "last_seen": 4,
+        "current_phase": "scan",
+        "confidence": 1.0
+      }
+    ],
+    "edge_updates": [
+      {
+        "edge_id": "0f6a2d9c1b7e",
+        "added_phases": [
+          "scan"
+        ],
+        "seen_in_epoch": 4
+      }
+    ]
+  },
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}

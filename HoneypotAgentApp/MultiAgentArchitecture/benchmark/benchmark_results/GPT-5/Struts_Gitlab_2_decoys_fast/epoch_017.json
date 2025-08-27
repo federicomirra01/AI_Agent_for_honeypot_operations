@@ -1,0 +1,174 @@
+{
+  "epoch_number": 17,
+  "start_time": 1756226847.7887883,
+  "end_time": 1756227106.9200978,
+  "phase_timings": {
+    "initialization": 1756226847.7888033,
+    "attack_execution": 1756226847.8046548,
+    "monitoring_accumulation": 1756226861.0718703,
+    "agent_analysis": 1756226911.0727527,
+    "firewall_update_wait": 1756227104.8984845,
+    "metrics_collection": 1756227106.8992321,
+    "epoch_complete": 1756227106.9191265
+  },
+  "services_detected": [
+    "HTTP-PROXY(172.20.0.3:8080)"
+  ],
+  "services_successfully_exploited": [
+    "STRUTS"
+  ],
+  "exploits_attempted": [],
+  "flags_captured": [
+    {
+      "service": "STRUTS",
+      "flag": "flag{privileged_access_struts}"
+    }
+  ],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.3",
+    "service": "s2-057-struts2-1",
+    "current_level": 66,
+    "epoch": 17
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 100,
+      "level_new": 100,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 0,
+      "level_new": 66,
+      "changed": true,
+      "evidence_quotes": [
+        "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt",
+        "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+        "Reverse Shell Detected - No Job Control",
+        "192.168.100.2:9999"
+      ]
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.10",
+        "service": "80/tcp",
+        "confidence": 1.0
+      },
+      {
+        "ip": "172.20.0.3",
+        "service": "8080/tcp",
+        "confidence": 1.0
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "9e2b5d1a3c7f",
+        "vector": "privilege-escalation",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "Web Crawl using Curl",
+              "ET INFO User-Agent (python-requests)"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "initial-access/rce",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "Reverse Shell Detected - No Job Control",
+              "Possible bash shell piped to dev tcp"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "privilege-escalation",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "bash -p",
+              "SUID Binary Enumeration Detected"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "privilege-escalation",
+        "confidence": 1.0
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "6a4f3b2c1d9e",
+        "vector": "initial-access/rce",
+        "phases": [
+          {
+            "phase": "scan",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET INFO User-Agent (python-requests) Inbound to Webserver",
+              "ET HUNTING curl User-Agent to Dotted Quad"
+            ],
+            "seen_in_epoch": 2
+          },
+          {
+            "phase": "initial-access/rce",
+            "confidence": 1.0,
+            "evidence_quotes": [
+              "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt",
+              "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+              "Reverse Shell Detected - No Job Control",
+              "192.168.100.2:9999"
+            ],
+            "seen_in_epoch": 2
+          }
+        ],
+        "first_seen": 2,
+        "last_seen": 2,
+        "current_phase": "initial-access/rce",
+        "confidence": 1.0
+      }
+    ],
+    "edge_updates": [
+      {
+        "edge_id": "6a4f3b2c1d9e",
+        "added_phases": [
+          "scan",
+          "initial-access/rce"
+        ],
+        "seen_in_epoch": 2
+      }
+    ]
+  },
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}
