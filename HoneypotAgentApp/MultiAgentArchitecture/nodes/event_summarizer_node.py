@@ -21,6 +21,7 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
     """
     logger.info("Summarizer Agent")
     configuration = config.get("configurable", {}).get("prompt", "Default")
+    model_config = config.get("configurable", {}).get("model_config", "small:4.1")
     # Initialize the prompt from configuration: eve.json or fast.log analysis
     if "fast" in configuration:
         prompt = fast_summary_prompt.SUMMARY_PROMPT_FAST.format(
@@ -33,25 +34,35 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
             honeypot_config=state.honeypot_config
         )
     messages = {"role":"system", "content": prompt}
+    version = model_config.split(':')[1]
+    if "small" in model_config:
+        model_name = f"gpt-{version}-mini"
+    else:
+        model_name = f"gpt-{version}"
 
-    try:
-        agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
-        response = agent.chat.completions.create(
-            model='gpt-4.1',
-            response_model=StructuredOutput,
-            messages=[messages]
-        )
-        message = ""
-        message += str(response.security_summary)
+    if state.security_events:    
+        try:
+            agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
+            response = agent.chat.completions.create(
+                model=model_name,
+                response_model=StructuredOutput,
+                messages=[messages]
+            )
+            message = ""
+            message += str(response.security_summary)
 
-        return {
-        "messages": [message],
-        "security_events_summary": response.security_summary
-        }
-
-
-    except BadRequestError as e:
-        logger.error(f"Error in calling Summarizer Agent: {e}")
-        return {
-            "messages": state.messages
+            return {
+            "messages": [message],
+            "security_events_summary": response.security_summary
             }
+
+        except BadRequestError as e:
+            logger.error(f"Error in calling Summarizer Agent: {e}")
+            return {
+                "messages": state.messages
+                }
+    else:
+        return {
+            "messages": state.messages,
+            "security_events_summary": "No alerts retrieved"
+        }

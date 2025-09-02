@@ -3,7 +3,7 @@
 
 vars:
   address-groups:
-    HOME_NET: "172.20.0.0/24"
+    HOME_NET: "[172.20.0.0/24, 192.168.100.254]"
     EXTERNAL_NET: "!$HOME_NET"
     
     # Focused server definitions for attack targets
@@ -100,7 +100,6 @@ af-packet:
     defrag: yes
     ring-size: 2048                         # Reduced ring size
     
-af-packet:
   - interface: eth2
     threads: 1                              # Single thread for resource efficiency
     cluster-id: 98

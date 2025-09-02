@@ -40,8 +40,17 @@ ACTION_PRIORITY = {
 }
 
 
-async def firewall_executor(state:state.HoneypotStateReact):
+async def firewall_executor(state:state.HoneypotStateReact, config):
     logger.info("Firewall Agent")
+    configuration = config.get("configurable", {}).get("model_config", "large:4.1")
+    size, version = configuration.split(':')
+    if size == "small":
+        model_name = f"gpt-{version}-mini"
+    else:
+        model_name = f"gpt-{version}"
+
+    logger.info(f"Using: {model_name}")
+
     prompt = firewall_executor_prompt.FIREWALL_EXECUTOR_PROMPT.format(
         selected_honeypot=state.currently_exposed,
         firewall_config=state.firewall_config,
@@ -51,14 +60,14 @@ async def firewall_executor(state:state.HoneypotStateReact):
     try:
         agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
         response = agent.chat.completions.create(
-            model="gpt-4.1",
+            model=model_name,
             response_model=StructuredOutput,
             messages=[messages]
         )
         message = f"Reasoning:" + str(response.reasoning)
         message += f"\nAction: {str(response.action)}"
 
-        return {"messages":state.messages + [message], "firewall_resoning":response.reasoning, "firewall_action": response.action}
+        return {"messages": [message], "firewall_resoning":response.reasoning, "firewall_action": response.action}
 
     except Exception as e:
         logger.error(f"Error splitting reasoning in firewall executor:\n{e}")

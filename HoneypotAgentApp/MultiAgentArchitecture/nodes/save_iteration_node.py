@@ -84,7 +84,7 @@ def _build_exposure_registry(episodic_memory, limit=20, current_ce=None, current
             r = registry[ip]
             # If we've already seen this IP in history, just ensure last_epoch is up-to-date
             r["last_epoch"] = max(r["last_epoch"], epoch if epoch is not None else r["last_epoch"])
-            r["epochs_exposed"] = r["last_epoch"] - r["first_epoch"]
+            r["epochs_exposed"] = r["last_epoch"] - r["first_epoch"] + 1
             # Only update levels if we have fresher info.
             if last_level is not None:
                 r["prev_level"] = r.get("last_level")
@@ -123,7 +123,7 @@ def save_iteration(state: state.HoneypotStateReact, config) -> Dict[str, Any]:
         )
 
     iteration_data = {
-        "memory_context": state.memory_context,
+        #"memory_context": state.memory_context,
         "currently_exposed": ce,
         "exposure_registry":exposure_registry,
         "rules_added": state.rules_added_current_epoch if state.rules_added_current_epoch else [],

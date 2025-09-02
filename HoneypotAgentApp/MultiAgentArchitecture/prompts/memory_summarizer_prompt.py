@@ -5,11 +5,10 @@ MEMORY_PLAN_SUMMARIZER_PROMPT = Template("""
 
 ## ROLE
 You summarize the last epoch's exploitation plan specifically for the Exploitation Manager Agent, and maintain a compact, epoch-indexed history log.
-The previous summaries must be copied as history for the next epochs.
-
+Output only the summary of the last epoch, taking into account the information provided by the previous epochs in case nothing changed.
 ## INPUTS
-- Exploitation plan episodic memory of the last epoch: $episodic_memory
-- Last episodic memory summary (may include prior epoch log): $previous_summary
+- Exposure plan episodic memory of the last epoch: $episodic_memory
+- memory summaries: $previous_summary
 - Current epoch number: $epoch_num
 
 ## SUMMARY RULES
@@ -28,29 +27,14 @@ The previous summaries must be copied as history for the next epochs.
    - If identical to previous epoch's plan, write:
      "No change from previous epoch; same honeypot exposed."
 
-## HISTORY MANAGEMENT
-- Maintain an append-only, epoch-indexed log: "Epoch {n}: <one compact line>".
-- Append the current epoch as one line derived from the current bullets.
 
 ## OUTPUT FORMAT
-Return TWO parts, in this exact order:
 
-1) Current Epoch Summary
-- "Epoch {current_epoch}: <one-line summary>"
+- "Epoch {current_epoch - 1}: <one-line summary>"
 - If needed, follow with up to two bullets for clarity.
-
-2) History (Most recent first)
-Epoch {current_epoch}: <one-line summary>
-Epoch {current_epoch-1}: <previous one-line>
 ...
 
-## EXAMPLES
-- Current Epoch Summary
+## EXAMPLES for epoch 8 summary
+
   - "Epoch 7: Exposed 172.20.0.5 (HTTP); exploitation rose 33%→66%; rotation applied; policy respected."
-- History (Most recent first)
-  Epoch 7: Exposed 172.20.0.5 (HTTP); exploitation 33%→66%; rotation; policy OK.
-  Epoch 6: Rotated to FTP; no exploitation progress; policy OK.
-  Epoch 5: No change from previous epoch; same honeypot exposed.
-  ...
-  Epoch 1: ...
 """)

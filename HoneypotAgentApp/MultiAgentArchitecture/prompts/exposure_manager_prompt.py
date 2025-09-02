@@ -17,17 +17,13 @@ You control allow/block rules only for traffic between the attacker network and 
 - List of current firewall rules                                    
 - Current exploitation level tracking
 - Current Inferred attack graph
-- Memory of past epochs exploitation plan
 - Exposure registry (first_epoch, last_epoch, epochs_exposed, prev/last exploitation levels)
 ---
 
 ## INPUTS:
 - Available honeypots: $available_honeypots
-- Firewall rules: $firewall_config
 - Exploitation levels: $honeypots_exploitations
-- Attack Graph: $inferred_attack_graph
 - Exposure registry: $exposure_registry                                   
-- Memory context (summarized): $memory_context
                                     
 ## DEFINITIONS
 - **Progress:** exploitation level increased since the previous epoch.

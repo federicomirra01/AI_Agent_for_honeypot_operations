@@ -50,6 +50,8 @@ alert udp any ![53,67,68,69,123,161,162,389,520,1026,1027,1028,1029,1194,1434,19
 
 alert tcp any any -> any any (msg:"User-Level File Discovery - find binary execution";pcre:"/find\s+[^\s]*\s+-type\s+f\s+-name\s+['\"]?user\.txt['\"]?.*2>\s*\/dev\/null/i";classtype:attempted-recon;priority:2;sid:9100002; rev:1;)
 
+alert tcp any any -> any any (msg:"Root-Level File Discovery - find binary execution";pcre:"/find\s+[^\s]*\s+-type\s+f\s+-name\s+['\"]?root\.txt['\"]?.*2>\s*\/dev\/null/i";classtype:attempted-recon;priority:2;sid:9100002; rev:1;)
+
 alert tcp any any -> any any (msg:"SUID Binary Enumeration Detected";pcre:"/find\s+[^\s]*\s+-perm\s+-?4000\s+-type\s+f/i";classtype:attempted-recon;priority:2;sid:9100004; rev:1;)
 
 alert tcp any any -> any any (msg:"Privilege Escalation Attempt - bash -p";pcre:"/bash\s+-p/i";classtype:attempted-admin;priority:1;sid:9100005; rev:1;)
