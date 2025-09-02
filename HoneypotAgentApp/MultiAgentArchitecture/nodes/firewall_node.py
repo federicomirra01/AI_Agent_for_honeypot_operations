@@ -1,3 +1,4 @@
+from langchain_core.messages import AIMessage
 from configuration import state
 from prompts import firewall_executor_prompt
 from .node_utils import OPEN_AI_KEY
@@ -17,14 +18,14 @@ class AddAllowRule(BaseModel):
     source_ip: str = Field(..., description="Source IP address")
     dest_ip: str = Field(..., description="Destination IP address")
     port: Optional[int] = Field(None, description="Port Number (optional)")
-    protocol: Optional[str] = Field("tcp", description="Protocol (default: tcp)")
+    protocol: str = Field("tcp", description="Protocol (default: tcp)")
 
 class AddBlockRule(BaseModel):
     """Model for adding a block rule to the firewall."""
     source_ip: str = Field(..., description="Source IP address")
     dest_ip: str = Field(..., description="Destination IP address")
     port: Optional[int] = Field(None, description="Port Number (optional)")
-    protocol: Optional[str] = Field("tcp", description="Protocol (default: tcp)")
+    protocol: str = Field("tcp", description="Protocol (default: tcp)")
 
 class RemoveFirewallRule(BaseModel):
     rule_numbers: List[int] = Field(..., description="List of firewall rule numbers to remove")
@@ -62,10 +63,11 @@ async def firewall_executor(state:state.HoneypotStateReact, config):
         response = agent.chat.completions.create(
             model=model_name,
             response_model=StructuredOutput,
-            messages=[messages]
+            messages=[messages] # type: ignore
         )
         message = f"Reasoning:" + str(response.reasoning)
         message += f"\nAction: {str(response.action)}"
+        message = AIMessage(content=message)
 
         return {"messages": [message], "firewall_resoning":response.reasoning, "firewall_action": response.action}
 

@@ -179,7 +179,7 @@ def get_alerts():
     return jsonify({
         "total_events": len(compressed_alerts),
         "time_window_minutes": time_window,
-        "events_by_type": compressed_alerts,
+        "alerts": compressed_alerts,
         "timestamp": datetime.now().isoformat() + "Z"
     })
 
@@ -208,7 +208,7 @@ def get_fast_log():
     time_window = int(request.args.get("time_window", 10))  # minutes
     entries = read_fast_log(time_window)
     return jsonify({
-        "count": len(entries),
+        "total_events": len(entries),
         "time_window_minutes": time_window,
         "alerts": entries,
         "timestamp": datetime.now().isoformat()

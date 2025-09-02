@@ -31,7 +31,7 @@ async def memory_summarizer(state: state.HoneypotStateReact, config):
     model_config = config.get("configurable", {}).get("model_config", "small:4.1")
     epoch_num = config.get("configurable", {}).get("epoch_num")
     last_epochs = episodic_memory.get_recent_iterations(limit=1)
-
+    message = ""
     
     if last_epochs:
         last_epoch_summary, last_epoch_memory = get_last_epoch_fields(last_epochs[-1].value)
@@ -52,12 +52,12 @@ async def memory_summarizer(state: state.HoneypotStateReact, config):
         try:
             messages = {"role":"system", "content": prompt}
             agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
-            response = agent.chat.completions.create(
+            response = agent.chat.completions.create( 
                 model=model_name,
                 response_model=StructuredOutput,
-                messages=[messages]
+                messages=[messages] # type:ignore
             )
-            message = ""
+            
             message += str(response.memory_context)
             logger.info(f"Summary produced: {message}")
             message = AIMessage(content=message)

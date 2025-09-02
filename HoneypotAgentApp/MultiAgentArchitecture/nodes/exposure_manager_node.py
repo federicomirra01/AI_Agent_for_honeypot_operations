@@ -1,3 +1,4 @@
+from langchain_core.messages import AIMessage
 from configuration import state
 from prompts import exposure_manager_prompt
 from .node_utils import OPEN_AI_KEY
@@ -55,20 +56,21 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
   
     model_name = f"gpt-{version}"
     logger.info(f"Using: {model_name}")
+    message = ""
     try:
         messages = {"role":"system", "content": prompt}
         agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
         response = agent.chat.completions.create(
             model=model_name,
             response_model=StructuredOutput,
-            messages=[messages]
+            messages=[messages] # type: ignore
         )
-        message = ""
+        
         message += f"Reasoning: {str(response.reasoning)}" + "\n"
         message += f"Selected Honeypot: {str(response.selected_honeypot)}" + "\n"
         message += f"Why not expose: {str(response.why_not_expose)}" + "\n"
         message += f"Lockdown: {str(response.lockdown)}"
-
+        message = AIMessage(content=message)
         return {
             "messages": [message],
             "reasoning_exploitation": response.reasoning,

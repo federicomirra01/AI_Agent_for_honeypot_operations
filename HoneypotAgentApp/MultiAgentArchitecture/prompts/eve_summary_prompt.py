@@ -5,10 +5,11 @@ Suricata IP (HOME_IP: 172.20.0.254, EXPOSED_IP: 192.168.100.254)
 ## INPUT
 Raw eve.json alert data containing: timestamp, severity, signature, src/dst IP/ports, protocols, etc.
 Honeypot network configuration
-
+Last produced alert summary to strongly highlight newly triggered alerts
 ## INPUT DATA:
 Security alerts: {security_events}
 Honeypots available: {honeypot_config}
+Last Summary: {last_summary}
 
 ## OUTPUT STRUCTURE
 **1. THREAT OVERVIEW**
@@ -27,6 +28,8 @@ For each honeypot available:
    - Compromise Indicators: report all distinct alerts and related payload (truncated if longer than 300 characters) for that honeypot and the count for each event.
 
 ## GUIDELINES
+Highlight new alerts from last summary provided. 
+
 Prioritize recent and high-severity events
 
 Reference specific IPs/ports/signatures where possible

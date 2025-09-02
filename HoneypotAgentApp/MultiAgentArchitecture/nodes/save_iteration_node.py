@@ -134,7 +134,8 @@ def save_iteration(state: state.HoneypotStateReact, config) -> Dict[str, Any]:
         "inferred_attack_graph": state.inferred_attack_graph,
         "reasoning_inference": state.reasoning_inference,
         "reasoning_exploitation":state.reasoning_exploitation,
-        "exploitation_strategy":state.exploitation_strategy
+        "exploitation_strategy":state.exploitation_strategy,
+        "security_summary": state.security_events_summary
     }
 
     # Save to episodic memory

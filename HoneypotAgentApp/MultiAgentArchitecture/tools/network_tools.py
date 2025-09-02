@@ -59,6 +59,7 @@ def check_services_health() -> Dict[str, Any]:
     Returns:
         Dict with health status of both services
     """
+    firewall_health, suricata_health = 'down', 'down'
     try:
         firewall_status = _make_request("GET", f"{FIREWALL_URL}/health")
         suricata_status = _make_request("GET", f"{SURICATA_URL}/health")
@@ -71,7 +72,7 @@ def check_services_health() -> Dict[str, Any]:
             'suricata_status': suricata_health
         }
 
-def get_docker_containers() -> List[Dict[str, Any]]:
+def get_docker_containers() -> Dict[str, Any]:
     """
     Get information about running Docker containers using the Docker API,
     including their internal private IP addresses.
@@ -115,8 +116,6 @@ def get_docker_containers() -> List[Dict[str, Any]]:
             
         return {'honeypot_config' : container_info}
         
-    except docker.errors.DockerException as e:
-        return {"error": f"Docker connection error: {str(e)}"}
     except Exception as e:
         return {"error": f"Unexpected error: {str(e)}"}
 
