@@ -36,10 +36,7 @@ class HoneypotStateReact:
     def __init__(self, **kwargs):
         """Custom initializer that can handle both direct field assignment and dictionary unpacking."""
         self.messages = kwargs.get('messages', [])
-        if isinstance(self.messages, str):
-            self.messages = [AIMessage(content=self.messages)]
-        elif not isinstance(self.messages, list):
-            self.messages = []
+        
         # Memory Field
         self.memory_context = kwargs.get('memory_context', [])
         # Configuration Field

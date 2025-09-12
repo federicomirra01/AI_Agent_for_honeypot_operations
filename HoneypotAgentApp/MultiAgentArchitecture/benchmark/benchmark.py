@@ -170,7 +170,7 @@ class AttackerController:
             def run_container():
                 nonlocal exec_result
                 try:
-                    exec_result = self.container.exec_run(
+                    exec_result = self.container.exec_run( # type: ignore
                         f"python3 /attacker/scripts/manager_exploit.py {epoch_num}",
                         stdout=True,
                         stderr=True,
@@ -243,7 +243,7 @@ class AttackerController:
         
 
             # At this point, the container process has completed
-            self.logger.info(f"Attack process completed with exit code: {exec_result.exit_code}")
+            self.logger.info(f"Attack process completed with exit code: {exec_result}")
 
             max_wait_time = 5
             poll_interval = 1
@@ -262,21 +262,20 @@ class AttackerController:
                                 results["exploits_attempted"] = benchmark_data.get("exploits_attempted", [])
                                 results["services_successfully_exploited"] = benchmark_data.get("services_successfully_exploited", [])
                                 results["flags_captured"] = benchmark_data.get("flags_captured", [])
-                                results["total_flags"] = benchmark_data.get("total_flags", 0)
-                                results["total_services_detected"] = benchmark_data.get("total_services_detected", 0)
-                                results["total_exploits_attempted"] = benchmark_data.get("total_exploits_attempted", 0)
+                                results["service_epoch_context"] = benchmark_data.get("service_epoch_context", [])
                                 
                                 self.logger.info(f"Successfully read attack results from file: {len(results['flags_captured'])} flags captured")
                                 break
                     except PermissionError as e:
                         self.logger.warning(f"Permission denied deleting previous results file: {e}")
                         self.logger.info("Container will overwrite the file")
+                    except FileNotFoundError as e:
+                        self.logger.warning(f"File not found: {e}")
                     except OSError as e:
                         self.logger.warning(f"Could not clear previous results file: {e}")
                     except (json.JSONDecodeError, PermissionError) as e:
                         self.logger.warning(f"Error reading results file (attampt {elapsed_time}s): {e}")
-                    except FileNotFoundError as e:
-                        self.logger.warning(f"File not found: {e}")
+                    
                 else:
                     logger.warning(f"File path does not exists {results_file}")
                 time.sleep(poll_interval)
@@ -295,7 +294,7 @@ class AttackerController:
         """Force stop any running processes in the container"""
         try:
             # Kill the specific process
-            kill_result = self.container.exec_run(
+            kill_result = self.container.exec_run( # type: ignore
                 "pkill -f manager_exploit.py",
                 stdout=True,
                 stderr=True
@@ -414,6 +413,7 @@ class MetricsCollector:
             parsed_metrics["exploits_attempted"] = attack_results.get("exploits_attempted", [])
             parsed_metrics["services_successfully_exploited"] = attack_results.get("services_successfully_exploited", [])
             parsed_metrics["flags_captured"] = attack_results.get("flags_captured", [])
+            parsed_metrics["service_epoch_context"] = attack_results.get('service_epoch_context', [])
             
             
             # Calculate success rate
@@ -427,7 +427,6 @@ class MetricsCollector:
             
             self.logger.info(f"Attack metrics: {len(parsed_metrics["flags_captured"])} flags, {total_services} services attempted, {parsed_metrics['attack_success_rate']:.1f}% success rate")
             
-            parsed_metrics["service_epoch_context"] = attack_results.get('service_epoch_context', [])
 
             self.logger.info(
                 f"Attack metrics: {len(parsed_metrics['flags_captured'])} flags, "
@@ -718,3 +717,4 @@ class BenchmarkRunner:
             }
         except Exception as e:
             logger.error(f"Exception: {e}")
+            return {"error": "Error: {e}"}

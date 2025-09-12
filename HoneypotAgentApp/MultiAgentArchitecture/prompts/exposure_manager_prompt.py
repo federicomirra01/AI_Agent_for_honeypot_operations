@@ -56,7 +56,7 @@ You control allow/block rules only for traffic between the attacker network and 
 
 ---
 ## STEPS
-1. Determine the honeypot to expose, strictly applying the policy and coverage requirement.
+1. Determine the honeypot to expose, strictly applying the policy and coverage requirement checking the information provided by the exposure registry dictionary.
    - If the currently exposed honeypot must be maintained due to the minimum window or recent progress, keep it.
    - Otherwise, select among non-100%, non-exhausted honeypots, prioritizing never-exposed ones.
 2. Mark a honeypot **exhausted** if it has been continuously exposed and has shown **no progress for 3 consecutive exposure epochs**.

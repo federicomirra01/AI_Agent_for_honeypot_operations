@@ -25,7 +25,8 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
     model_config = config.get("configurable", {}).get("model_config", "small:4.1")
     memory = config.get("configurable", {}).get("store")
     last_summary = memory.get_recent_iterations(limit=1)
-
+    if last_summary:
+        last_summary = last_summary[0].value.get("security_events_summary", "")
     # Initialize the prompt from configuration: eve.json or fast.log analysis
     if "fast" in configuration:
         prompt = fast_summary_prompt.SUMMARY_PROMPT_FAST.format(
@@ -34,7 +35,8 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
             last_summary=last_summary
             )
     else:
-        prompt = eve_summary_prompt.SUMMARY_PROMPT_EVE.format(
+        prompt = eve_summary_prompt.SUMMARY_PROMPT_EVE.substitute(
+            last_summary=last_summary,
             security_events=state.security_events,
             honeypot_config=state.honeypot_config
         )
