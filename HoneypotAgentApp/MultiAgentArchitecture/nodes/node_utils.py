@@ -23,3 +23,4 @@ def load_memory_context(state: state.HoneypotStateReact, episodic_memory):
     
     logger.info(f"Loaded {len(recent_iterations)} recent iterations from episodic memory.")
     return recent_iterations
+

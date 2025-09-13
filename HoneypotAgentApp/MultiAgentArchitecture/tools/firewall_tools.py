@@ -20,6 +20,7 @@ async def add_allow_rule(source_ip: str, dest_ip: str, port=None, protocol: str 
         Dict with success status and response data
     """
     async with firewall_lock:
+        port=None
         response = await _add_allow_rule(source_ip, dest_ip, port, protocol)
     
     return response
@@ -32,6 +33,7 @@ async def add_block_rule(source_ip: str, dest_ip: str, port=None, protocol: str 
         Dict with success status and response data
     """
     async with firewall_lock:
+        port = None
         response = await _add_block_rule(source_ip, dest_ip, port, protocol)
     return response 
 

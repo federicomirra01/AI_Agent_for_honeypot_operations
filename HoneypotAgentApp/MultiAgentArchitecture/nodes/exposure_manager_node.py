@@ -4,16 +4,16 @@ from prompts import exposure_manager_prompt
 from .node_utils import OPEN_AI_KEY
 from openai import BadRequestError
 import logging
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 import instructor
 from openai import OpenAI
 from typing import List, Dict, Any
 
 class StructuredOutput(BaseModel):
-    reasoning: str
-    selected_honeypot: dict
-    why_not_expose: List[Dict]
-    lockdown: bool
+    reasoning: str = ""
+    selected_honeypot: dict = {}
+    why_not_expose: List[Dict] = []
+    lockdown: bool = False
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -30,6 +30,7 @@ def _extract_exposure_registry(last_epochs: List[Any]) -> Dict[str, Dict[str, An
     return registry
 
 
+
 async def exposure_manager(state: state.HoneypotStateReact, config):
     """
     Decides which honeypot(s) to expose next based on current attack graph
@@ -42,7 +43,6 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
     last_epochs = episodic_memory.get_recent_iterations(limit=20)
     exposure_registry = _extract_exposure_registry(last_epochs)
     logger.info(f"Exposure registry: {exposure_registry}")
-    #logger.info(f"Memory_context: {state.memory_context}")
     prompt = exposure_manager_prompt.EXPLOITATION_PLAN_PROMPT.substitute(
         available_honeypots=state.honeypot_config,
         #firewall_config=state.firewall_config,
@@ -58,13 +58,32 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
     logger.info(f"Using: {model_name}")
     message = ""
     try:
+        
         messages = {"role":"system", "content": prompt}
-        agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
-        response = agent.chat.completions.create(
-            model=model_name,
-            response_model=StructuredOutput,
-            messages=[messages] # type: ignore
-        )
+        if version == '5':
+            logger.info(f"Using gpt5 minimal effort")
+            schema = StructuredOutput.model_json_schema()
+            client = OpenAI()
+            raw = client.responses.create( # type: ignore
+                model="gpt-5",
+                input=f"{prompt}\n\nReturn valid JSON matching this schema:\n{schema}",
+                reasoning={"effort":"minimal"},
+                
+            )
+            content = raw.output_text
+            try:
+                response = StructuredOutput.model_validate_json(content)
+            except ValidationError as e:
+                logger.error(f"Schema validation failed: \n{e}")
+                response = StructuredOutput()
+
+        else:
+            agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
+            response: StructuredOutput = agent.chat.completions.create(
+                model=model_name,
+                response_model=StructuredOutput,
+                messages=[messages] # type: ignore
+            )
         
         message += f"Reasoning: {str(response.reasoning)}" + "\n"
         message += f"Selected Honeypot: {str(response.selected_honeypot)}" + "\n"

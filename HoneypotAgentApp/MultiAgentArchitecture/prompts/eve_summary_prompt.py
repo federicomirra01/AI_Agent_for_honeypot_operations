@@ -37,7 +37,7 @@ Produce a compact, **strictly structured** summary that:
 - If payload contains base64 chars, include only the first 30 chars and continue with `...` (only for the base64 command).
 
 ## OUTPUT SECTIONS (STRICT, MACHINE-PARSABLE)
-Output **exactly** the three sections below, with the shown keys and JSON blocks. Do not add commentary.
+Output **exactly** as the json below, with the shown keys and JSON blocks. Do not add commentary.
 
 
 Target Analysis:
@@ -53,6 +53,8 @@ Target Analysis:
           "count": int,
           "severity": int,
           "new": true|false,
+          "src_ip": "source ip address",
+          "src_port": "source port"
           "evidence_quotes": ["exact substrings from alerts (≤120 chars each)"],
           "payload": "all payload without base64 encoded chars if present, else ''"
         }
@@ -69,9 +71,5 @@ Target Analysis:
 - Output must be deterministic and unambiguous. No extra prose beyond the required sections.
 
 ## REQUIRED OUTPUT FORMAT (strict, no extra text):
-
-Target Analysis:
-
-{...}
 """
 )

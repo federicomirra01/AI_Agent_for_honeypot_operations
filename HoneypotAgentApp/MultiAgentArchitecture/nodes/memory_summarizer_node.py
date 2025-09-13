@@ -52,12 +52,20 @@ async def memory_summarizer(state: state.HoneypotStateReact, config):
         try:
             messages = {"role":"system", "content": prompt}
             agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
-            response = agent.chat.completions.create( 
+            if version == '5':
+                logger.info(f"Using gpt5 minimal effort")
+                response = agent.chat.completions.create(
                 model=model_name,
                 response_model=StructuredOutput,
-                messages=[messages] # type:ignore
-            )
-            
+                messages=[messages], # type: ignore
+                reasoning={"effort":"minimal"}
+                )
+            else:    
+                response = agent.chat.completions.create(
+                    model=model_name,
+                    response_model=StructuredOutput,
+                    messages=[messages] # type: ignore
+                )
             message += str(response.memory_context)
             logger.info(f"Summary produced: {message}")
             message = AIMessage(content=message)

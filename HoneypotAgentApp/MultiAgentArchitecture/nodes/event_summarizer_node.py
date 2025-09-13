@@ -5,12 +5,12 @@ from prompts import eve_summary_prompt, fast_summary_prompt
 from .node_utils import OPEN_AI_KEY
 from openai import BadRequestError 
 import logging
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 import instructor
 from openai import OpenAI
 
 class StructuredOutput(BaseModel):
-    security_summary: str
+    security_summary: str = ""
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -49,12 +49,29 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
 
     if state.security_events and len(state.security_events.get('alerts', [])) > 0:    
         try:
-            agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
-            response = agent.chat.completions.create(
-                model=model_name,
-                response_model=StructuredOutput,
-                messages=[messages] # type: ignore
-            )
+            if version == '5':
+                logger.info(f"Using gpt5 minimal effort")
+                schema = StructuredOutput.model_json_schema()
+                client = OpenAI()
+                raw = client.responses.create( # type: ignore
+                    model="gpt-5",
+                    input=f"{prompt}\n\nReturn valid JSON matching this schema:\n{schema}",
+                    reasoning={"effort":"minimal"},
+                    
+                )
+                content = raw.output_text
+                try:
+                    response = StructuredOutput.model_validate_json(content)
+                except ValidationError as e:
+                    logger.error(f"Schema validation failed: \n{e}")
+                    response = StructuredOutput()
+            else:
+                agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
+                response: StructuredOutput = agent.chat.completions.create(
+                    model=model_name,
+                    response_model=StructuredOutput,
+                    messages=[messages] # type: ignore
+                )
             message = ""
             message += str(response.security_summary)
 

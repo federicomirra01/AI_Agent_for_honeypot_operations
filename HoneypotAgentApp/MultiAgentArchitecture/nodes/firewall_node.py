@@ -4,7 +4,7 @@ from prompts import firewall_executor_prompt
 from .node_utils import OPEN_AI_KEY
 from tools import firewall_tools
 import logging
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from typing import Optional, Union, List
 import instructor
 from openai import OpenAI
@@ -17,21 +17,21 @@ class AddAllowRule(BaseModel):
     """Model for adding an allow rule to the firewall."""
     source_ip: str = Field(..., description="Source IP address")
     dest_ip: str = Field(..., description="Destination IP address")
-    port: Optional[int] = Field(None, description="Port Number (optional)")
+    #port: Optional[int] = Field(None, description="Port Number (optional)")
     protocol: str = Field("tcp", description="Protocol (default: tcp)")
 
 class AddBlockRule(BaseModel):
     """Model for adding a block rule to the firewall."""
     source_ip: str = Field(..., description="Source IP address")
     dest_ip: str = Field(..., description="Destination IP address")
-    port: Optional[int] = Field(None, description="Port Number (optional)")
+    #port: Optional[int] = Field(None, description="Port Number (optional)")
     protocol: str = Field("tcp", description="Protocol (default: tcp)")
 
 class RemoveFirewallRule(BaseModel):
     rule_numbers: List[int] = Field(..., description="List of firewall rule numbers to remove")
 
 class StructuredOutput(BaseModel):
-    reasoning: str
+    reasoning: str = ""
     action: List[Union[AddAllowRule, AddBlockRule, RemoveFirewallRule]] = []
 
 ACTION_PRIORITY = {
@@ -59,12 +59,29 @@ async def firewall_executor(state:state.HoneypotStateReact, config):
     )
     messages = {"role":"system", "content":prompt}
     try:
-        agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
-        response = agent.chat.completions.create(
-            model=model_name,
-            response_model=StructuredOutput,
-            messages=[messages] # type: ignore
-        )
+        if version == '5':
+            logger.info(f"Using gpt5 minimal effort")
+            schema = StructuredOutput.model_json_schema()
+            client = OpenAI()
+            raw = client.responses.create( # type: ignore
+                model="gpt-5",
+                input=f"{prompt}\n\nReturn valid JSON matching this schema:\n{schema}",
+                reasoning={"effort":"minimal"},
+                
+            )
+            content = raw.output_text
+            try:
+                response = StructuredOutput.model_validate_json(content)
+            except ValidationError as e:
+                logger.error(f"Schema validation failed: \n{e}")
+                response = StructuredOutput()
+        else:
+            agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
+            response: StructuredOutput = agent.chat.completions.create(
+                model=model_name,
+                response_model=StructuredOutput,
+                messages=[messages] # type: ignore
+            )
         message = f"Reasoning:" + str(response.reasoning)
         message += f"\nAction: {str(response.action)}"
         message = AIMessage(content=message)
@@ -95,7 +112,7 @@ async def tools_firewall(state: state.HoneypotStateReact):
                     resp = await firewall_tools.add_allow_rule(
                         source_ip=action.source_ip,
                         dest_ip=action.dest_ip,
-                        port=action.port,
+                        #port=action.port,
                         protocol=action.protocol
                     )
                     rules_added.append(resp)
@@ -104,7 +121,7 @@ async def tools_firewall(state: state.HoneypotStateReact):
                     resp = await firewall_tools.add_block_rule(
                         source_ip=action.source_ip,
                         dest_ip=action.dest_ip,
-                        port=action.port,
+                        #port=action.port,
                         protocol=action.protocol
                     )
                     rules_added.append(resp)
