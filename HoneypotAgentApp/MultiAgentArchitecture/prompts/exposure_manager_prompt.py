@@ -28,7 +28,7 @@ You control allow/block rules only for traffic between the attacker network and 
 ## DEFINITIONS
 - **Progress:** exploitation level increased since the previous epoch.
 - **Exhausted:** a honeypot that, while **continuously exposed**, has shown **no additional information/progress for 3 consecutive epochs** since the last increase. Mark it as exhausted at that point and do **not** re-expose it thereafter.
-- **Coverage:** every honeypot that is **not at 100%** must be exposed **at least once** (ever_exposed == false → must be selected before lockdown is possible).
+- **Coverage:** every honeypot that is **not at 100%** must be exposed **at least once** (ever_exposed == false -> must be selected before lockdown is possible).
 
 ---
 ## SELECTION POLICY 
