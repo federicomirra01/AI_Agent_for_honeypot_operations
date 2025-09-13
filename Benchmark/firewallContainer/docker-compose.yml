@@ -57,7 +57,7 @@ services:
       - ./suricata/suricata_logs:/var/log/suricata
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-    command: -i eth0 -i eth2
+    command: -i eth1 -i eth2
     cap_add:
       - NET_ADMIN
       - SYS_NICE

@@ -23,14 +23,13 @@ Last Summary: $last_summary
 ## GOAL
 Produce a compact, **strictly structured** summary that:
 - Highlights *new since last summary* alerts.
-- Normalizes data for deterministic parsing.
 - Provides per-honeypot context on targeted services and compromise indicators.
 - Extracts **evidence quotes** usable downstream for attack graph inference.
-- Do not skip alerts for any container, all alerts are important 
+- Do not skip alerts for any container, all alerts are important. 
+- Different alerts can contain the same payload that triggered multiple alerts (e.g., data-exfiltration + privilege escalation) 
 - Highlight higher priority alerts (command execution, reverse shell, privilege-escalation and data exfiltraton)
 
 ## NORMALIZATION RULES
-- Treat traffic with src in 192.168.100.0/24 and dst in 172.20.0.0/24 as attacker->honeypot unless evidence shows otherwise.
 - Map services as "proto/port" (e.g., "tcp/22") and include app_proto when present (e.g., "ssh@tcp/22").
 - Collapse duplicate alerts by (src_ip, dst_ip, service, signature) with counts; preserve first_seen and last_seen (min/max timestamps in this batch).
 - **Evidence quotes**: extract the smallest exact substrings present in the alert (e.g., command fragments, CVE IDs, function names, "uid=0", "sudo -l", "Reverse shell", "wget http://", "SELECT * FROM", "cat /etc/shadow", "Privilege escalation"). Truncate each quote at 120 chars.

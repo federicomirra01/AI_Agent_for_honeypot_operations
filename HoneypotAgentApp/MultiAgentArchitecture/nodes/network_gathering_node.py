@@ -29,10 +29,11 @@ async def network_gathering(state: state.HoneypotStateReact, config) -> Dict[str
     security_events = alerts_response.get('security_events', {})
     honeypot_config = containers_response.get('honeypot_config', {})
     firewall_config = firewall_response.get('firewall_config', {})
-    
+    messages = str(security_events) 
     # Update state
     return {
         "security_events": security_events,
         "honeypot_config": honeypot_config,
         "firewall_config": firewall_config,
+        "messages": messages
     }

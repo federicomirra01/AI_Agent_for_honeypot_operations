@@ -93,15 +93,15 @@ outputs:
 
 # Single interface configuration for container
 af-packet:
-  - interface: eth0
-    threads: 1                              # Single thread for resource efficiency
+  - interface: eth1
+    threads: 2                              # Single thread for resource efficiency
     cluster-id: 99
     cluster-type: cluster_flow
     defrag: yes
     ring-size: 2048                         # Reduced ring size
     
   - interface: eth2
-    threads: 1                              # Single thread for resource efficiency
+    threads: 2                              # Single thread for resource efficiency
     cluster-id: 98
     cluster-type: cluster_flow
     defrag: yes
@@ -194,7 +194,7 @@ logging:
 
 # Resource-optimized settings
 host-mode: auto
-max-pending-packets: 512                    # Reduced from default 1024
+max-pending-packets: 1024
 
 # Optimized flow and memory settings for container
 flow:
