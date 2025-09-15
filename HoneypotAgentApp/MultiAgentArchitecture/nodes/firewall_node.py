@@ -5,7 +5,7 @@ from .node_utils import OPEN_AI_KEY
 from tools import firewall_tools
 import logging
 from pydantic import BaseModel, Field, ValidationError
-from typing import Optional, Union, List
+from typing import Union, List
 import instructor
 from openai import OpenAI
 
@@ -59,22 +59,26 @@ async def firewall_executor(state:state.HoneypotStateReact, config):
     )
     messages = {"role":"system", "content":prompt}
     try:
+        response = StructuredOutput()
         if version == '5':
-            logger.info(f"Using gpt5 minimal effort")
-            schema = StructuredOutput.model_json_schema()
-            client = OpenAI()
-            raw = client.responses.create( # type: ignore
-                model="gpt-5",
-                input=f"{prompt}\n\nReturn valid JSON matching this schema:\n{schema}",
-                reasoning={"effort":"minimal"},
-                
-            )
-            content = raw.output_text
-            try:
-                response = StructuredOutput.model_validate_json(content)
-            except ValidationError as e:
-                logger.error(f"Schema validation failed: \n{e}")
-                response = StructuredOutput()
+            valid_json = False
+            while(not valid_json):
+                logger.info(f"Using gpt5 minimal effort")
+                schema = StructuredOutput.model_json_schema()
+                client = OpenAI()
+                raw = client.responses.create( # type: ignore
+                    model="gpt-5",
+                    input=f"{prompt}\n\nReturn valid JSON matching this schema:\n{schema}",
+                    reasoning={"effort":"minimal"},
+                    
+                )
+                content = raw.output_text
+                try:
+                    response = StructuredOutput.model_validate_json(content)
+                    valid_json = True
+                except ValidationError as e:
+                    logger.error(f"Schema validation failed: \n{e}")
+                    response = StructuredOutput()
         else:
             agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
             response: StructuredOutput = agent.chat.completions.create(

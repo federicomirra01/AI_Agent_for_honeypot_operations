@@ -1,6 +1,6 @@
 from langchain_core.messages import AIMessage
 from configuration import state
-from typing import Dict,  Any
+from typing import Dict, Optional, Any
 from prompts import eve_summary_prompt, fast_summary_prompt
 from .node_utils import OPEN_AI_KEY
 from openai import BadRequestError 
@@ -48,23 +48,27 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
         model_name = f"gpt-{version}"
 
     if state.security_events and len(state.security_events.get('alerts', [])) > 0:    
+        response = StructuredOutput()
         try:
             if version == '5':
-                logger.info(f"Using gpt5 minimal effort")
-                schema = StructuredOutput.model_json_schema()
-                client = OpenAI()
-                raw = client.responses.create( # type: ignore
-                    model="gpt-5",
-                    input=f"{prompt}\n\nReturn valid JSON matching this schema:\n{schema}",
-                    reasoning={"effort":"minimal"},
-                    
-                )
-                content = raw.output_text
-                try:
-                    response = StructuredOutput.model_validate_json(content)
-                except ValidationError as e:
-                    logger.error(f"Schema validation failed: \n{e}")
-                    response = StructuredOutput()
+                valid_json = False
+                while not valid_json:
+                    logger.info(f"Using gpt5 minimal effort")
+                    schema = StructuredOutput.model_json_schema()
+                    client = OpenAI()
+                    raw = client.responses.create( # type: ignore
+                        model="gpt-5",
+                        input=f"{prompt}\n\nReturn valid JSON matching this schema:\n{schema}",
+                        reasoning={"effort":"minimal"},
+                        
+                    )
+                    content = raw.output_text
+                    try:
+                        response = StructuredOutput.model_validate_json(content)
+                        valid_json = True
+                    except ValidationError as e:
+                        logger.error(f"Schema validation failed: \n{e}")
+                        response = StructuredOutput()
             else:
                 agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
                 response: StructuredOutput = agent.chat.completions.create(

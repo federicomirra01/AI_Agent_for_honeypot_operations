@@ -7,7 +7,7 @@ import instructor
 from openai import OpenAI
 from langchain_core.messages import AIMessage
 class StructuredOutput(BaseModel):
-    memory_context: str
+    memory_context: str = ""
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -50,6 +50,7 @@ async def memory_summarizer(state: state.HoneypotStateReact, config):
             model_name = f"gpt-{version}"
         logger.info(f"Using: {model_name}")
         try:
+            response = StructuredOutput()
             messages = {"role":"system", "content": prompt}
             agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
             if version == '5':
