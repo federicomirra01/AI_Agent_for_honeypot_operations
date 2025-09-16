@@ -10,7 +10,7 @@ import instructor
 from openai import OpenAI
 
 class StructuredOutput(BaseModel):
-    security_summary: str = ""
+    security_summary: str = "No alerts retrieved"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,19 +24,24 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
     configuration = config.get("configurable", {}).get("prompt", "Default")
     model_config = config.get("configurable", {}).get("model_config", "small:4.1")
     memory = config.get("configurable", {}).get("store")
-    last_summary = memory.get_recent_iterations(limit=1)
-    if last_summary:
-        last_summary = last_summary[0].value.get("security_events_summary", "")
+    last_iteration = memory.get_recent_iterations(limit=1)
+    last_summary = ""
+    last_exposed = {}
+    if last_iteration:
+        last_summary = last_iteration[0].value.get("security_events_summary", "")
+        last_exposed = last_iteration[0].value.get("currently_exposed", {})
     # Initialize the prompt from configuration: eve.json or fast.log analysis
     if "fast" in configuration:
-        prompt = fast_summary_prompt.SUMMARY_PROMPT_FAST.format(
+        prompt = fast_summary_prompt.SUMMARY_PROMPT_FAST.substitute(
             security_events=state.security_events,
             honeypot_config=state.honeypot_config,
-            last_summary=last_summary
+            last_summary=last_summary,
+            last_exposed=last_exposed
             )
     else:
         prompt = eve_summary_prompt.SUMMARY_PROMPT_EVE.substitute(
             last_summary=last_summary,
+            last_exposed=last_exposed,
             security_events=state.security_events,
             honeypot_config=state.honeypot_config
         )
@@ -57,7 +62,7 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
                     schema = StructuredOutput.model_json_schema()
                     client = OpenAI()
                     raw = client.responses.create( # type: ignore
-                        model="gpt-5",
+                        model=model_name,
                         input=f"{prompt}\n\nReturn valid JSON matching this schema:\n{schema}",
                         reasoning={"effort":"minimal"},
                         

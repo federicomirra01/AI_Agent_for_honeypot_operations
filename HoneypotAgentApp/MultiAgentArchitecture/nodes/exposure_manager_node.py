@@ -10,9 +10,9 @@ from openai import OpenAI
 from typing import List, Dict, Any
 
 class StructuredOutput(BaseModel):
-    reasoning: str = ""
-    selected_honeypot: dict = {}
-    why_not_expose: List[Dict] = []
+    reasoning: str 
+    selected_honeypot: dict
+    why_not_expose: List[Dict] 
     lockdown: bool = False
 
 # Configure logging
@@ -45,10 +45,7 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
     logger.info(f"Exposure registry: {exposure_registry}")
     prompt = exposure_manager_prompt.EXPLOITATION_PLAN_PROMPT.substitute(
         available_honeypots=state.honeypot_config,
-        #firewall_config=state.firewall_config,
         honeypots_exploitations=state.honeypots_exploitation,
-        #inferred_attack_graph=state.inferred_attack_graph,
-        #memory_context=state.memory_context,
         exposure_registry=exposure_registry
 
     )
@@ -58,7 +55,7 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
     logger.info(f"Using: {model_name}")
     message = ""
     try:
-        response = StructuredOutput()
+        response = StructuredOutput(reasoning="", selected_honeypot={}, why_not_expose=[])
         messages = {"role":"system", "content": prompt}
         if version == '5':
             valid_json = False
@@ -78,8 +75,7 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
                     valid_json = True
                 except ValidationError as e:
                     logger.error(f"Schema validation failed: \n{e}")
-                    response = StructuredOutput()
-
+                    response = StructuredOutput(reasoning="", selected_honeypot={}, why_not_expose=[])
         else:
             agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
             response: StructuredOutput = agent.chat.completions.create(

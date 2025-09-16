@@ -7,194 +7,134 @@ import json
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def _extract_level(levels: List[Dict[str, Any]], ip: str) -> Dict[str, Optional[int]]:
-    """
-    Find the level info for a specific IP from a list of per-honeypot dicts.
-    Returns only the keys present (level_new/level_prev), else empty dict.
-    """
-    out: Dict[str, Optional[int]] = {}
-    for item in levels or []:
-        if item.get("ip") == ip:
-            # Copy only if present and not None
-            if item.get("level_new") is not None:
-                out["level_new"] = item["level_new"]
-            if item.get("level_prev") is not None:
-                out["level_prev"] = item["level_prev"]
-            break
-    return out
 
-def _pick_levels(lv: Dict[str, Any], fallback_last: Optional[int], fallback_prev: Optional[int]) -> Tuple[Optional[int], Optional[int]]:
-    """
-    Decide last_level and prev_level for the *current observation*.
-    Priority:
-      - last_level := level_new if present, else level_prev if present, else fallback_last
-      - prev_level := level_prev if present, else fallback_prev (do NOT force to last_level)
-    """
-    last_level = lv.get("level_new", lv.get("level_prev", fallback_last))
-    prev_level = lv.get("level_prev", fallback_prev)
-    return last_level, prev_level
+def _extract_epoch_from_item(item: Dict[str, Any]) -> int:
+    # Prefer top-level "epoch"; else from currently_exposed.epoch; else 0.
+    if item.get("epoch") is not None:
+        return int(item["epoch"])
+    ce = item.get("currently_exposed") or {}
+    if ce.get("epoch") is not None:
+        return int(ce["epoch"])
+    return 0
 
-
-def _build_exposure_registry(episodic_memory, limit=20, current_ce=None, current_levels=None):
+def _key_for_entry(ce: Dict[str, Any], key_mode: str) -> Tuple:
     """
-    Build exposure registry across recent iterations and seed with the *current* snapshot.
-    Uses an epoch set per IP to ensure consistent counting, and derives levels
-    from (level_new, level_prev) with sensible fallbacks.
+    key_mode: "ip" | "ip_service"
+    - "ip":   group all services for the same IP together
+    - "ip_service": treat a service change on same IP as a distinct track
     """
-    # Temporary working structure
-    temp: Dict[str, Dict[str, Any]] = {}
-    recent = episodic_memory.get_recent_iterations(limit=limit) or []
+    ip = ce.get("ip")
+    svc = ce.get("service")
+    if not ip:
+        return tuple()  # empty => not exposed this epoch
+    return (ip,) if key_mode == "ip" else (ip, svc)
 
-    def ensure(ip: str, service: Optional[str] = None):
-        if ip not in temp:
-            temp[ip] = {
-                "service": service,
-                "epoch_set": set(),      # collect distinct epochs
-                "last_level": None,
-                "prev_level": None,
-            }
-        elif service and not temp[ip].get("service"):
-            temp[ip]["service"] = service
+def build_exposure_registry_from_ce(episodic_memory, key_mode: str = "ip") -> Dict[str, Dict[str, Any]]:
+    """
+    Replay history using only `currently_exposed` saved each epoch.
 
-    # 1) Fold history
-    for item in recent:
-        data = getattr(item, "value", item)  # handle wrapper
-        ce = data.get("currently_exposed") or {}
-        ip = ce.get("ip")
-        if not ip:
+    Returns:
+      {
+        "<key>": {
+          "service": <first non-null service we saw for this key>,
+          "first_epoch": int,
+          "last_epoch": int,
+          "epochs_exposed": int
+        },
+        ...
+      }
+    Where <key> is the IP string if key_mode="ip", else "ip|service".
+    """
+    # 1) Load all iterations (best) or a large recent window.
+    try:
+        history = episodic_memory.get_all_iterations()
+    except AttributeError:
+        history = episodic_memory.get_recent_iterations(limit=10000) or []
+
+    items: List[Dict[str, Any]] = [getattr(x, "value", x) for x in history]
+    items.sort(key=_extract_epoch_from_item)
+
+    registry: Dict[str, Dict[str, Any]] = {}
+    seen_in_epoch: Dict[str, int] = {}  # key_str -> last epoch we counted
+
+    for it in items:
+        epoch = _extract_epoch_from_item(it)
+        ce = it.get("currently_exposed") or {}
+        key = _key_for_entry(ce, key_mode)
+
+        # Nothing exposed this epoch (e.g., lockdown) -> skip
+        if not key:
             continue
 
-        svc = ce.get("service")
-        epoch = ce.get("epoch")
-        levels = data.get("honeypots_exploitation", {}) or {}
-        levels = getattr(levels, "value", levels)
-        lv = _extract_level(levels, ip)
-
-        ensure(ip, svc)
-        r = temp[ip]
-        if epoch is not None:
-            r["epoch_set"].add(int(epoch))
-
-        # Update levels with preference to explicit epoch info
-        new_last, new_prev = _pick_levels(lv, r["last_level"], r["prev_level"])
-        # If we learned a *new* last_level, shift prev_level accordingly ONLY if the current lv didn't specify level_prev.
-        if new_last is not None and new_last != r["last_level"]:
-            # If level_prev explicitly present, trust it; else roll prev forward.
-            if "level_prev" in lv:
-                r["prev_level"] = new_prev
-            else:
-                r["prev_level"] = r["last_level"]
-            r["last_level"] = new_last
+        # Build a stable string key for dict usage
+        if key_mode == "ip":
+            key_str = key[0]
         else:
-            # Even if last_level unchanged, still accept an explicit level_prev
-            if "level_prev" in lv:
-                r["prev_level"] = new_prev
+            key_str = f"{key[0]}|{key[1]}"
 
-    # 2) Seed current snapshot (so epoch 1 is captured when store is empty)
-    if current_ce and current_ce.get("ip"):
-        ip = current_ce["ip"]
-        svc = current_ce.get("service")
-        epoch = current_ce.get("epoch")
-        ensure(ip, svc)
+        # Initialize track
+        if key_str not in registry:
+            registry[key_str] = {
+                "service": ce.get("service"),
+                "first_epoch": epoch,
+                "last_epoch": epoch,
+                "epochs_exposed": 0,  # will increment below
+            }
+            seen_in_epoch[key_str] = None # type: ignore
 
-        r = temp[ip]
-        if epoch is not None:
-            r["epoch_set"].add(int(epoch))
+        # Increment once per epoch per key
+        last_counted_epoch = seen_in_epoch.get(key_str)
+        if last_counted_epoch != epoch:
+            registry[key_str]["epochs_exposed"] += 1
+            registry[key_str]["last_epoch"] = epoch
+            seen_in_epoch[key_str] = epoch
 
-        lv = _extract_level(current_levels or [], ip)
-        new_last, new_prev = _pick_levels(lv, r["last_level"], r["prev_level"])
+        # Fill service if not set yet and we have one now
+        if not registry[key_str].get("service") and ce.get("service"):
+            registry[key_str]["service"] = ce["service"]
 
-        if new_last is not None and new_last != r["last_level"]:
-            if "level_prev" in lv:
-                r["prev_level"] = new_prev
-            else:
-                r["prev_level"] = r["last_level"]
-            r["last_level"] = new_last
-        else:
-            if "level_prev" in lv:
-                r["prev_level"] = new_prev
-
-    # 3) Consolidate output
-    registry: Dict[str, Dict[str, Any]] = {}
-    for ip, r in temp.items():
-        epochs = sorted(r["epoch_set"])
-        if epochs:
-            first_epoch = epochs[0]
-            last_epoch = epochs[-1]
-            epochs_exposed = len(epochs)          # no off-by-one, no duplicate count
-        else:
-            first_epoch = 0
-            last_epoch = 0
-            epochs_exposed = 0
-
-        registry[ip] = {
-            "service": r.get("service"),
-            "first_epoch": first_epoch,
-            "last_epoch": last_epoch,
-            "epochs_exposed": epochs_exposed,
-            "last_level": r.get("last_level"),
-            "prev_level": r.get("prev_level"),
-        }
-
+    # If you prefer a dict keyed by IP only, return with IP keys.
+    # If you want the original shape (keyed by IP) but still counted by ip_service,
+    # you can collapse here by summing epochs or keeping the longest track.
     return registry
 
-
 def save_iteration(state: state.HoneypotStateReact, config) -> Dict[str, Any]:
-    """
-    Save iteration summary with structured data for benchmark metrics collection.
-    
-    Args:
-        state: Current honeypot state with all relevant data
-        config: Configuration dictionary with episodic memory store
-    
-    Returns:
-        Dict with success status and iteration info
-    """
     epoch_num = config.get("configurable", {}).get("epoch_num")
+
     ce = None
     if state.currently_exposed:
         ce = {
-            "ip" : state.currently_exposed.get("ip"),
-            "service" : state.currently_exposed.get("service"),
-            "current_level":state.currently_exposed.get("current_level"),
-            "epoch" : epoch_num
+            "ip": state.currently_exposed.get("ip"), # type: ignore
+            "service": state.currently_exposed.get("service"), # type: ignore
+            "current_level": state.currently_exposed.get("current_level"), # type: ignore
+            "epoch": epoch_num,
         }
-    
-    
+
     episodic_memory = config.get("configurable", {}).get("store")
-    exposure_registry = _build_exposure_registry(
-        episodic_memory,
-        limit=20,
-        current_ce=ce,
-        current_levels=state.honeypots_exploitation
-        )
+
+    # Build registry purely from currently_exposed history
+    exposure_registry = build_exposure_registry_from_ce(episodic_memory, key_mode="ip")
 
     iteration_data = {
-        #"memory_context": state.memory_context,
-        "currently_exposed": ce,
-        "exposure_registry":exposure_registry,
-        "rules_added": state.rules_added_current_epoch if state.rules_added_current_epoch else [],
+        "epoch": epoch_num,                         # <--- important
+        "currently_exposed": ce,                    # <--- source of truth
+        "exposure_registry": exposure_registry,     # <--- persisted summary (nice to have)
+        "rules_added": state.rules_added_current_epoch or [],
+        "rules_removed": state.rules_removed_current_epoch or [],
         "honeypots_exploitation": state.honeypots_exploitation,
         "lockdown_status": state.lockdown_status,
-        "rules_removed": state.rules_removed_current_epoch if state.rules_removed_current_epoch else [],
         "firewall_reasoning": state.firewall_reasoning,
         "inferred_attack_graph": state.inferred_attack_graph,
         "reasoning_inference": state.reasoning_inference,
-        "reasoning_exploitation":state.reasoning_exploitation,
-        "exploitation_strategy":state.exploitation_strategy,
-        "security_events_summary": state.security_events_summary
+        "reasoning_exploitation": state.reasoning_exploitation,
+        "exploitation_strategy": state.exploitation_strategy,
+        "security_events_summary": state.security_events_summary,
     }
 
-    # Save to episodic memory
     iteration_id = episodic_memory.save_iteration(iteration_data)
     total_iterations = episodic_memory.get_iteration_count()
     logger.info(f"Iteration saved with ID {iteration_id}. Total iterations: {total_iterations}")
-    
-    return {
-        "success": True,
-        "iteration_id": iteration_id,
-        "total_iterations": total_iterations,
-    }
 
+    return {"success": True, "iteration_id": iteration_id, "total_iterations": total_iterations}
 
 
