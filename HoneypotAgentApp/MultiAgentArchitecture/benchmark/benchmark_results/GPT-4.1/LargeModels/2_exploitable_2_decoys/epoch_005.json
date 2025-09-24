@@ -1,0 +1,188 @@
+{
+  "epoch_number": 5,
+  "start_time": 1758203541.8707335,
+  "end_time": 1758203634.374035,
+  "phase_timings": {
+    "initialization": 1758203541.8707602,
+    "attack_execution": 1758203541.8853552,
+    "monitoring_accumulation": 1758203557.8748732,
+    "agent_analysis": 1758203562.8759947,
+    "firewall_update_wait": 1758203632.3567874,
+    "metrics_collection": 1758203634.3583696,
+    "epoch_complete": 1758203634.3730254
+  },
+  "services_detected": [
+    "UNKNOWN(172.20.0.4:61616)",
+    "PATROL-SNMP(172.20.0.4:8161)"
+  ],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.4",
+    "service": "cve-2015-5254-activemq-1",
+    "current_level": 33,
+    "epoch": 5
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 66,
+      "level_new": 100,
+      "changed": true,
+      "evidence_quotes": [
+        "Reverse Shell",
+        "no job control",
+        "root@5bd072d75034:/usr/local/tomcat#",
+        "find / -type f -name 'root.txt'",
+        "cat /root/root.txt",
+        "flag{privileged_access_struts}"
+      ]
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1"
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "",
+        "vector": "privilege-escalation",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN",
+              "Information Leak",
+              "Suspicious inbound to mySQL port 3306"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              "OGNL injection remote code execution",
+              "Apache Struts Possible OGNL Java Exec",
+              "OgnlContext@DEFAULT_MEMBER_ACCESS",
+              ".exec in HTTP URI Inbound"
+            ],
+            "seen_in_epoch": 2
+          },
+          {
+            "phase": "privilege-escalation",
+            "evidence_quotes": [
+              "Reverse Shell",
+              "no job control",
+              "root@5bd072d75034:/usr/local/tomcat#",
+              "find / -type f -name 'root.txt'",
+              "cat /root/root.txt",
+              "flag{privileged_access_struts}"
+            ],
+            "seen_in_epoch": 4
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 4,
+        "current_phase": "privilege-escalation"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN",
+              "Information Leak",
+              "Suspicious inbound to mySQL port 3306",
+              "Suspicious inbound to MSSQL port 1433"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN",
+              "Information Leak",
+              "Suspicious inbound to mySQL port 3306",
+              "Suspicious inbound to MSSQL port 1433"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN",
+              "Information Leak",
+              "Potential SSH Scan",
+              "Suspicious inbound to MSSQL port 1433"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      }
+    ]
+  },
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}

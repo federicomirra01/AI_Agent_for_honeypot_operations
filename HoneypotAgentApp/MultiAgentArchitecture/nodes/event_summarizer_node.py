@@ -47,7 +47,7 @@ def _build_model_config(model_config: str):
             model_name = f"gpt-{version}"
     return model_name, version
 
-def _build_response(model_name: str, version: str, prompt: str, messages: List[Dict]) -> StructuredOutput:
+def _build_response(model_name: str, version: str, prompt: str, messages: List[Dict], prompt_data: dict = {}) -> StructuredOutput:
     response = StructuredOutput()
     if version == '5':
         logger.info(f"Using gpt5 minimal effort")
@@ -71,12 +71,20 @@ def _build_response(model_name: str, version: str, prompt: str, messages: List[D
     
     else:
         logger.info(f"Using Mistral model")
-        agent = instructor.from_openai(OpenAI(api_key=POLITO_CLUSTER_KEY, base_url=POLITO_URL))
-        response: StructuredOutput = agent.chat.completions.create(
+        messages = [
+            {"role" : "system", "content" : eve_summary_prompt.EVE_SUMMARY_PROMPT_MISTRAL},
+            {"role" : "user", "content" : f"Input Data:\
+                \nSecurity Events: {prompt_data["state"].security_events}\
+                \nHoneypot Config: {prompt_data["state"].honeypot_config}\
+                \nLast Summary: {prompt_data["last_summary"]}\
+                \nLast Exposed: {prompt_data["last_exposed"]}"}
+        ]
+        client = OpenAI(api_key=POLITO_CLUSTER_KEY, base_url=POLITO_URL)
+        raw = client.chat.completions.create(
             model=model_name,
-            response_model=StructuredOutput,
             messages=messages #type: ignore
         )
+        response.security_summary = str(raw.choices[0].message.content)
     
     return response
 
@@ -107,14 +115,20 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
     if state.security_events and len(state.security_events.get('alerts', [])) > 0:    
         response = StructuredOutput()
         try:
-            response = _build_response(model_name=model_name, version=version, prompt=prompt, messages=messages)
+            prompt_data = {
+                "state" : state,
+                "last_summary" : last_summary,
+                "last_exposed" : last_exposed
+            }
+
+            response = _build_response(model_name=model_name, version=version, prompt=prompt, messages=messages, prompt_data=prompt_data)
 
             message = ""
-            message += str(response.security_summary if version == '4' else response)
+            message += str(response.security_summary if version == '4.1' else response)
 
             return {
             "messages": [message],
-            "security_events_summary": response.security_summary if version == '4' else response
+            "security_events_summary": response.security_summary if version == '4.1' else response
             }
 
         except BadRequestError as e:
