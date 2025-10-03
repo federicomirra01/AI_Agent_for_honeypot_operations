@@ -1,0 +1,170 @@
+{
+  "epoch_number": 1,
+  "start_time": 1758202986.9074712,
+  "end_time": 1758203125.626175,
+  "phase_timings": {
+    "initialization": 1758202986.9074955,
+    "attack_execution": 1758202986.9208481,
+    "monitoring_accumulation": 1758203003.607091,
+    "agent_analysis": 1758203008.6098437,
+    "firewall_update_wait": 1758203123.5925229,
+    "metrics_collection": 1758203125.5941873,
+    "epoch_complete": 1758203125.6251059
+  },
+  "services_detected": [],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.3 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.3",
+    "service": "s2-057-struts2-1",
+    "current_level": 33,
+    "epoch": 1
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 0,
+      "level_new": 33,
+      "changed": true,
+      "evidence_quotes": [
+        "POSSBL PORT SCAN",
+        "Information Leak"
+      ]
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 0,
+      "level_new": 33,
+      "changed": true,
+      "evidence_quotes": [
+        "POSSBL PORT SCAN",
+        "Information Leak"
+      ]
+    },
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 0,
+      "level_new": 33,
+      "changed": true,
+      "evidence_quotes": [
+        "POSSBL PORT SCAN",
+        "Information Leak"
+      ]
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 0,
+      "level_new": 33,
+      "changed": true,
+      "evidence_quotes": [
+        "POSSBL PORT SCAN",
+        "Information Leak"
+      ]
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN",
+              "Information Leak",
+              "Suspicious inbound to mySQL port 3306"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN",
+              "Information Leak",
+              "Suspicious inbound to mySQL port 3306",
+              "Suspicious inbound to MSSQL port 1433"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN",
+              "Information Leak",
+              "Suspicious inbound to mySQL port 3306",
+              "Suspicious inbound to MSSQL port 1433"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN",
+              "Information Leak",
+              "Potential SSH Scan",
+              "Suspicious inbound to MSSQL port 1433"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      }
+    ]
+  },
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}
