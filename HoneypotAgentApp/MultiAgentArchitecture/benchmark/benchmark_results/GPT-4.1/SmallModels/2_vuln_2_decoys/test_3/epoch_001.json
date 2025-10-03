@@ -1,0 +1,155 @@
+{
+  "epoch_number": 1,
+  "start_time": 1759264900.761406,
+  "end_time": 1759264987.0998871,
+  "phase_timings": {
+    "initialization": 1759264900.7614415,
+    "attack_execution": 1759264900.7755592,
+    "monitoring_accumulation": 1759264917.472145,
+    "agent_analysis": 1759264922.473848,
+    "firewall_update_wait": 1759264985.0791416,
+    "metrics_collection": 1759264987.0807624,
+    "epoch_complete": 1759264987.0988336
+  },
+  "services_detected": [],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.5 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.5 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.5",
+    "service": "cve-2014-6271-web-1",
+    "current_level": 33,
+    "epoch": 1
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 0,
+      "level_new": 33,
+      "changed": true,
+      "evidence_quotes": [
+        "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+      ]
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 0,
+      "level_new": 33,
+      "changed": true,
+      "evidence_quotes": [
+        "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+      ]
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 0,
+      "level_new": 33,
+      "changed": true,
+      "evidence_quotes": [
+        "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+      ]
+    },
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 0,
+      "level_new": 33,
+      "changed": true,
+      "evidence_quotes": [
+        "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+      ]
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      }
+    ]
+  },
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}

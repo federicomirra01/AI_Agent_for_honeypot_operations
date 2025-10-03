@@ -1,0 +1,207 @@
+{
+  "epoch_number": 10,
+  "start_time": 1759265545.1181314,
+  "end_time": 1759265633.9450505,
+  "phase_timings": {
+    "initialization": 1759265545.1181507,
+    "attack_execution": 1759265545.1311903,
+    "monitoring_accumulation": 1759265579.9538805,
+    "agent_analysis": 1759265584.9554014,
+    "firewall_update_wait": 1759265631.9300187,
+    "metrics_collection": 1759265633.9323552,
+    "epoch_complete": 1759265633.944505
+  },
+  "services_detected": [
+    "HTTP(172.20.0.10:80)"
+  ],
+  "services_successfully_exploited": [
+    "GITLAB"
+  ],
+  "exploits_attempted": [],
+  "flags_captured": [
+    {
+      "service": "GITLAB",
+      "flag": "flag{privileged_access_gitlab}"
+    }
+  ],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10"
+      ]
+    }
+  ],
+  "honeypots_exposed": {
+    "ip": "",
+    "service": "",
+    "current_level": 0,
+    "epoch": 10
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 33,
+      "level_new": 100,
+      "changed": true,
+      "evidence_quotes": [
+        "new privilege escalation and evidence of file discovery attempts on 172.20.0.10 were detected with severity 1 and 2 alerts including bash shell piped to dev tcp and commands like \"find / -type f -name 'user.txt'\" and \"cat /root/root.txt\" indicating root-level data exfiltration efforts."
+      ]
+    },
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 100,
+      "level_new": 100,
+      "changed": false,
+      "evidence_quotes": []
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1"
+      },
+      {
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy"
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "",
+        "vector": "privilege-escalation",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              "critical exploitation attempts related to Apache Struts OGNL injection remote code execution were observed with multiple signatures (severity 1)"
+            ],
+            "seen_in_epoch": 9
+          },
+          {
+            "phase": "privilege-escalation",
+            "evidence_quotes": [
+              "possible user and administrator privilege gain attempts"
+            ],
+            "seen_in_epoch": 9
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 9,
+        "current_phase": "privilege-escalation"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "",
+        "vector": "data-exfil-root",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "privilege-escalation",
+            "evidence_quotes": [
+              "new privilege escalation and evidence of file discovery attempts on 172.20.0.10 were detected with severity 1 and 2 alerts including bash shell piped to dev tcp and commands like \"find / -type f -name 'user.txt'\" and \"cat /root/root.txt\" indicating root-level data exfiltration efforts."
+            ],
+            "seen_in_epoch": 10
+          },
+          {
+            "phase": "data-exfil-root",
+            "evidence_quotes": [
+              "new privilege escalation and evidence of file discovery attempts on 172.20.0.10 were detected with severity 1 and 2 alerts including bash shell piped to dev tcp and commands like \"find / -type f -name 'user.txt'\" and \"cat /root/root.txt\" indicating root-level data exfiltration efforts."
+            ],
+            "seen_in_epoch": 10
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 10,
+        "current_phase": "data-exfil-root"
+      }
+    ]
+  },
+  "service_epoch_context": [
+    {
+      "service_id": "gitlab:172.20.0.10:80",
+      "service": "gitlab",
+      "host": "172.20.0.10",
+      "port": "80",
+      "url": "http://172.20.0.10:80",
+      "version": "13.12.3",
+      "first_exposed_epoch": 8,
+      "local_epoch": 3,
+      "allowed_phase": "privilege_escalation"
+    }
+  ],
+  "lockdown_activated": true
+}

@@ -1,0 +1,1784 @@
+{
+  "config": {
+    "max_epochs": 20,
+    "attacker_image": "attacker:latest",
+    "attacker_container_name": "attackercontainer-attacker",
+    "attack_duration": 240,
+    "monitor_accumulation_wait": 5,
+    "firewall_update_wait": 2,
+    "between_epoch_wait": 1,
+    "attacker_network": "192.168.100.0/24",
+    "honeypot_network": "172.20.0.0/24",
+    "firewall_api_url": "http://192.168.200.2:5000",
+    "allow_full_compromise": true,
+    "stop_on_lockdown": true,
+    "clear_memory_between_epochs": false,
+    "results_dir": "./benchmark/benchmark_results",
+    "dir_name": "test_3",
+    "save_detailed_logs": true,
+    "log_level": "INFO"
+  },
+  "start_time": 1759264900.761406,
+  "end_time": 1759265633.9450505,
+  "total_epochs": 10,
+  "epochs": [
+    {
+      "epoch_number": 1,
+      "start_time": 1759264900.761406,
+      "end_time": 1759264987.0998871,
+      "phase_timings": {
+        "initialization": 1759264900.7614415,
+        "attack_execution": 1759264900.7755592,
+        "monitoring_accumulation": 1759264917.472145,
+        "agent_analysis": 1759264922.473848,
+        "firewall_update_wait": 1759264985.0791416,
+        "metrics_collection": 1759264987.0807624,
+        "epoch_complete": 1759264987.0988336
+      },
+      "services_detected": [],
+      "services_successfully_exploited": [],
+      "exploits_attempted": [],
+      "flags_captured": [],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.5 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.5 -> 192.168.100.0/24 (tcp)"
+        }
+      ],
+      "firewall_rules_removed": [],
+      "honeypots_exposed": {
+        "ip": "172.20.0.5",
+        "service": "cve-2014-6271-web-1",
+        "current_level": 33,
+        "epoch": 1
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 0,
+          "level_new": 33,
+          "changed": true,
+          "evidence_quotes": [
+            "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+          ]
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 0,
+          "level_new": 33,
+          "changed": true,
+          "evidence_quotes": [
+            "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+          ]
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 0,
+          "level_new": 33,
+          "changed": true,
+          "evidence_quotes": [
+            "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+          ]
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 0,
+          "level_new": 33,
+          "changed": true,
+          "evidence_quotes": [
+            "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+          ]
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          }
+        ]
+      },
+      "service_epoch_context": [],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 2,
+      "start_time": 1759264988.1054146,
+      "end_time": 1759265052.8159602,
+      "phase_timings": {
+        "initialization": 1759264988.1054366,
+        "attack_execution": 1759264988.117216,
+        "monitoring_accumulation": 1759265003.8078384,
+        "agent_analysis": 1759265008.808407,
+        "firewall_update_wait": 1759265050.7951229,
+        "metrics_collection": 1759265052.7972763,
+        "epoch_complete": 1759265052.8148081
+      },
+      "services_detected": [
+        "HTTP(172.20.0.5:80)"
+      ],
+      "services_successfully_exploited": [],
+      "exploits_attempted": [],
+      "flags_captured": [],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [],
+      "firewall_rules_removed": [],
+      "honeypots_exposed": {
+        "ip": "172.20.0.5",
+        "service": "cve-2014-6271-web-1",
+        "current_level": 33,
+        "epoch": 2
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 0,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 0,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 0,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 0,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          }
+        ]
+      },
+      "service_epoch_context": [],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 3,
+      "start_time": 1759265053.8231165,
+      "end_time": 1759265117.0670686,
+      "phase_timings": {
+        "initialization": 1759265053.8231359,
+        "attack_execution": 1759265053.8390236,
+        "monitoring_accumulation": 1759265069.5098016,
+        "agent_analysis": 1759265074.5104077,
+        "firewall_update_wait": 1759265115.0541134,
+        "metrics_collection": 1759265117.0551467,
+        "epoch_complete": 1759265117.0661886
+      },
+      "services_detected": [
+        "HTTP(172.20.0.5:80)"
+      ],
+      "services_successfully_exploited": [],
+      "exploits_attempted": [],
+      "flags_captured": [],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [],
+      "firewall_rules_removed": [],
+      "honeypots_exposed": {
+        "ip": "172.20.0.5",
+        "service": "cve-2014-6271-web-1",
+        "current_level": 33,
+        "epoch": 3
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          }
+        ]
+      },
+      "service_epoch_context": [],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 4,
+      "start_time": 1759265118.073111,
+      "end_time": 1759265182.3046203,
+      "phase_timings": {
+        "initialization": 1759265118.0731392,
+        "attack_execution": 1759265118.0865707,
+        "monitoring_accumulation": 1759265133.8802702,
+        "agent_analysis": 1759265138.882462,
+        "firewall_update_wait": 1759265180.277795,
+        "metrics_collection": 1759265182.2789278,
+        "epoch_complete": 1759265182.3037212
+      },
+      "services_detected": [
+        "HTTP(172.20.0.5:80)"
+      ],
+      "services_successfully_exploited": [],
+      "exploits_attempted": [],
+      "flags_captured": [],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.4 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.4 -> 192.168.100.0/24 (tcp)"
+        }
+      ],
+      "firewall_rules_removed": [
+        {
+          "rules_removed_current_epoch": [
+            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5"
+          ]
+        }
+      ],
+      "honeypots_exposed": {
+        "ip": "172.20.0.4",
+        "service": "cve-2015-5254-activemq-1",
+        "current_level": 33,
+        "epoch": 4
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          }
+        ]
+      },
+      "service_epoch_context": [],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 5,
+      "start_time": 1759265183.3099687,
+      "end_time": 1759265244.9619825,
+      "phase_timings": {
+        "initialization": 1759265183.3099911,
+        "attack_execution": 1759265183.3260045,
+        "monitoring_accumulation": 1759265199.4049006,
+        "agent_analysis": 1759265204.4054692,
+        "firewall_update_wait": 1759265242.9489362,
+        "metrics_collection": 1759265244.9497383,
+        "epoch_complete": 1759265244.9614093
+      },
+      "services_detected": [
+        "PATROL-SNMP(172.20.0.4:8161)",
+        "UNKNOWN(172.20.0.4:61616)"
+      ],
+      "services_successfully_exploited": [],
+      "exploits_attempted": [],
+      "flags_captured": [],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [],
+      "firewall_rules_removed": [],
+      "honeypots_exposed": {
+        "ip": "172.20.0.4",
+        "service": "cve-2015-5254-activemq-1",
+        "current_level": 33,
+        "epoch": 5
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          }
+        ]
+      },
+      "service_epoch_context": [],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 6,
+      "start_time": 1759265245.9650054,
+      "end_time": 1759265314.7154639,
+      "phase_timings": {
+        "initialization": 1759265245.9650218,
+        "attack_execution": 1759265245.9805403,
+        "monitoring_accumulation": 1759265261.999558,
+        "agent_analysis": 1759265267.0010068,
+        "firewall_update_wait": 1759265312.6857157,
+        "metrics_collection": 1759265314.6866937,
+        "epoch_complete": 1759265314.7145913
+      },
+      "services_detected": [
+        "PATROL-SNMP(172.20.0.4:8161)",
+        "UNKNOWN(172.20.0.4:61616)"
+      ],
+      "services_successfully_exploited": [],
+      "exploits_attempted": [],
+      "flags_captured": [],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [],
+      "firewall_rules_removed": [],
+      "honeypots_exposed": {
+        "ip": "172.20.0.4",
+        "service": "cve-2015-5254-activemq-1",
+        "current_level": 33,
+        "epoch": 6
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          }
+        ]
+      },
+      "service_epoch_context": [],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 7,
+      "start_time": 1759265315.7197866,
+      "end_time": 1759265379.5587194,
+      "phase_timings": {
+        "initialization": 1759265315.719809,
+        "attack_execution": 1759265315.7332106,
+        "monitoring_accumulation": 1759265331.815583,
+        "agent_analysis": 1759265336.8167074,
+        "firewall_update_wait": 1759265377.5386415,
+        "metrics_collection": 1759265379.5405965,
+        "epoch_complete": 1759265379.557764
+      },
+      "services_detected": [
+        "PATROL-SNMP(172.20.0.4:8161)",
+        "UNKNOWN(172.20.0.4:61616)"
+      ],
+      "services_successfully_exploited": [],
+      "exploits_attempted": [],
+      "flags_captured": [],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.10 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.10 -> 192.168.100.0/24 (tcp)"
+        }
+      ],
+      "firewall_rules_removed": [
+        {
+          "rules_removed_current_epoch": [
+            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.4           192.168.100.0/24",
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4"
+          ]
+        }
+      ],
+      "honeypots_exposed": {
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy",
+        "current_level": 33,
+        "epoch": 7
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          }
+        ]
+      },
+      "service_epoch_context": [],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 8,
+      "start_time": 1759265380.5645292,
+      "end_time": 1759265453.77966,
+      "phase_timings": {
+        "initialization": 1759265380.5645628,
+        "attack_execution": 1759265380.5796516,
+        "monitoring_accumulation": 1759265403.4818456,
+        "agent_analysis": 1759265408.483001,
+        "firewall_update_wait": 1759265451.7631266,
+        "metrics_collection": 1759265453.7648082,
+        "epoch_complete": 1759265453.7789443
+      },
+      "services_detected": [
+        "HTTP(172.20.0.10:80)"
+      ],
+      "services_successfully_exploited": [],
+      "exploits_attempted": [],
+      "flags_captured": [],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.3 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
+        }
+      ],
+      "firewall_rules_removed": [
+        {
+          "rules_removed_current_epoch": [
+            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10"
+          ]
+        }
+      ],
+      "honeypots_exposed": {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1",
+        "current_level": 33,
+        "epoch": 8
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          }
+        ]
+      },
+      "service_epoch_context": [
+        {
+          "service_id": "gitlab:172.20.0.10:80",
+          "service": "gitlab",
+          "host": "172.20.0.10",
+          "port": "80",
+          "url": "http://172.20.0.10:80",
+          "version": "13.12.3",
+          "first_exposed_epoch": 8,
+          "local_epoch": 1,
+          "allowed_phase": "initial-access/rce"
+        }
+      ],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 9,
+      "start_time": 1759265454.7837167,
+      "end_time": 1759265544.113122,
+      "phase_timings": {
+        "initialization": 1759265454.7837355,
+        "attack_execution": 1759265454.7989812,
+        "monitoring_accumulation": 1759265474.3835425,
+        "agent_analysis": 1759265479.384351,
+        "firewall_update_wait": 1759265542.0980582,
+        "metrics_collection": 1759265544.1005228,
+        "epoch_complete": 1759265544.1122582
+      },
+      "services_detected": [
+        "HTTP-PROXY(172.20.0.3:8080)"
+      ],
+      "services_successfully_exploited": [],
+      "exploits_attempted": [],
+      "flags_captured": [],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.10 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.10 -> 192.168.100.0/24 (tcp)"
+        }
+      ],
+      "firewall_rules_removed": [
+        {
+          "rules_removed_current_epoch": [
+            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.3           192.168.100.0/24",
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3"
+          ]
+        }
+      ],
+      "honeypots_exposed": {
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy",
+        "current_level": 33,
+        "epoch": 9
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 33,
+          "level_new": 100,
+          "changed": true,
+          "evidence_quotes": [
+            "possible user and administrator privilege gain attempts",
+            "critical exploitation attempts related to Apache Struts OGNL injection remote code execution were observed with multiple signatures (severity 1)"
+          ]
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [
+          {
+            "ip": "172.20.0.3",
+            "service": "s2-057-struts2-1"
+          }
+        ],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "",
+            "vector": "privilege-escalation",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              },
+              {
+                "phase": "initial-access/rce",
+                "evidence_quotes": [
+                  "critical exploitation attempts related to Apache Struts OGNL injection remote code execution were observed with multiple signatures (severity 1)"
+                ],
+                "seen_in_epoch": 9
+              },
+              {
+                "phase": "privilege-escalation",
+                "evidence_quotes": [
+                  "possible user and administrator privilege gain attempts"
+                ],
+                "seen_in_epoch": 9
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 9,
+            "current_phase": "privilege-escalation"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          }
+        ]
+      },
+      "service_epoch_context": [
+        {
+          "service_id": "struts:172.20.0.3:8080",
+          "service": "struts",
+          "host": "172.20.0.3",
+          "port": "8080",
+          "path": "struts2-showcase",
+          "first_exposed_epoch": 9,
+          "local_epoch": 1,
+          "allowed_phase": "initial-access/rce"
+        }
+      ],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 10,
+      "start_time": 1759265545.1181314,
+      "end_time": 1759265633.9450505,
+      "phase_timings": {
+        "initialization": 1759265545.1181507,
+        "attack_execution": 1759265545.1311903,
+        "monitoring_accumulation": 1759265579.9538805,
+        "agent_analysis": 1759265584.9554014,
+        "firewall_update_wait": 1759265631.9300187,
+        "metrics_collection": 1759265633.9323552,
+        "epoch_complete": 1759265633.944505
+      },
+      "services_detected": [
+        "HTTP(172.20.0.10:80)"
+      ],
+      "services_successfully_exploited": [
+        "GITLAB"
+      ],
+      "exploits_attempted": [],
+      "flags_captured": [
+        {
+          "service": "GITLAB",
+          "flag": "flag{privileged_access_gitlab}"
+        }
+      ],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [],
+      "firewall_rules_removed": [
+        {
+          "rules_removed_current_epoch": [
+            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10"
+          ]
+        }
+      ],
+      "honeypots_exposed": {
+        "ip": "",
+        "service": "",
+        "current_level": 0,
+        "epoch": 10
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 33,
+          "level_new": 33,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 33,
+          "level_new": 100,
+          "changed": true,
+          "evidence_quotes": [
+            "new privilege escalation and evidence of file discovery attempts on 172.20.0.10 were detected with severity 1 and 2 alerts including bash shell piped to dev tcp and commands like \"find / -type f -name 'user.txt'\" and \"cat /root/root.txt\" indicating root-level data exfiltration efforts."
+          ]
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 100,
+          "level_new": 100,
+          "changed": false,
+          "evidence_quotes": []
+        }
+      ],
+      "inferred_attack_graph": {
+        "interesting": [
+          {
+            "ip": "172.20.0.3",
+            "service": "s2-057-struts2-1"
+          },
+          {
+            "ip": "172.20.0.10",
+            "service": "cve-2021-22205-gitlab-1-proxy"
+          }
+        ],
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "edge_id": "",
+            "vector": "privilege-escalation",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              },
+              {
+                "phase": "initial-access/rce",
+                "evidence_quotes": [
+                  "critical exploitation attempts related to Apache Struts OGNL injection remote code execution were observed with multiple signatures (severity 1)"
+                ],
+                "seen_in_epoch": 9
+              },
+              {
+                "phase": "privilege-escalation",
+                "evidence_quotes": [
+                  "possible user and administrator privilege gain attempts"
+                ],
+                "seen_in_epoch": 9
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 9,
+            "current_phase": "privilege-escalation"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "edge_id": "",
+            "vector": "scan",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 1,
+            "current_phase": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "edge_id": "",
+            "vector": "data-exfil-root",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+                ],
+                "seen_in_epoch": 1
+              },
+              {
+                "phase": "privilege-escalation",
+                "evidence_quotes": [
+                  "new privilege escalation and evidence of file discovery attempts on 172.20.0.10 were detected with severity 1 and 2 alerts including bash shell piped to dev tcp and commands like \"find / -type f -name 'user.txt'\" and \"cat /root/root.txt\" indicating root-level data exfiltration efforts."
+                ],
+                "seen_in_epoch": 10
+              },
+              {
+                "phase": "data-exfil-root",
+                "evidence_quotes": [
+                  "new privilege escalation and evidence of file discovery attempts on 172.20.0.10 were detected with severity 1 and 2 alerts including bash shell piped to dev tcp and commands like \"find / -type f -name 'user.txt'\" and \"cat /root/root.txt\" indicating root-level data exfiltration efforts."
+                ],
+                "seen_in_epoch": 10
+              }
+            ],
+            "first_seen": 1,
+            "last_seen": 10,
+            "current_phase": "data-exfil-root"
+          }
+        ]
+      },
+      "service_epoch_context": [
+        {
+          "service_id": "gitlab:172.20.0.10:80",
+          "service": "gitlab",
+          "host": "172.20.0.10",
+          "port": "80",
+          "url": "http://172.20.0.10:80",
+          "version": "13.12.3",
+          "first_exposed_epoch": 8,
+          "local_epoch": 3,
+          "allowed_phase": "privilege_escalation"
+        }
+      ],
+      "lockdown_activated": true
+    }
+  ],
+  "summary": {
+    "total_flags_captured": 1,
+    "average_epoch_duration": 72.41373481750489,
+    "lockdown_triggered": true,
+    "lockdown_epoch": 10,
+    "final_honeypots_exploitation": [
+      {
+        "ip": "172.20.0.5",
+        "service": "cve-2014-6271-web-1",
+        "level_prev": 33,
+        "level_new": 33,
+        "changed": false,
+        "evidence_quotes": []
+      },
+      {
+        "ip": "172.20.0.4",
+        "service": "cve-2015-5254-activemq-1",
+        "level_prev": 33,
+        "level_new": 33,
+        "changed": false,
+        "evidence_quotes": []
+      },
+      {
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy",
+        "level_prev": 33,
+        "level_new": 100,
+        "changed": true,
+        "evidence_quotes": [
+          "new privilege escalation and evidence of file discovery attempts on 172.20.0.10 were detected with severity 1 and 2 alerts including bash shell piped to dev tcp and commands like \"find / -type f -name 'user.txt'\" and \"cat /root/root.txt\" indicating root-level data exfiltration efforts."
+        ]
+      },
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1",
+        "level_prev": 100,
+        "level_new": 100,
+        "changed": false,
+        "evidence_quotes": []
+      }
+    ],
+    "final_inferred_attack_graph": {
+      "interesting": [
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1"
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy"
+        }
+      ],
+      "edges": [
+        {
+          "from": "192.168.100.2",
+          "to": "172.20.0.3",
+          "edge_id": "",
+          "vector": "privilege-escalation",
+          "phases": [
+            {
+              "phase": "scan",
+              "evidence_quotes": [
+                "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+              ],
+              "seen_in_epoch": 1
+            },
+            {
+              "phase": "initial-access/rce",
+              "evidence_quotes": [
+                "critical exploitation attempts related to Apache Struts OGNL injection remote code execution were observed with multiple signatures (severity 1)"
+              ],
+              "seen_in_epoch": 9
+            },
+            {
+              "phase": "privilege-escalation",
+              "evidence_quotes": [
+                "possible user and administrator privilege gain attempts"
+              ],
+              "seen_in_epoch": 9
+            }
+          ],
+          "first_seen": 1,
+          "last_seen": 9,
+          "current_phase": "privilege-escalation"
+        },
+        {
+          "from": "192.168.100.2",
+          "to": "172.20.0.4",
+          "edge_id": "",
+          "vector": "scan",
+          "phases": [
+            {
+              "phase": "scan",
+              "evidence_quotes": [
+                "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+              ],
+              "seen_in_epoch": 1
+            }
+          ],
+          "first_seen": 1,
+          "last_seen": 1,
+          "current_phase": "scan"
+        },
+        {
+          "from": "192.168.100.2",
+          "to": "172.20.0.5",
+          "edge_id": "",
+          "vector": "scan",
+          "phases": [
+            {
+              "phase": "scan",
+              "evidence_quotes": [
+                "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+              ],
+              "seen_in_epoch": 1
+            }
+          ],
+          "first_seen": 1,
+          "last_seen": 1,
+          "current_phase": "scan"
+        },
+        {
+          "from": "192.168.100.2",
+          "to": "172.20.0.10",
+          "edge_id": "",
+          "vector": "data-exfil-root",
+          "phases": [
+            {
+              "phase": "scan",
+              "evidence_quotes": [
+                "Extensive TCP SYN (Nmap) port scanning was observed across multiple internal honeypot IPs (172.20.0.0/24)"
+              ],
+              "seen_in_epoch": 1
+            },
+            {
+              "phase": "privilege-escalation",
+              "evidence_quotes": [
+                "new privilege escalation and evidence of file discovery attempts on 172.20.0.10 were detected with severity 1 and 2 alerts including bash shell piped to dev tcp and commands like \"find / -type f -name 'user.txt'\" and \"cat /root/root.txt\" indicating root-level data exfiltration efforts."
+              ],
+              "seen_in_epoch": 10
+            },
+            {
+              "phase": "data-exfil-root",
+              "evidence_quotes": [
+                "new privilege escalation and evidence of file discovery attempts on 172.20.0.10 were detected with severity 1 and 2 alerts including bash shell piped to dev tcp and commands like \"find / -type f -name 'user.txt'\" and \"cat /root/root.txt\" indicating root-level data exfiltration efforts."
+              ],
+              "seen_in_epoch": 10
+            }
+          ],
+          "first_seen": 1,
+          "last_seen": 10,
+          "current_phase": "data-exfil-root"
+        }
+      ]
+    }
+  }
+}
