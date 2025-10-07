@@ -1,40 +1,56 @@
 {
   "epoch_number": 12,
-  "start_time": 1758204430.0757143,
-  "end_time": 1758204558.859472,
+  "start_time": 1759860695.2216208,
+  "end_time": 1759860905.759016,
   "phase_timings": {
-    "initialization": 1758204430.0757368,
-    "attack_execution": 1758204430.091419,
-    "monitoring_accumulation": 1758204446.2800646,
-    "agent_analysis": 1758204451.2816699,
-    "firewall_update_wait": 1758204556.8391356,
-    "metrics_collection": 1758204558.8413606,
-    "epoch_complete": 1758204558.8582532
+    "initialization": 1759860695.221646,
+    "attack_execution": 1759860695.2308109,
+    "monitoring_accumulation": 1759860719.0092058,
+    "agent_analysis": 1759860724.0098898,
+    "firewall_update_wait": 1759860903.7449882,
+    "metrics_collection": 1759860905.7463863,
+    "epoch_complete": 1759860905.7581935
   },
   "services_detected": [
-    "UNKNOWN(172.20.0.4:61616)",
-    "PATROL-SNMP(172.20.0.4:8161)"
+    "HTTP-PROXY(172.20.0.3:8080)"
   ],
-  "services_successfully_exploited": [],
+  "services_successfully_exploited": [
+    "STRUTS"
+  ],
   "exploits_attempted": [],
-  "flags_captured": [],
+  "flags_captured": [
+    {
+      "service": "STRUTS",
+      "flag": "flag{privileged_access_struts}"
+    }
+  ],
   "attack_success_rate": 0.0,
   "firewall_rules_added": [],
-  "firewall_rules_removed": [],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.3           192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3"
+      ]
+    }
+  ],
   "honeypots_exposed": {
-    "ip": "172.20.0.4",
-    "service": "cve-2015-5254-activemq-1",
-    "current_level": 33,
+    "ip": null,
+    "service": null,
+    "current_level": null,
     "epoch": 12
   },
   "honeypots_exploitation": [
     {
       "ip": "172.20.0.3",
       "service": "s2-057-struts2-1",
-      "level_prev": 100,
+      "level_prev": 66,
       "level_new": 100,
-      "changed": false,
-      "evidence_quotes": []
+      "changed": true,
+      "evidence_quotes": [
+        "cat /root/root.txt",
+        "find / -type f -name 'root.txt'"
+      ]
     },
     {
       "ip": "172.20.0.4",
@@ -82,9 +98,8 @@
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN",
-              "Information Leak",
-              "Suspicious inbound to mySQL port 3306"
+              "NMAP -sS",
+              "Information Leak"
             ],
             "seen_in_epoch": 1
           },
@@ -92,27 +107,24 @@
             "phase": "initial-access/rce",
             "evidence_quotes": [
               "OGNL injection remote code execution",
-              "Apache Struts Possible OGNL Java Exec",
-              "OgnlContext@DEFAULT_MEMBER_ACCESS",
-              ".exec in HTTP URI Inbound"
+              "java.lang inbound OGNL injection remote code execution",
+              "Apache Struts Possible OGNL Java Exec In URI",
+              "Possible Apache Struts OGNL in Dynamic Action",
+              "Possible Exploit Activity"
             ],
             "seen_in_epoch": 2
           },
           {
             "phase": "privilege-escalation",
             "evidence_quotes": [
-              "Reverse Shell",
-              "no job control",
-              "root@5bd072d75034:/usr/local/tomcat#",
               "find / -type f -name 'root.txt'",
-              "cat /root/root.txt",
-              "flag{privileged_access_struts}"
+              "cat /root/root.txt"
             ],
-            "seen_in_epoch": 4
+            "seen_in_epoch": 12
           }
         ],
         "first_seen": 1,
-        "last_seen": 4,
+        "last_seen": 12,
         "current_phase": "privilege-escalation"
       },
       {
@@ -124,10 +136,10 @@
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN",
+              "NMAP -sS",
               "Information Leak",
-              "Suspicious inbound to mySQL port 3306",
-              "Suspicious inbound to MSSQL port 1433"
+              "mySQL port 3306",
+              "MSSQL port 1433"
             ],
             "seen_in_epoch": 1
           }
@@ -145,10 +157,11 @@
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN",
+              "NMAP -sS",
               "Information Leak",
-              "Suspicious inbound to mySQL port 3306",
-              "Suspicious inbound to MSSQL port 1433"
+              "mySQL port 3306",
+              "MSSQL port 1433",
+              "Potential SSH Scan"
             ],
             "seen_in_epoch": 1
           }
@@ -166,25 +179,34 @@
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN",
-              "Potential SSH Scan",
-              "Suspicious inbound to MSSQL port 1433"
+              "NMAP -sS",
+              "Information Leak",
+              "mySQL port 3306",
+              "MSSQL port 1433"
             ],
             "seen_in_epoch": 1
           },
           {
             "phase": "initial-access/rce",
             "evidence_quotes": [
-              "bash shell piped to dev tcp"
+              "Possible bash shell piped to dev tcp",
+              "python-requests"
             ],
-            "seen_in_epoch": 9
+            "seen_in_epoch": 7
+          },
+          {
+            "phase": "data-exfil-user",
+            "evidence_quotes": [
+              "find / -type f -name 'user.txt'"
+            ],
+            "seen_in_epoch": 11
           },
           {
             "phase": "privilege-escalation",
             "evidence_quotes": [
-              "/bin/bash -p",
-              "cat /root/root.txt",
-              "Privilege Escalation Attempt"
+              "bash -p",
+              "-perm -4000 -type f",
+              "cat /root/root.txt"
             ],
             "seen_in_epoch": 11
           }
@@ -195,6 +217,17 @@
       }
     ]
   },
-  "service_epoch_context": [],
-  "lockdown_activated": false
+  "service_epoch_context": [
+    {
+      "service_id": "struts:172.20.0.3:8080",
+      "service": "struts",
+      "host": "172.20.0.3",
+      "port": "8080",
+      "path": "struts2-showcase",
+      "first_exposed_epoch": 2,
+      "local_epoch": 11,
+      "allowed_phase": "privilege_escalation"
+    }
+  ],
+  "lockdown_activated": true
 }

@@ -1,18 +1,18 @@
 {
   "epoch_number": 9,
-  "start_time": 1758203876.8187213,
-  "end_time": 1758204026.3653426,
+  "start_time": 1759860230.1682477,
+  "end_time": 1759860368.2678676,
   "phase_timings": {
-    "initialization": 1758203876.818743,
-    "attack_execution": 1758203876.8350077,
-    "monitoring_accumulation": 1758203900.0042887,
-    "agent_analysis": 1758203905.0055854,
-    "firewall_update_wait": 1758204024.3474724,
-    "metrics_collection": 1758204026.3498764,
-    "epoch_complete": 1758204026.3640482
+    "initialization": 1759860230.1682665,
+    "attack_execution": 1759860230.1790762,
+    "monitoring_accumulation": 1759860245.849758,
+    "agent_analysis": 1759860250.850469,
+    "firewall_update_wait": 1759860366.2555714,
+    "metrics_collection": 1759860368.2562768,
+    "epoch_complete": 1759860368.267126
   },
   "services_detected": [
-    "HTTP(172.20.0.10:80)"
+    "HTTP(172.20.0.5:80)"
   ],
   "services_successfully_exploited": [],
   "exploits_attempted": [],
@@ -21,17 +21,17 @@
   "firewall_rules_added": [],
   "firewall_rules_removed": [],
   "honeypots_exposed": {
-    "ip": "172.20.0.10",
-    "service": "cve-2021-22205-gitlab-1-proxy",
-    "current_level": 66,
+    "ip": "172.20.0.5",
+    "service": "cve-2014-6271-web-1",
+    "current_level": 33,
     "epoch": 9
   },
   "honeypots_exploitation": [
     {
       "ip": "172.20.0.3",
       "service": "s2-057-struts2-1",
-      "level_prev": 100,
-      "level_new": 100,
+      "level_prev": 66,
+      "level_new": 66,
       "changed": false,
       "evidence_quotes": []
     },
@@ -54,12 +54,10 @@
     {
       "ip": "172.20.0.10",
       "service": "cve-2021-22205-gitlab-1-proxy",
-      "level_prev": 33,
+      "level_prev": 66,
       "level_new": 66,
-      "changed": true,
-      "evidence_quotes": [
-        "bash shell piped to dev tcp"
-      ]
+      "changed": false,
+      "evidence_quotes": []
     }
   ],
   "inferred_attack_graph": {
@@ -78,14 +76,13 @@
         "from": "192.168.100.2",
         "to": "172.20.0.3",
         "edge_id": "",
-        "vector": "privilege-escalation",
+        "vector": "initial-access/rce",
         "phases": [
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN",
-              "Information Leak",
-              "Suspicious inbound to mySQL port 3306"
+              "NMAP -sS",
+              "Information Leak"
             ],
             "seen_in_epoch": 1
           },
@@ -93,28 +90,17 @@
             "phase": "initial-access/rce",
             "evidence_quotes": [
               "OGNL injection remote code execution",
-              "Apache Struts Possible OGNL Java Exec",
-              "OgnlContext@DEFAULT_MEMBER_ACCESS",
-              ".exec in HTTP URI Inbound"
+              "java.lang inbound OGNL injection remote code execution",
+              "Apache Struts Possible OGNL Java Exec In URI",
+              "Possible Apache Struts OGNL in Dynamic Action",
+              "Possible Exploit Activity"
             ],
             "seen_in_epoch": 2
-          },
-          {
-            "phase": "privilege-escalation",
-            "evidence_quotes": [
-              "Reverse Shell",
-              "no job control",
-              "root@5bd072d75034:/usr/local/tomcat#",
-              "find / -type f -name 'root.txt'",
-              "cat /root/root.txt",
-              "flag{privileged_access_struts}"
-            ],
-            "seen_in_epoch": 4
           }
         ],
         "first_seen": 1,
-        "last_seen": 4,
-        "current_phase": "privilege-escalation"
+        "last_seen": 2,
+        "current_phase": "initial-access/rce"
       },
       {
         "from": "192.168.100.2",
@@ -125,10 +111,10 @@
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN",
+              "NMAP -sS",
               "Information Leak",
-              "Suspicious inbound to mySQL port 3306",
-              "Suspicious inbound to MSSQL port 1433"
+              "mySQL port 3306",
+              "MSSQL port 1433"
             ],
             "seen_in_epoch": 1
           }
@@ -146,10 +132,11 @@
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN",
+              "NMAP -sS",
               "Information Leak",
-              "Suspicious inbound to mySQL port 3306",
-              "Suspicious inbound to MSSQL port 1433"
+              "mySQL port 3306",
+              "MSSQL port 1433",
+              "Potential SSH Scan"
             ],
             "seen_in_epoch": 1
           }
@@ -167,38 +154,28 @@
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN",
-              "Potential SSH Scan",
-              "Suspicious inbound to MSSQL port 1433"
+              "NMAP -sS",
+              "Information Leak",
+              "mySQL port 3306",
+              "MSSQL port 1433"
             ],
             "seen_in_epoch": 1
           },
           {
             "phase": "initial-access/rce",
             "evidence_quotes": [
-              "bash shell piped to dev tcp"
+              "Possible bash shell piped to dev tcp",
+              "python-requests"
             ],
-            "seen_in_epoch": 9
+            "seen_in_epoch": 7
           }
         ],
         "first_seen": 1,
-        "last_seen": 9,
+        "last_seen": 7,
         "current_phase": "initial-access/rce"
       }
     ]
   },
-  "service_epoch_context": [
-    {
-      "service_id": "gitlab:172.20.0.10:80",
-      "service": "gitlab",
-      "host": "172.20.0.10",
-      "port": "80",
-      "url": "http://172.20.0.10:80",
-      "version": "13.12.3",
-      "first_exposed_epoch": 9,
-      "local_epoch": 1,
-      "allowed_phase": "initial-access/rce"
-    }
-  ],
+  "service_epoch_context": [],
   "lockdown_activated": false
 }

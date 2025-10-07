@@ -1,0 +1,168 @@
+{
+  "epoch_number": 10,
+  "start_time": 1759563418.1284778,
+  "end_time": 1759563572.6258585,
+  "phase_timings": {
+    "initialization": 1759563418.1284974,
+    "attack_execution": 1759563418.1524096,
+    "monitoring_accumulation": 1759563434.1625772,
+    "agent_analysis": 1759563439.1632266,
+    "firewall_update_wait": 1759563570.594468,
+    "metrics_collection": 1759563572.597255,
+    "epoch_complete": 1759563572.6246407
+  },
+  "services_detected": [
+    "HTTP(172.20.0.5:80)"
+  ],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.10 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.10 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5"
+      ]
+    }
+  ],
+  "honeypots_exposed": {
+    "ip": "172.20.0.10",
+    "service": "cve-2021-22205-gitlab-1-proxy",
+    "current_level": 33,
+    "epoch": 10
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 66,
+      "level_new": 66,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1"
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "",
+        "vector": "initial-access/rce",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "ET SCAN Potential SSH Scan"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              "OGNL injection remote code execution attempt"
+            ],
+            "seen_in_epoch": 2
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 2,
+        "current_phase": "initial-access/rce"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "ET SCAN Suspicious inbound to mySQL port 3306"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "ET SCAN Suspicious inbound to mySQL port 3306"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      }
+    ]
+  },
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}

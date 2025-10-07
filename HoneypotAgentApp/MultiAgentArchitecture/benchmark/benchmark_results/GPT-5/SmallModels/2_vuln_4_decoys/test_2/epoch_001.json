@@ -1,0 +1,38 @@
+{
+  "epoch_number": 1,
+  "start_time": 1759571648.207415,
+  "end_time": 1759571699.6746683,
+  "phase_timings": {
+    "initialization": 1759571648.207437,
+    "attack_execution": 1759571648.2204478,
+    "monitoring_accumulation": 1759571665.2126613,
+    "agent_analysis": 1759571670.2137563,
+    "firewall_update_wait": 1759571697.6461565,
+    "metrics_collection": 1759571699.6485639,
+    "epoch_complete": 1759571699.672451
+  },
+  "services_detected": [],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.5 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.5 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.5",
+    "service": "cve-2014-6271-web-1 (HTTP on 80/tcp)",
+    "current_level": 0,
+    "epoch": 1
+  },
+  "honeypots_exploitation": [],
+  "inferred_attack_graph": {},
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}

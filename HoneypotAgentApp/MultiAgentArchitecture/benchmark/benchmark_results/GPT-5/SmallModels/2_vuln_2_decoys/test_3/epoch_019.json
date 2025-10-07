@@ -1,0 +1,186 @@
+{
+  "epoch_number": 19,
+  "start_time": 1759565006.4844806,
+  "end_time": 1759565139.8462763,
+  "phase_timings": {
+    "initialization": 1759565006.4845078,
+    "attack_execution": 1759565006.5106,
+    "monitoring_accumulation": 1759565023.2880073,
+    "agent_analysis": 1759565028.2886813,
+    "firewall_update_wait": 1759565137.8160563,
+    "metrics_collection": 1759565139.8197222,
+    "epoch_complete": 1759565139.8447165
+  },
+  "services_detected": [
+    "UNKNOWN(172.20.0.4:61616)",
+    "PATROL-SNMP(172.20.0.4:8161)"
+  ],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.4",
+    "service": "cve-2015-5254-activemq-1",
+    "current_level": 33,
+    "epoch": 19
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 66,
+      "level_new": 100,
+      "changed": true,
+      "evidence_quotes": [
+        "root@c678cb52a81b:/usr/local/tomcat#",
+        "cat /root/root.txt"
+      ]
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 100,
+      "level_new": 100,
+      "changed": false,
+      "evidence_quotes": []
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1"
+      },
+      {
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy"
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "",
+        "vector": "data-exfil-root",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "ET SCAN Potential SSH Scan"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              "OGNL injection remote code execution attempt"
+            ],
+            "seen_in_epoch": 2
+          },
+          {
+            "phase": "data-exfil-root",
+            "evidence_quotes": [
+              "root@c678cb52a81b:/usr/local/tomcat#",
+              "cat /root/root.txt"
+            ],
+            "seen_in_epoch": 18
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 18,
+        "current_phase": "data-exfil-root"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "ET SCAN Suspicious inbound to mySQL port 3306"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "",
+        "vector": "privilege-escalation",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "ET SCAN Suspicious inbound to mySQL port 3306"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              "Possible bash shell piped to dev tcp",
+              "POST /uploads/user"
+            ],
+            "seen_in_epoch": 11
+          },
+          {
+            "phase": "privilege-escalation",
+            "evidence_quotes": [
+              "/bin/bash -p",
+              "find / -perm -4000 -type f"
+            ],
+            "seen_in_epoch": 13
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 13,
+        "current_phase": "privilege-escalation"
+      }
+    ]
+  },
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}

@@ -12,7 +12,6 @@ from typing import List, Dict, Any
 class StructuredOutput(BaseModel):
     reasoning: str 
     selected_honeypot: dict
-    why_not_expose: List[Dict] 
     lockdown: bool = False
 
 # Configure logging
@@ -55,7 +54,7 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
     logger.info(f"Using: {model_name}")
     message = ""
     try:
-        response = StructuredOutput(reasoning="", selected_honeypot={}, why_not_expose=[])
+        response = StructuredOutput(reasoning="", selected_honeypot={})
         messages = {"role":"system", "content": prompt}
         if version == '5':
             valid_json = False
@@ -75,7 +74,7 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
                     valid_json = True
                 except ValidationError as e:
                     logger.error(f"Schema validation failed: \n{e}")
-                    response = StructuredOutput(reasoning="", selected_honeypot={}, why_not_expose=[])
+                    response = StructuredOutput(reasoning="", selected_honeypot={})
         else:
             agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
             response: StructuredOutput = agent.chat.completions.create(
@@ -86,7 +85,6 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
         
         message += f"Reasoning: {str(response.reasoning)}" + "\n"
         message += f"Selected Honeypot: {str(response.selected_honeypot)}" + "\n"
-        message += f"Why not expose: {str(response.why_not_expose)}" + "\n"
         message += f"Lockdown: {str(response.lockdown)}"
         message = AIMessage(content=message)
         return {

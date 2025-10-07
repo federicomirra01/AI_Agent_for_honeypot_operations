@@ -1,0 +1,191 @@
+{
+  "epoch_number": 17,
+  "start_time": 1759595825.4856064,
+  "end_time": 1759595970.5371208,
+  "phase_timings": {
+    "initialization": 1759595825.4856198,
+    "attack_execution": 1759595825.4986956,
+    "monitoring_accumulation": 1759595841.4263048,
+    "agent_analysis": 1759595846.4272242,
+    "firewall_update_wait": 1759595968.525017,
+    "metrics_collection": 1759595970.5261853,
+    "epoch_complete": 1759595970.5359564
+  },
+  "services_detected": [
+    "PATROL-SNMP(172.20.0.4:8161)",
+    "UNKNOWN(172.20.0.4:61616)"
+  ],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.4",
+    "service": "cve-2015-5254-activemq-1",
+    "current_level": 33,
+    "epoch": 17
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 66,
+      "level_new": 100,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 100,
+      "level_new": 100,
+      "changed": false,
+      "evidence_quotes": []
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1"
+      },
+      {
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy"
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "",
+        "vector": "privilege-escalation",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              "Apache Struts ognl inbound OGNL injection remote code execution attempt"
+            ],
+            "seen_in_epoch": 3
+          },
+          {
+            "phase": "privilege-escalation",
+            "evidence_quotes": [
+              "find / -type f -name 'root.txt'",
+              "cat /root/root.txt"
+            ],
+            "seen_in_epoch": 16
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 16,
+        "current_phase": "privilege-escalation"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "",
+        "vector": "privilege-escalation",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "ET INFO POSSIBLE Web Crawl using Curl"
+            ],
+            "seen_in_epoch": 9
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              "bash shell piped to dev tcp"
+            ],
+            "seen_in_epoch": 9
+          },
+          {
+            "phase": "data-exfil-user",
+            "evidence_quotes": [
+              "find / -type f -name 'user.txt'",
+              "cat /home/ctf/user.txt"
+            ],
+            "seen_in_epoch": 11
+          },
+          {
+            "phase": "privilege-escalation",
+            "evidence_quotes": [
+              "/bin/bash -p",
+              "cat /root/root.txt",
+              "find / -perm -4000 -type f"
+            ],
+            "seen_in_epoch": 11
+          }
+        ],
+        "first_seen": 9,
+        "last_seen": 11,
+        "current_phase": "privilege-escalation"
+      }
+    ]
+  },
+  "service_epoch_context": [],
+  "lockdown_activated": false
+}

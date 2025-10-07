@@ -1,0 +1,172 @@
+{
+  "epoch_number": 7,
+  "start_time": 1759572334.1499238,
+  "end_time": 1759572500.2397275,
+  "phase_timings": {
+    "initialization": 1759572334.1499515,
+    "attack_execution": 1759572334.1680925,
+    "monitoring_accumulation": 1759572358.0702755,
+    "agent_analysis": 1759572363.0709372,
+    "firewall_update_wait": 1759572498.21853,
+    "metrics_collection": 1759572500.2198386,
+    "epoch_complete": 1759572500.2386072
+  },
+  "services_detected": [
+    "HTTP-PROXY(172.20.0.3:8080)"
+  ],
+  "services_successfully_exploited": [
+    "STRUTS"
+  ],
+  "exploits_attempted": [],
+  "flags_captured": [
+    {
+      "service": "STRUTS",
+      "flag": "flag{privileged_access_struts}"
+    }
+  ],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.8 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.8 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.3           192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3"
+      ]
+    }
+  ],
+  "honeypots_exposed": {
+    "ip": "172.20.0.8",
+    "service": "cve-2024-36401-web-1",
+    "current_level": 0,
+    "epoch": 7
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 66,
+      "level_new": 100,
+      "changed": true,
+      "evidence_quotes": [
+        "root@e72755139d8c:/usr/local/tomcat#",
+        "cat /root/root.txt"
+      ]
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.8",
+      "service": "cve-2024-36401-web-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.11",
+      "service": "cve-2013-4547-php-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": []
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1"
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)",
+              "ET SCAN Suspicious inbound to mySQL port 3306"
+            ],
+            "seen_in_epoch": 2
+          }
+        ],
+        "first_seen": 2,
+        "last_seen": 2,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "",
+        "vector": "data-exfil-root",
+        "phases": [
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              "OGNL injection remote code execution attempt",
+              "java.lang.Runtime@getRuntim"
+            ],
+            "seen_in_epoch": 5
+          },
+          {
+            "phase": "data-exfil-root",
+            "evidence_quotes": [
+              "root@e72755139d8c:/usr/local/tomcat#",
+              "cat /root/root.txt"
+            ],
+            "seen_in_epoch": 7
+          }
+        ],
+        "first_seen": 5,
+        "last_seen": 7,
+        "current_phase": "data-exfil-root"
+      }
+    ]
+  },
+  "service_epoch_context": [
+    {
+      "service_id": "struts:172.20.0.3:8080",
+      "service": "struts",
+      "host": "172.20.0.3",
+      "port": "8080",
+      "path": "struts2-showcase",
+      "first_exposed_epoch": 5,
+      "local_epoch": 3,
+      "allowed_phase": "privilege_escalation"
+    }
+  ],
+  "lockdown_activated": false
+}

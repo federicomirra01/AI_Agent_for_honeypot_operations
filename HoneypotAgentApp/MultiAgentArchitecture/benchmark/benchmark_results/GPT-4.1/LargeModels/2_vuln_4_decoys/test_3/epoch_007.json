@@ -1,0 +1,148 @@
+{
+  "epoch_number": 7,
+  "start_time": 1759494966.657219,
+  "end_time": 1759495089.7558112,
+  "phase_timings": {
+    "initialization": 1759494966.6572459,
+    "attack_execution": 1759494966.6700451,
+    "monitoring_accumulation": 1759494989.5102413,
+    "agent_analysis": 1759494994.510842,
+    "firewall_update_wait": 1759495087.7381423,
+    "metrics_collection": 1759495089.7393196,
+    "epoch_complete": 1759495089.75536
+  },
+  "services_detected": [
+    "HTTP(172.20.0.10:80)"
+  ],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.10",
+    "service": "cve-2021-22205-gitlab-1-proxy",
+    "current_level": 66,
+    "epoch": 7
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 0,
+      "level_new": 66,
+      "changed": true,
+      "evidence_quotes": [
+        "Possible bash shell piped to dev tcp"
+      ]
+    },
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.11",
+      "service": "cve-2013-4547-php-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.8",
+      "service": "cve-2024-36401-web-1",
+      "level_prev": 0,
+      "level_new": 0,
+      "changed": false,
+      "evidence_quotes": []
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy"
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "",
+        "vector": "initial-access/rce",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 7
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              "Possible bash shell piped to dev tcp"
+            ],
+            "seen_in_epoch": 7
+          }
+        ],
+        "first_seen": 7,
+        "last_seen": 7,
+        "current_phase": "initial-access/rce"
+      }
+    ]
+  },
+  "service_epoch_context": [
+    {
+      "service_id": "gitlab:172.20.0.10:80",
+      "service": "gitlab",
+      "host": "172.20.0.10",
+      "port": "80",
+      "url": "http://172.20.0.10:80",
+      "version": "13.12.3",
+      "first_exposed_epoch": 7,
+      "local_epoch": 1,
+      "allowed_phase": "initial-access/rce"
+    }
+  ],
+  "lockdown_activated": false
+}

@@ -1,15 +1,15 @@
 {
   "epoch_number": 1,
-  "start_time": 1758202986.9074712,
-  "end_time": 1758203125.626175,
+  "start_time": 1759859306.6629293,
+  "end_time": 1759859437.0120058,
   "phase_timings": {
-    "initialization": 1758202986.9074955,
-    "attack_execution": 1758202986.9208481,
-    "monitoring_accumulation": 1758203003.607091,
-    "agent_analysis": 1758203008.6098437,
-    "firewall_update_wait": 1758203123.5925229,
-    "metrics_collection": 1758203125.5941873,
-    "epoch_complete": 1758203125.6251059
+    "initialization": 1759859306.6629474,
+    "attack_execution": 1759859306.6754992,
+    "monitoring_accumulation": 1759859323.276953,
+    "agent_analysis": 1759859328.2780359,
+    "firewall_update_wait": 1759859434.9987333,
+    "metrics_collection": 1759859436.999815,
+    "epoch_complete": 1759859437.0111985
   },
   "services_detected": [],
   "services_successfully_exploited": [],
@@ -39,7 +39,7 @@
       "level_new": 33,
       "changed": true,
       "evidence_quotes": [
-        "POSSBL PORT SCAN",
+        "NMAP -sS",
         "Information Leak"
       ]
     },
@@ -50,8 +50,10 @@
       "level_new": 33,
       "changed": true,
       "evidence_quotes": [
-        "POSSBL PORT SCAN",
-        "Information Leak"
+        "NMAP -sS",
+        "Information Leak",
+        "mySQL port 3306",
+        "MSSQL port 1433"
       ]
     },
     {
@@ -61,8 +63,11 @@
       "level_new": 33,
       "changed": true,
       "evidence_quotes": [
-        "POSSBL PORT SCAN",
-        "Information Leak"
+        "NMAP -sS",
+        "Information Leak",
+        "mySQL port 3306",
+        "MSSQL port 1433",
+        "Potential SSH Scan"
       ]
     },
     {
@@ -72,8 +77,10 @@
       "level_new": 33,
       "changed": true,
       "evidence_quotes": [
-        "POSSBL PORT SCAN",
-        "Information Leak"
+        "NMAP -sS",
+        "Information Leak",
+        "mySQL port 3306",
+        "MSSQL port 1433"
       ]
     }
   ],
@@ -89,9 +96,8 @@
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN",
-              "Information Leak",
-              "Suspicious inbound to mySQL port 3306"
+              "NMAP -sS",
+              "Information Leak"
             ],
             "seen_in_epoch": 1
           }
@@ -109,10 +115,10 @@
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN",
+              "NMAP -sS",
               "Information Leak",
-              "Suspicious inbound to mySQL port 3306",
-              "Suspicious inbound to MSSQL port 1433"
+              "mySQL port 3306",
+              "MSSQL port 1433"
             ],
             "seen_in_epoch": 1
           }
@@ -130,10 +136,11 @@
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN",
+              "NMAP -sS",
               "Information Leak",
-              "Suspicious inbound to mySQL port 3306",
-              "Suspicious inbound to MSSQL port 1433"
+              "mySQL port 3306",
+              "MSSQL port 1433",
+              "Potential SSH Scan"
             ],
             "seen_in_epoch": 1
           }
@@ -151,10 +158,10 @@
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN",
+              "NMAP -sS",
               "Information Leak",
-              "Potential SSH Scan",
-              "Suspicious inbound to MSSQL port 1433"
+              "mySQL port 3306",
+              "MSSQL port 1433"
             ],
             "seen_in_epoch": 1
           }
