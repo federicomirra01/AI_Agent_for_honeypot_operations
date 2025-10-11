@@ -100,7 +100,7 @@ def get_docker_containers() -> Dict[str, Any]:
                 if network_config.get('IPAddress'):
                     ip_address = network_config.get('IPAddress')
                     break
-            if ip_address in ['192.168.100.2', '192.168.200.2'] or container.name in ['cve-2021-22205-redis-1', 'cve-2021-22205-postgresql-1', 'suricata', 'cve-2021-22205-gitlab-1']:
+            if ip_address in ['192.168.100.2', '192.168.200.2', '172.20.0.11'] or container.name in ['cve-2021-22205-redis-1', 'cve-2021-22205-postgresql-1', 'suricata', 'cve-2021-22205-gitlab-1']:
                 continue # Skip the firewall and attacker containers and backend containers
 
             info = {

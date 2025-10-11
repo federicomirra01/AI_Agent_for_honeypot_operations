@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 load_dotenv()
 OPEN_AI_KEY = os.getenv("OPENAI_API_KEY")
 POLITO_CLUSTER_KEY = os.getenv("POLITO_CLUSTER_KEY")
+BOFFA_KEY = os.getenv("BOFFA_KEY")
+OPENROUTER_URL = "https://openrouter.ai/api/v1"
+DEEPSEEK_STRING = "openai/gpt-oss-20b:free" #"deepseek/deepseek-chat-v3-0324:free" #"deepseek/deepseek-r1-distill-llama-70b:free"
 MISTRAL_STRING = "mistralai/Mistral-7B-Instruct-v0.1"
 POLITO_URL = "https://kubernetes.polito.it/vllm/v1"
 # Configure logging

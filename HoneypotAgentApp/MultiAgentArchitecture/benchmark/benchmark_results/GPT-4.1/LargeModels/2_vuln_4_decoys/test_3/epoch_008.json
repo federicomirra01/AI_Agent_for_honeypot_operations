@@ -1,53 +1,53 @@
 {
   "epoch_number": 8,
-  "start_time": 1759495090.7611852,
-  "end_time": 1759495233.3096256,
+  "start_time": 1760178818.0590534,
+  "end_time": 1760178935.6574817,
   "phase_timings": {
-    "initialization": 1759495090.7611976,
-    "attack_execution": 1759495090.7721422,
-    "monitoring_accumulation": 1759495119.3905935,
-    "agent_analysis": 1759495124.3910444,
-    "firewall_update_wait": 1759495231.2942827,
-    "metrics_collection": 1759495233.2960489,
-    "epoch_complete": 1759495233.3091137
+    "initialization": 1760178818.0590653,
+    "attack_execution": 1760178818.0708735,
+    "monitoring_accumulation": 1760178823.085492,
+    "agent_analysis": 1760178828.0869143,
+    "firewall_update_wait": 1760178933.6427896,
+    "metrics_collection": 1760178935.6439824,
+    "epoch_complete": 1760178935.6563714
   },
-  "services_detected": [
-    "HTTP(172.20.0.10:80)"
-  ],
-  "services_successfully_exploited": [
-    "GITLAB"
-  ],
+  "services_detected": [],
+  "services_successfully_exploited": [],
   "exploits_attempted": [],
-  "flags_captured": [
-    {
-      "service": "GITLAB",
-      "flag": "flag{user_access_gitlab}"
-    }
-  ],
+  "flags_captured": [],
   "attack_success_rate": 0.0,
-  "firewall_rules_added": [
-    {
-      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.3 (tcp)"
-    },
-    {
-      "rules_added_current_epoch": "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
-    }
-  ],
+  "firewall_rules_added": [],
   "firewall_rules_removed": [
     {
       "rules_removed_current_epoch": [
-        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
-        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10"
+        "REMOVED rule #3:    DROP       all  --  172.20.0.0/24        192.168.100.0/24",
+        "REMOVED rule #4:    LOG        all  --  0.0.0.0/0            0.0.0.0/0            LOG flags 0 level 4 prefix \"FIREWALL-DROP: \""
       ]
     }
   ],
   "honeypots_exposed": {
-    "ip": "172.20.0.3",
-    "service": "s2-057-struts2-1",
-    "current_level": 0,
+    "ip": "172.20.0.8",
+    "service": "cve-2024-36401-web-1",
+    "current_level": 33,
     "epoch": 8
   },
   "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 100,
+      "level_new": 100,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
     {
       "ip": "172.20.0.5",
       "service": "cve-2014-6271-web-1",
@@ -57,42 +57,26 @@
       "evidence_quotes": []
     },
     {
-      "ip": "172.20.0.4",
-      "service": "cve-2015-5254-activemq-1",
-      "level_prev": 0,
-      "level_new": 0,
+      "ip": "172.20.0.8",
+      "service": "cve-2024-36401-web-1",
+      "level_prev": 33,
+      "level_new": 33,
       "changed": false,
       "evidence_quotes": []
     },
     {
       "ip": "172.20.0.10",
       "service": "cve-2021-22205-gitlab-1-proxy",
-      "level_prev": 66,
-      "level_new": 66,
+      "level_prev": 33,
+      "level_new": 33,
       "changed": false,
       "evidence_quotes": []
     },
     {
-      "ip": "172.20.0.3",
-      "service": "s2-057-struts2-1",
-      "level_prev": 0,
-      "level_new": 0,
-      "changed": false,
-      "evidence_quotes": []
-    },
-    {
-      "ip": "172.20.0.11",
-      "service": "cve-2013-4547-php-1",
-      "level_prev": 0,
-      "level_new": 0,
-      "changed": false,
-      "evidence_quotes": []
-    },
-    {
-      "ip": "172.20.0.8",
-      "service": "cve-2024-36401-web-1",
-      "level_prev": 0,
-      "level_new": 0,
+      "ip": "172.20.0.30",
+      "service": "cve-2013-4547-nginx-1",
+      "level_prev": 33,
+      "level_new": 33,
       "changed": false,
       "evidence_quotes": []
     }
@@ -100,11 +84,63 @@
   "inferred_attack_graph": {
     "interesting": [
       {
-        "ip": "172.20.0.10",
-        "service": "cve-2021-22205-gitlab-1-proxy"
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1"
       }
     ],
     "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "",
+        "vector": "data-exfil-root",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              "Reverse shell",
+              ".exec in HTTP URI"
+            ],
+            "seen_in_epoch": 3
+          },
+          {
+            "phase": "data-exfil-root",
+            "evidence_quotes": [
+              "cat /root/root.txt",
+              "root@cdc1e5ed0c27:/usr/local/tomcat#"
+            ],
+            "seen_in_epoch": 3
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 3,
+        "current_phase": "data-exfil-root"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
       {
         "from": "192.168.100.2",
         "to": "172.20.0.5",
@@ -125,43 +161,60 @@
       },
       {
         "from": "192.168.100.2",
-        "to": "172.20.0.10",
+        "to": "172.20.0.8",
         "edge_id": "",
-        "vector": "initial-access/rce",
+        "vector": "scan",
         "phases": [
           {
             "phase": "scan",
             "evidence_quotes": [
               "POSSBL PORT SCAN (NMAP -sS)"
             ],
-            "seen_in_epoch": 7
-          },
-          {
-            "phase": "initial-access/rce",
-            "evidence_quotes": [
-              "Possible bash shell piped to dev tcp"
-            ],
-            "seen_in_epoch": 7
+            "seen_in_epoch": 1
           }
         ],
-        "first_seen": 7,
-        "last_seen": 7,
-        "current_phase": "initial-access/rce"
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.30",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
       }
     ]
   },
-  "service_epoch_context": [
-    {
-      "service_id": "gitlab:172.20.0.10:80",
-      "service": "gitlab",
-      "host": "172.20.0.10",
-      "port": "80",
-      "url": "http://172.20.0.10:80",
-      "version": "13.12.3",
-      "first_exposed_epoch": 7,
-      "local_epoch": 2,
-      "allowed_phase": "data-exfil"
-    }
-  ],
+  "service_epoch_context": [],
   "lockdown_activated": false
 }

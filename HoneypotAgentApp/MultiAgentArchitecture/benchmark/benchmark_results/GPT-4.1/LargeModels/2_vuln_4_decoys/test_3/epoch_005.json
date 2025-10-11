@@ -1,15 +1,15 @@
 {
   "epoch_number": 5,
-  "start_time": 1759494700.0900931,
-  "end_time": 1759494796.5115619,
+  "start_time": 1760178271.025729,
+  "end_time": 1760178626.2409456,
   "phase_timings": {
-    "initialization": 1759494700.0901031,
-    "attack_execution": 1759494700.100198,
-    "monitoring_accumulation": 1759494715.9286711,
-    "agent_analysis": 1759494720.9291441,
-    "firewall_update_wait": 1759494794.4900267,
-    "metrics_collection": 1759494796.491279,
-    "epoch_complete": 1759494796.510198
+    "initialization": 1760178271.0257454,
+    "attack_execution": 1760178271.0364032,
+    "monitoring_accumulation": 1760178286.7390661,
+    "agent_analysis": 1760178291.7403584,
+    "firewall_update_wait": 1760178624.2279813,
+    "metrics_collection": 1760178626.2292843,
+    "epoch_complete": 1760178626.2404153
   },
   "services_detected": [
     "UNKNOWN(172.20.0.4:61616)",
@@ -19,15 +19,45 @@
   "exploits_attempted": [],
   "flags_captured": [],
   "attack_success_rate": 0.0,
-  "firewall_rules_added": [],
-  "firewall_rules_removed": [],
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.5 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.5 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5"
+      ]
+    }
+  ],
   "honeypots_exposed": {
-    "ip": "172.20.0.4",
-    "service": "cve-2015-5254-activemq-1",
-    "current_level": 0,
+    "ip": "172.20.0.5",
+    "service": "cve-2014-6271-web-1",
+    "current_level": 33,
     "epoch": 5
   },
   "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 66,
+      "level_new": 100,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
     {
       "ip": "172.20.0.5",
       "service": "cve-2014-6271-web-1",
@@ -37,52 +67,153 @@
       "evidence_quotes": []
     },
     {
-      "ip": "172.20.0.4",
-      "service": "cve-2015-5254-activemq-1",
-      "level_prev": 0,
-      "level_new": 0,
+      "ip": "172.20.0.8",
+      "service": "cve-2024-36401-web-1",
+      "level_prev": 33,
+      "level_new": 33,
       "changed": false,
       "evidence_quotes": []
     },
     {
       "ip": "172.20.0.10",
       "service": "cve-2021-22205-gitlab-1-proxy",
-      "level_prev": 0,
-      "level_new": 0,
+      "level_prev": 33,
+      "level_new": 33,
       "changed": false,
       "evidence_quotes": []
     },
     {
-      "ip": "172.20.0.3",
-      "service": "s2-057-struts2-1",
-      "level_prev": 0,
-      "level_new": 0,
-      "changed": false,
-      "evidence_quotes": []
-    },
-    {
-      "ip": "172.20.0.11",
-      "service": "cve-2013-4547-php-1",
-      "level_prev": 0,
-      "level_new": 0,
-      "changed": false,
-      "evidence_quotes": []
-    },
-    {
-      "ip": "172.20.0.8",
-      "service": "cve-2024-36401-web-1",
-      "level_prev": 0,
-      "level_new": 0,
+      "ip": "172.20.0.30",
+      "service": "cve-2013-4547-nginx-1",
+      "level_prev": 33,
+      "level_new": 33,
       "changed": false,
       "evidence_quotes": []
     }
   ],
   "inferred_attack_graph": {
-    "interesting": [],
+    "interesting": [
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1"
+      }
+    ],
     "edges": [
       {
         "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "",
+        "vector": "data-exfil-root",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              ".exec in HTTP URI Inbound",
+              "struts2-showcase/${(#"
+            ],
+            "seen_in_epoch": 2
+          },
+          {
+            "phase": "privilege-escalation",
+            "evidence_quotes": [
+              "cat /root/root.txt"
+            ],
+            "seen_in_epoch": 3
+          },
+          {
+            "phase": "data-exfil-root",
+            "evidence_quotes": [
+              "cat /root/root.txt"
+            ],
+            "seen_in_epoch": 3
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 3,
+        "current_phase": "data-exfil-root"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
         "to": "172.20.0.5",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.8",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.30",
         "edge_id": "",
         "vector": "scan",
         "phases": [

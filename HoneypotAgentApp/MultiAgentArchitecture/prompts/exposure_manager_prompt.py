@@ -17,7 +17,7 @@ You control allow/block rules only for traffic between the attacker network and 
 - List of current firewall rules                                    
 - Current exploitation level tracking
 - Current Inferred attack graph
-- Exposure registry (first_epoch, last_epoch, epochs_exposed, prev/last exploitation levels)
+- Exposure registry (first_epoch, last_epoch, epochs_exposed, prev/last exploitation levels) -> track only already exposed containers
 ---
 
 ## INPUTS:
@@ -38,7 +38,7 @@ You control allow/block rules only for traffic between the attacker network and 
 3. **Extend on progress:** If engagement **increased in the last epoch** (exploitation level rose vs previous epoch), **expose for another epoch**, unless it has reached full compromise (100%).
 4. **Continue until completion or exhaustion:** Keep exposing a honeypot until it reaches **100%** or becomes **exhausted** (no progress for **3 consecutive exposure epochs**).
 5. **Never re-expose** a honeypot that is **100%** or **exhausted**.
-6.  **Coverage priority:** Until **all non-100% honeypots have been exposed at least once**, prefer honeypots with **ever_exposed == false** (even if others would normally be extended/deprioritized), while still respecting the minimum exposure window of the currently exposed target.
+6.  **Coverage priority:** Until **all non-100% honeypots from the available honeypots list have been exposed at least once**, prefer honeypots with **ever_exposed == false** (even if others would normally be extended/deprioritized), while still respecting the minimum exposure window of the currently exposed target.
 8. If multiple candidates are equal, choose one **randomly**.
 
 ---

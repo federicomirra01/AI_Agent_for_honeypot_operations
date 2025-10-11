@@ -30,8 +30,7 @@ Produce a compact, **strictly structured** summary that:
 - Extract **evidence quotes** usable downstream for attack graph inference (e.g., "uid=0", "Reverse shell", "wget http://", "cat /etc/shadow").
 - Avoid skipping alerts even if they look like duplicates of lower phases; later-phase evidence is always critical.
 - Different alerts can share the same payload (e.g., privilege escalation + data exfiltration); both must be represented.
-- Prioritize higher severity and later-phase indicators while still listing reconnaissance/earlier stages.
-
+- For each honeypot list alerts by severity value in a ascending order (the lower the severity value is, the more critical the alert is)
 ## NORMALIZATION RULES
 - Map services as "proto/port" (e.g., "tcp/22") and include app_proto when present (e.g., "ssh@tcp/22").
 - Collapse duplicates by (src_ip, dest_ip, service, signature) with counts; preserve **first_seen** and **last_seen** (min/max timestamps in this batch).
@@ -90,7 +89,7 @@ Output **exactly** this JSON shape and keys:
 - Never output the internal analysis. The final message must be the JSON object **only**.
 """)
 
-EVE_SUMMARY_PROMPT_MISTRAL = """
+EVE_SUMMARY_PROMPT_OPEN = """
 # ROLE: Honeypot Security Alert Summarizer
 You are a cybersecurity analyst for a honeypot research network.
 

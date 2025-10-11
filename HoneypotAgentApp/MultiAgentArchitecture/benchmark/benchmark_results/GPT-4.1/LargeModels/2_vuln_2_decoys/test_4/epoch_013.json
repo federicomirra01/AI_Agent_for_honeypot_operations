@@ -1,0 +1,231 @@
+{
+  "epoch_number": 13,
+  "start_time": 1760198265.5739777,
+  "end_time": 1760198369.3870566,
+  "phase_timings": {
+    "initialization": 1760198265.573989,
+    "attack_execution": 1760198265.5861642,
+    "monitoring_accumulation": 1760198289.1571405,
+    "agent_analysis": 1760198294.1577528,
+    "firewall_update_wait": 1760198367.3710697,
+    "metrics_collection": 1760198369.3725643,
+    "epoch_complete": 1760198369.3859198
+  },
+  "services_detected": [
+    "HTTP-PROXY(172.20.0.3:8080)"
+  ],
+  "services_successfully_exploited": [
+    "STRUTS"
+  ],
+  "exploits_attempted": [],
+  "flags_captured": [
+    {
+      "service": "STRUTS",
+      "flag": "flag{privileged_access_struts}"
+    }
+  ],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [
+    {
+      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.4 (tcp)"
+    },
+    {
+      "rules_added_current_epoch": "ALLOW 172.20.0.4 -> 192.168.100.0/24 (tcp)"
+    }
+  ],
+  "firewall_rules_removed": [
+    {
+      "rules_removed_current_epoch": [
+        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.3           192.168.100.0/24",
+        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3"
+      ]
+    }
+  ],
+  "honeypots_exposed": {
+    "ip": "172.20.0.4",
+    "service": "cve-2015-5254-activemq-1",
+    "current_level": 33,
+    "epoch": 13
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 66,
+      "level_new": 100,
+      "changed": true,
+      "evidence_quotes": [
+        "root@dfa1b7824351:/usr/local/tomcat#",
+        "find / -type f -name 'root.txt'",
+        "cat /root/root.txt",
+        "flag{privileged_access_struts}"
+      ]
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 66,
+      "level_new": 66,
+      "changed": false,
+      "evidence_quotes": []
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1"
+      },
+      {
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy"
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "",
+        "vector": "data-exfil-root",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 2
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              ".exec in HTTP URI",
+              "Possible Exploit Activity"
+            ],
+            "seen_in_epoch": 4
+          },
+          {
+            "phase": "privilege-escalation",
+            "evidence_quotes": [
+              "Reverse Shell",
+              "no job control in this shell",
+              "root@dfa1b7824351:/usr/local/tomcat#"
+            ],
+            "seen_in_epoch": 13
+          },
+          {
+            "phase": "data-exfil-root",
+            "evidence_quotes": [
+              "find / -type f -name 'root.txt'",
+              "cat /root/root.txt",
+              "flag{privileged_access_struts}"
+            ],
+            "seen_in_epoch": 13
+          }
+        ],
+        "first_seen": 2,
+        "last_seen": 13,
+        "current_phase": "data-exfil-root"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 2
+          }
+        ],
+        "first_seen": 2,
+        "last_seen": 2,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 2
+          }
+        ],
+        "first_seen": 2,
+        "last_seen": 2,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "",
+        "vector": "data-exfil-user",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 2
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              "Reverse Shell",
+              "no job control in this shell"
+            ],
+            "seen_in_epoch": 10
+          },
+          {
+            "phase": "data-exfil-user",
+            "evidence_quotes": [
+              "find / -type f -name 'user.txt'",
+              "cat /home/ctf/user.txt",
+              "flag{user_access_gitlab}"
+            ],
+            "seen_in_epoch": 10
+          }
+        ],
+        "first_seen": 2,
+        "last_seen": 10,
+        "current_phase": "data-exfil-user"
+      }
+    ]
+  },
+  "service_epoch_context": [
+    {
+      "service_id": "struts:172.20.0.3:8080",
+      "service": "struts",
+      "host": "172.20.0.3",
+      "port": "8080",
+      "path": "struts2-showcase",
+      "first_exposed_epoch": 4,
+      "local_epoch": 10,
+      "allowed_phase": "privilege_escalation"
+    }
+  ],
+  "lockdown_activated": false
+}

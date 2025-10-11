@@ -1,15 +1,15 @@
 {
   "epoch_number": 17,
-  "start_time": 1759496100.2387817,
-  "end_time": 1759496171.205777,
+  "start_time": 1760179903.237161,
+  "end_time": 1760180014.809111,
   "phase_timings": {
-    "initialization": 1759496100.2388003,
-    "attack_execution": 1759496100.2569728,
-    "monitoring_accumulation": 1759496117.1353073,
-    "agent_analysis": 1759496122.135823,
-    "firewall_update_wait": 1759496169.1910822,
-    "metrics_collection": 1759496171.1922314,
-    "epoch_complete": 1759496171.2052264
+    "initialization": 1760179903.237173,
+    "attack_execution": 1760179903.2477007,
+    "monitoring_accumulation": 1760179908.2589538,
+    "agent_analysis": 1760179913.2600522,
+    "firewall_update_wait": 1760180012.7960784,
+    "metrics_collection": 1760180014.7976365,
+    "epoch_complete": 1760180014.8081374
   },
   "services_detected": [],
   "services_successfully_exploited": [],
@@ -19,12 +19,28 @@
   "firewall_rules_added": [],
   "firewall_rules_removed": [],
   "honeypots_exposed": {
-    "ip": "172.20.0.11",
-    "service": "cve-2013-4547-php-1",
+    "ip": "172.20.0.8",
+    "service": "cve-2024-36401-web-1",
     "current_level": 33,
     "epoch": 17
   },
   "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 100,
+      "level_new": 100,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
     {
       "ip": "172.20.0.5",
       "service": "cve-2014-6271-web-1",
@@ -34,45 +50,26 @@
       "evidence_quotes": []
     },
     {
-      "ip": "172.20.0.4",
-      "service": "cve-2015-5254-activemq-1",
-      "level_prev": 0,
-      "level_new": 0,
+      "ip": "172.20.0.8",
+      "service": "cve-2024-36401-web-1",
+      "level_prev": 33,
+      "level_new": 33,
       "changed": false,
       "evidence_quotes": []
     },
     {
       "ip": "172.20.0.10",
       "service": "cve-2021-22205-gitlab-1-proxy",
-      "level_prev": 66,
-      "level_new": 66,
+      "level_prev": 100,
+      "level_new": 100,
       "changed": false,
       "evidence_quotes": []
     },
     {
-      "ip": "172.20.0.3",
-      "service": "s2-057-struts2-1",
-      "level_prev": 66,
-      "level_new": 66,
-      "changed": false,
-      "evidence_quotes": []
-    },
-    {
-      "ip": "172.20.0.11",
-      "service": "cve-2013-4547-php-1",
-      "level_prev": 0,
+      "ip": "172.20.0.30",
+      "service": "cve-2013-4547-nginx-1",
+      "level_prev": 33,
       "level_new": 33,
-      "changed": true,
-      "evidence_quotes": [
-        "POSSBL PORT SCAN (NMAP -sS)",
-        "PORT SCAN"
-      ]
-    },
-    {
-      "ip": "172.20.0.8",
-      "service": "cve-2024-36401-web-1",
-      "level_prev": 0,
-      "level_new": 0,
       "changed": false,
       "evidence_quotes": []
     }
@@ -80,15 +77,67 @@
   "inferred_attack_graph": {
     "interesting": [
       {
-        "ip": "172.20.0.10",
-        "service": "cve-2021-22205-gitlab-1-proxy"
-      },
-      {
         "ip": "172.20.0.3",
         "service": "s2-057-struts2-1"
+      },
+      {
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy"
       }
     ],
     "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "",
+        "vector": "data-exfil-root",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              "Reverse shell",
+              ".exec in HTTP URI"
+            ],
+            "seen_in_epoch": 3
+          },
+          {
+            "phase": "data-exfil-root",
+            "evidence_quotes": [
+              "cat /root/root.txt",
+              "root@cdc1e5ed0c27:/usr/local/tomcat#"
+            ],
+            "seen_in_epoch": 3
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 3,
+        "current_phase": "data-exfil-root"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
       {
         "from": "192.168.100.2",
         "to": "172.20.0.5",
@@ -109,76 +158,79 @@
       },
       {
         "from": "192.168.100.2",
-        "to": "172.20.0.10",
-        "edge_id": "",
-        "vector": "initial-access/rce",
-        "phases": [
-          {
-            "phase": "scan",
-            "evidence_quotes": [
-              "POSSBL PORT SCAN (NMAP -sS)"
-            ],
-            "seen_in_epoch": 7
-          },
-          {
-            "phase": "initial-access/rce",
-            "evidence_quotes": [
-              "Possible bash shell piped to dev tcp"
-            ],
-            "seen_in_epoch": 7
-          }
-        ],
-        "first_seen": 7,
-        "last_seen": 7,
-        "current_phase": "initial-access/rce"
-      },
-      {
-        "from": "192.168.100.2",
-        "to": "172.20.0.3",
-        "edge_id": "",
-        "vector": "initial-access/rce",
-        "phases": [
-          {
-            "phase": "scan",
-            "evidence_quotes": [
-              "PORT SCAN (NMAP -sS)",
-              "Suspicious inbound to mySQL port 3306",
-              "Suspicious inbound to MSSQL port 1433"
-            ],
-            "seen_in_epoch": 9
-          },
-          {
-            "phase": "initial-access/rce",
-            "evidence_quotes": [
-              "OGNL injection remote code execution attempt",
-              "Possible OGNL Java Exec In URI",
-              "OGNL in Dynamic Action",
-              ".exec in HTTP URI Inbound"
-            ],
-            "seen_in_epoch": 9
-          }
-        ],
-        "first_seen": 9,
-        "last_seen": 9,
-        "current_phase": "initial-access/rce"
-      },
-      {
-        "from": "192.168.100.2",
-        "to": "172.20.0.11",
+        "to": "172.20.0.8",
         "edge_id": "",
         "vector": "scan",
         "phases": [
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN (NMAP -sS)",
-              "PORT SCAN"
+              "POSSBL PORT SCAN (NMAP -sS)"
             ],
-            "seen_in_epoch": 17
+            "seen_in_epoch": 1
           }
         ],
-        "first_seen": 17,
-        "last_seen": 17,
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "",
+        "vector": "data-exfil-root",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              "Reverse shell",
+              "bash: no job control in this shell"
+            ],
+            "seen_in_epoch": 10
+          },
+          {
+            "phase": "privilege-escalation",
+            "evidence_quotes": [
+              "/bin/bash -p",
+              "SUID Binary Enumeration"
+            ],
+            "seen_in_epoch": 10
+          },
+          {
+            "phase": "data-exfil-root",
+            "evidence_quotes": [
+              "cat /root/root.txt"
+            ],
+            "seen_in_epoch": 10
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 10,
+        "current_phase": "data-exfil-root"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.30",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
         "current_phase": "scan"
       }
     ]

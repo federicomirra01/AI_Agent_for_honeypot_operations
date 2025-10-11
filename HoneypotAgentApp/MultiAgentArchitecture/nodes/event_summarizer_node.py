@@ -2,7 +2,7 @@ from langchain_core.messages import AIMessage
 from configuration import state
 from typing import Dict, Any, List
 from prompts import eve_summary_prompt, fast_summary_prompt
-from .node_utils import OPEN_AI_KEY, POLITO_CLUSTER_KEY, POLITO_URL, MISTRAL_STRING
+from .node_utils import OPEN_AI_KEY, POLITO_CLUSTER_KEY, POLITO_URL, DEEPSEEK_STRING, BOFFA_KEY, OPENROUTER_URL
 from openai import BadRequestError 
 import logging
 from pydantic import BaseModel
@@ -34,9 +34,9 @@ def _build_prompt(configuration: str, state: state.HoneypotStateReact, last_summ
         )
 
 def _build_model_config(model_config: str):
-    if "mistral" in model_config:
+    if "open" in model_config:
 
-        model_name = MISTRAL_STRING
+        model_name = DEEPSEEK_STRING
         version = '0.1'
     
     else:
@@ -66,25 +66,21 @@ def _build_response(model_name: str, version: str, prompt: str, messages: List[D
         response: StructuredOutput = agent.chat.completions.create(
             model=model_name,
             response_model=StructuredOutput,
+            temperature=0.6,
             messages=messages # type: ignore
         )
     
     else:
-        logger.info(f"Using Mistral model")
-        messages = [
-            {"role" : "system", "content" : eve_summary_prompt.EVE_SUMMARY_PROMPT_MISTRAL},
-            {"role" : "user", "content" : f"Input Data:\
-                \nSecurity Events: {prompt_data["state"].security_events}\
-                \nHoneypot Config: {prompt_data["state"].honeypot_config}\
-                \nLast Summary: {prompt_data["last_summary"]}\
-                \nLast Exposed: {prompt_data["last_exposed"]}"}
-        ]
-        client = OpenAI(api_key=POLITO_CLUSTER_KEY, base_url=POLITO_URL)
-        raw = client.chat.completions.create(
-            model=model_name,
-            messages=messages #type: ignore
+        logger.info(f"Using OpenRouter model")
+        
+        client = instructor.from_openai(OpenAI(api_key=BOFFA_KEY, base_url=OPENROUTER_URL))
+        response = client.chat.completions.create(
+            model=DEEPSEEK_STRING,
+            response_model=StructuredOutput,
+            messages=messages, #type: ignore
+            extra_body={"provider": {"require_parameters": True}}
         )
-        response.security_summary = str(raw.choices[0].message.content)
+        # response.security_summary = str(raw.choices[0].message.content)
     
     return response
 
@@ -107,7 +103,7 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
 
     messages = [
         {"role":"system", "content": prompt},
-        {"role":"user", "content": "Summarize the security events clearly and concisely"}
+        {"role":"user", "content": "Summarize the security events following the rules for each available honeypot step by step"}
     ]
     
     model_name, version = _build_model_config(model_config)

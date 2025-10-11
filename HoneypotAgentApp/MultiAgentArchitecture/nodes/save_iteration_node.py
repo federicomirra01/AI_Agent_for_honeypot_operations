@@ -29,7 +29,12 @@ def _key_for_entry(ce: Dict[str, Any], key_mode: str) -> Tuple:
         return tuple()  # empty => not exposed this epoch
     return (ip,) if key_mode == "ip" else (ip, svc)
 
-def build_exposure_registry_from_ce(episodic_memory, key_mode: str = "ip") -> Dict[str, Dict[str, Any]]:
+def build_exposure_registry_from_ce(
+    episodic_memory, 
+    key_mode: str = "ip", 
+    include_current: Optional[Dict[str, Any]] = None,
+    current_epoch: Optional[int] = None
+    ) -> Dict[str, Dict[str, Any]]:
     """
     Replay history using only `currently_exposed` saved each epoch.
 
@@ -49,9 +54,13 @@ def build_exposure_registry_from_ce(episodic_memory, key_mode: str = "ip") -> Di
     try:
         history = episodic_memory.get_all_iterations()
     except AttributeError:
-        history = episodic_memory.get_recent_iterations(limit=10000) or []
+        history = episodic_memory.get_recent_iterations(limit=30) or []
 
     items: List[Dict[str, Any]] = [getattr(x, "value", x) for x in history]
+
+    if include_current is not None and current_epoch is not None:
+        items.append({"epoch":current_epoch, "currently_exposed":include_current})
+
     items.sort(key=_extract_epoch_from_item)
 
     registry: Dict[str, Dict[str, Any]] = {}
@@ -113,7 +122,7 @@ def save_iteration(state: state.HoneypotStateReact, config) -> Dict[str, Any]:
     episodic_memory = config.get("configurable", {}).get("store")
 
     # Build registry purely from currently_exposed history
-    exposure_registry = build_exposure_registry_from_ce(episodic_memory, key_mode="ip")
+    exposure_registry = build_exposure_registry_from_ce(episodic_memory, key_mode="ip", include_current=ce, current_epoch=epoch_num)
 
     iteration_data = {
         "epoch": epoch_num,                         # <--- important

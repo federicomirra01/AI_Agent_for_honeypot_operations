@@ -1,7 +1,7 @@
 from langchain_core.messages import AIMessage
 from configuration import state
 from prompts import firewall_executor_prompt
-from .node_utils import OPEN_AI_KEY
+from .node_utils import OPEN_AI_KEY, BOFFA_KEY, OPENROUTER_URL, DEEPSEEK_STRING
 from tools import firewall_tools
 import logging
 from pydantic import BaseModel, Field, ValidationError
@@ -79,12 +79,24 @@ async def firewall_executor(state:state.HoneypotStateReact, config):
                 except ValidationError as e:
                     logger.error(f"Schema validation failed: \n{e}")
                     response = StructuredOutput()
-        else:
+        elif version == "4.1":
             agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
             response: StructuredOutput = agent.chat.completions.create(
                 model=model_name,
                 response_model=StructuredOutput,
+                temperature=0.6,
                 messages=[messages] # type: ignore
+            )
+        
+        else:
+            logger.info(f"Using OpenRouter model")
+        
+            client = instructor.from_openai(OpenAI(api_key=BOFFA_KEY, base_url=OPENROUTER_URL))
+            response = client.chat.completions.create(
+                model=DEEPSEEK_STRING,
+                response_model=StructuredOutput,
+                extra_body={"provider": {"require_parameters": True}},
+                messages=messages #type: ignore
             )
         message = f"Reasoning:" + str(response.reasoning)
         message += f"\nAction: {str(response.action)}"

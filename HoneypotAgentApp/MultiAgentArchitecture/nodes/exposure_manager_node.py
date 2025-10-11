@@ -1,7 +1,7 @@
 from langchain_core.messages import AIMessage
 from configuration import state
 from prompts import exposure_manager_prompt
-from .node_utils import OPEN_AI_KEY
+from .node_utils import OPEN_AI_KEY, BOFFA_KEY, OPENROUTER_URL, DEEPSEEK_STRING
 from openai import BadRequestError
 import logging
 from pydantic import BaseModel, ValidationError
@@ -50,12 +50,15 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
     )
     size, version = model_config.split(':')
   
-    model_name = f"gpt-{version}"
+    model_name = f"gpt-{version}" if "4.1" in model_config or "5" in model_config else "deepseek"
     logger.info(f"Using: {model_name}")
     message = ""
     try:
         response = StructuredOutput(reasoning="", selected_honeypot={})
-        messages = {"role":"system", "content": prompt}
+        messages = [
+            {"role":"system", "content": prompt},
+            {"role": "user", "content": "Output the selected honeypot to expose following the rules in the system prompt, use a step by step reasoning"}
+        ]
         if version == '5':
             valid_json = False
             while(not valid_json):
@@ -75,12 +78,24 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
                 except ValidationError as e:
                     logger.error(f"Schema validation failed: \n{e}")
                     response = StructuredOutput(reasoning="", selected_honeypot={})
-        else:
+        elif version == '4.1':
             agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
             response: StructuredOutput = agent.chat.completions.create(
                 model=model_name,
                 response_model=StructuredOutput,
-                messages=[messages] # type: ignore
+                temperature=0.6,
+                messages=messages # type: ignore
+            )
+        
+        else:
+            logger.info(f"Using OpenRouter model")
+        
+            client = instructor.from_openai(OpenAI(api_key=BOFFA_KEY, base_url=OPENROUTER_URL))
+            response = client.chat.completions.create(
+                model=DEEPSEEK_STRING,
+                response_model=StructuredOutput,
+                extra_body={"provider": {"require_parameters": True}},
+                messages=messages #type: ignore
             )
         
         message += f"Reasoning: {str(response.reasoning)}" + "\n"

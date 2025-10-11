@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Removing gateway and attacker container
-cd ~/Desktop/Thesis/AI_Agent_for_honeypot_operations/Benchmark/attackerContainer && docker compose down -v && ./cleanup_logs.sh && docker compose up -d
+cd ~/Desktop/Thesis/AI_Agent_for_honeypot_operations/Benchmark/attackerContainer && docker compose down -v && sudo -u federico ./cleanup_logs.sh && docker compose up -d
 cd ~/Desktop/Thesis/AI_Agent_for_honeypot_operations/Benchmark/firewallContainer && docker compose down -v && docker compose up -d
 
 # removing vulnerable containers
