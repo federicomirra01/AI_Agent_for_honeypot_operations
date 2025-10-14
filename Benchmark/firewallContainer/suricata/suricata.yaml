@@ -94,21 +94,24 @@ outputs:
 # Single interface configuration for container
 af-packet:
   - interface: eth0
-    threads: 2                              # Single thread for resource efficiency
+    threads: 2
     cluster-id: 99
     cluster-type: cluster_flow
     defrag: yes
-    ring-size: 2048                         # Reduced ring size
+    ring-size: 2048
+    snaplen: 0
+    bpf-filter: not net 192.168.200.0/24
     
+
   - interface: eth1
-    threads: 2                              # Single thread for resource efficiency
+    threads: 2
     cluster-id: 98
     cluster-type: cluster_flow
     defrag: yes
-    ring-size: 2048 
-    
-  - interface: default
-    threads: 1
+    ring-size: 2048
+    snaplen: 0
+    bpf-filter: not net 192.168.200.0/24
+
 
 # Application layer protocols - focused on attack vectors
 app-layer:

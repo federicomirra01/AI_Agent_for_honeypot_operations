@@ -69,7 +69,6 @@ def _build_response(model_name: str, version: str, prompt: str, messages: List[D
         response: StructuredOutput = agent.chat.completions.create(
             model=model_name,
             response_model=StructuredOutput,
-            temperature=0.3,
             messages=messages # type: ignore
         )
     
