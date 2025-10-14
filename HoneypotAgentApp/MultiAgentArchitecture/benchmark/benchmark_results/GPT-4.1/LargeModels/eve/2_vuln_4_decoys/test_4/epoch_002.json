@@ -1,0 +1,219 @@
+{
+  "epoch_number": 2,
+  "start_time": 1760373546.558403,
+  "end_time": 1760373950.0077019,
+  "phase_timings": {
+    "initialization": 1760373546.5584276,
+    "attack_execution": 1760373546.5708182,
+    "monitoring_accumulation": 1760373565.6973746,
+    "agent_analysis": 1760373575.6984556,
+    "firewall_update_wait": 1760373947.997085,
+    "metrics_collection": 1760373949.998566,
+    "epoch_complete": 1760373950.0071661
+  },
+  "services_detected": [
+    "HTTP-PROXY(172.20.0.3:8080)"
+  ],
+  "services_successfully_exploited": [],
+  "exploits_attempted": [],
+  "flags_captured": [],
+  "attack_success_rate": 0.0,
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
+  "honeypots_exposed": {
+    "ip": "172.20.0.3",
+    "service": "s2-057-struts2-1",
+    "current_level": 66,
+    "epoch": 2
+  },
+  "honeypots_exploitation": [
+    {
+      "ip": "172.20.0.3",
+      "service": "s2-057-struts2-1",
+      "level_prev": 33,
+      "level_new": 66,
+      "changed": true,
+      "evidence_quotes": [
+        ".exec in HTTP URI"
+      ]
+    },
+    {
+      "ip": "172.20.0.4",
+      "service": "cve-2015-5254-activemq-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.5",
+      "service": "cve-2014-6271-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.8",
+      "service": "cve-2024-36401-web-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.10",
+      "service": "cve-2021-22205-gitlab-1-proxy",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    },
+    {
+      "ip": "172.20.0.30",
+      "service": "cve-2013-4547-nginx-1",
+      "level_prev": 33,
+      "level_new": 33,
+      "changed": false,
+      "evidence_quotes": []
+    }
+  ],
+  "inferred_attack_graph": {
+    "interesting": [
+      {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1"
+      }
+    ],
+    "edges": [
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.3",
+        "edge_id": "",
+        "vector": "initial-access/rce",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          },
+          {
+            "phase": "initial-access/rce",
+            "evidence_quotes": [
+              ".exec in HTTP URI"
+            ],
+            "seen_in_epoch": 2
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 2,
+        "current_phase": "initial-access/rce"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.4",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.5",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.8",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.10",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      },
+      {
+        "from": "192.168.100.2",
+        "to": "172.20.0.30",
+        "edge_id": "",
+        "vector": "scan",
+        "phases": [
+          {
+            "phase": "scan",
+            "evidence_quotes": [
+              "POSSBL PORT SCAN (NMAP -sS)"
+            ],
+            "seen_in_epoch": 1
+          }
+        ],
+        "first_seen": 1,
+        "last_seen": 1,
+        "current_phase": "scan"
+      }
+    ]
+  },
+  "service_epoch_context": [
+    {
+      "service_id": "struts:172.20.0.3:8080",
+      "service": "struts",
+      "host": "172.20.0.3",
+      "port": "8080",
+      "path": "struts2-showcase",
+      "first_exposed_epoch": 2,
+      "local_epoch": 1,
+      "allowed_phase": "initial-access/rce"
+    }
+  ],
+  "lockdown_activated": false
+}
