@@ -11,9 +11,7 @@ from openai import OpenAI
 
 class StructuredOutput(BaseModel):
     security_summary: str 
-    reasoning: str = ""
-class StructuredOutputMini(BaseModel):
-    security_summary: str
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -50,7 +48,7 @@ def _build_model_config(model_config: str):
             model_name = f"gpt-{version}"
     return model_name, version
 
-def _build_response(model_name: str, version: str, prompt: str, messages: List[Dict], prompt_data: dict = {}) -> StructuredOutput:
+def _build_response(model_name: str, version: str, prompt: str, messages: List[Dict]) -> StructuredOutput:
     response = StructuredOutput(security_summary="")
     if version == '5':
         logger.info(f"Using gpt5 minimal effort")
@@ -72,18 +70,7 @@ def _build_response(model_name: str, version: str, prompt: str, messages: List[D
             messages=messages # type: ignore
         )
     
-    else:
-        logger.info(f"Using OpenRouter model")
-        
-        client = instructor.from_openai(OpenAI(api_key=BOFFA_KEY, base_url=OPENROUTER_URL))
-        response = client.chat.completions.create(
-            model=DEEPSEEK_STRING,
-            response_model=StructuredOutput,
-            messages=messages, #type: ignore
-            extra_body={"provider": {"require_parameters": True}}
-        )
-        # response.security_summary = str(raw.choices[0].message.content)
-    
+   
     return response
 
 async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str, Any]:
@@ -103,8 +90,16 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
     # Initialize the prompt from configuration: eve.json or fast.log analysis
     prompt = _build_prompt(configuration, state, last_summary, last_exposed)
 
+
     messages = [
-        {"role":"system", "content": prompt}
+        {"role":"system", "content": eve_summary_prompt.SYSTEM_PROMPT},
+        {"role" : "user", "content" : eve_summary_prompt.USER_PROMPT.substitute(
+            last_summary=last_summary,
+            last_exposed=last_exposed,
+            security_events=state.security_events,
+            honeypot_config=state.honeypot_config
+            )
+        }
     ]
     
     model_name, version = _build_model_config(model_config)
@@ -112,17 +107,11 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
     if state.security_events and len(state.security_events.get('alerts', [])) > 0:    
         response = StructuredOutput(security_summary="")
         try:
-            prompt_data = {
-                "state" : state,
-                "last_summary" : last_summary,
-                "last_exposed" : last_exposed
-            }
-
-            response = _build_response(model_name=model_name, version=version, prompt=prompt, messages=messages, prompt_data=prompt_data)
+            
+            response = _build_response(model_name=model_name, version=version, prompt=prompt, messages=messages)
             
             message = ""
             message += "Security Summary: " + str(response.security_summary) + "\n" if version == '4.1' else str(response)
-            message += "Reasoning: " + str(response.reasoning) if version == '4.1' else str(response) 
 
             return {
             "messages": [message],

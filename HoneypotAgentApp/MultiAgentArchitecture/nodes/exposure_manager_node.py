@@ -56,7 +56,12 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
     try:
         response = StructuredOutput(reasoning="", selected_honeypot={})
         messages = [
-            {"role":"system", "content": prompt},
+            {"role":"system", "content": exposure_manager_prompt.SYSTEM_PROMPT},
+            {"role" : "user", "content" : exposure_manager_prompt.USER_PROMPT.substitute(
+                available_honeypots=state.honeypot_config,
+                honeypots_exploitations=state.honeypots_exploitation,
+                exposure_registry=exposure_registry
+            )}
         ]
         if version == '5':
             valid_json = False
@@ -85,16 +90,6 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
                 messages=messages # type: ignore
             )
         
-        else:
-            logger.info(f"Using OpenRouter model")
-        
-            client = instructor.from_openai(OpenAI(api_key=BOFFA_KEY, base_url=OPENROUTER_URL))
-            response = client.chat.completions.create(
-                model=DEEPSEEK_STRING,
-                response_model=StructuredOutput,
-                extra_body={"provider": {"require_parameters": True}},
-                messages=messages #type: ignore
-            )
         
         message += f"Reasoning: {str(response.reasoning)}" + "\n"
         message += f"Selected Honeypot: {str(response.selected_honeypot)}" + "\n"

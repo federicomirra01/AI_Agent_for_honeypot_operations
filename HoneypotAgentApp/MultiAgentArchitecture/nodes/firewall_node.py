@@ -45,6 +45,7 @@ async def firewall_executor(state:state.HoneypotStateReact, config):
     logger.info("Firewall Agent")
     configuration = config.get("configurable", {}).get("model_config", "large:4.1")
     size, version = configuration.split(':')
+    
     if size == "small":
         model_name = f"gpt-{version}-mini"
     else:
@@ -52,33 +53,37 @@ async def firewall_executor(state:state.HoneypotStateReact, config):
 
     logger.info(f"Using: {model_name}")
 
-    prompt = firewall_executor_prompt.FIREWALL_EXECUTOR_PROMPT.format(
-        selected_honeypot=state.currently_exposed,
-        firewall_config=state.firewall_config,
-        available_honeypots=state.honeypot_config
-    )
-    messages = {"role":"system", "content":prompt}
+    messages = [
+        {"role":"system", "content":firewall_executor_prompt.SYSTEM_PROMPT},
+        {"role" : "user", "content" : firewall_executor_prompt.USER_PROMPT.substitute(
+            selected_honeypot=state.currently_exposed,
+            firewall_config=state.firewall_config,
+            available_honeypots=state.honeypot_config
+        )}
+    ]
+
     try:
         response = StructuredOutput()
         if version == '5':
-            valid_json = False
-            while(not valid_json):
-                logger.info(f"Using gpt5 minimal effort")
-                schema = StructuredOutput.model_json_schema()
-                client = OpenAI()
-                raw = client.responses.create( # type: ignore
-                    model="gpt-5",
-                    input=f"{prompt}\n\nReturn valid JSON matching this schema:\n{schema}",
-                    reasoning={"effort":"minimal"},
+            # valid_json = False
+            # while(not valid_json):
+            #     logger.info(f"Using gpt5 minimal effort")
+            #     schema = StructuredOutput.model_json_schema()
+            #     client = OpenAI()
+            #     raw = client.responses.create( # type: ignore
+            #         model="gpt-5",
+            #         input=f"{prompt}\n\nReturn valid JSON matching this schema:\n{schema}",
+            #         reasoning={"effort":"minimal"},
                     
-                )
-                content = raw.output_text
-                try:
-                    response = StructuredOutput.model_validate_json(content)
-                    valid_json = True
-                except ValidationError as e:
-                    logger.error(f"Schema validation failed: \n{e}")
-                    response = StructuredOutput()
+            #     )
+            #     content = raw.output_text
+            #     try:
+            #         response = StructuredOutput.model_validate_json(content)
+            #         valid_json = True
+            #     except ValidationError as e:
+            #         logger.error(f"Schema validation failed: \n{e}")
+            #         response = StructuredOutput()
+            return 
         elif version == "4.1":
             agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
             response: StructuredOutput = agent.chat.completions.create(
@@ -87,16 +92,6 @@ async def firewall_executor(state:state.HoneypotStateReact, config):
                 messages=[messages] # type: ignore
             )
         
-        else:
-            logger.info(f"Using OpenRouter model")
-        
-            client = instructor.from_openai(OpenAI(api_key=BOFFA_KEY, base_url=OPENROUTER_URL))
-            response = client.chat.completions.create(
-                model=DEEPSEEK_STRING,
-                response_model=StructuredOutput,
-                extra_body={"provider": {"require_parameters": True}},
-                messages=messages #type: ignore
-            )
         message = f"Reasoning:" + str(response.reasoning)
         message += f"\nAction: {str(response.action)}"
         message = AIMessage(content=message)
