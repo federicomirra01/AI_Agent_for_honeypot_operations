@@ -84,7 +84,7 @@ async def firewall_executor(state:state.HoneypotStateReact, config):
             response: StructuredOutput = agent.chat.completions.create(
                 model=model_name,
                 response_model=StructuredOutput,
-                temperature=0.6,
+                temperature=0.3,
                 messages=[messages] # type: ignore
             )
         

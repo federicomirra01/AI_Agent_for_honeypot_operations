@@ -24,55 +24,67 @@ Last Summary: $last_summary
 Currently Exposed: $last_exposed
 
 ## GOAL
-Produce a compact, strictly structured summary that:
-- Firstly analyzes the alerts related to the **currently exposed honeypot** (should be the main target). If there are alerts for other honeypots, list them after.
-- Always includes **all alerts** observed in this batch.
-- Strongly highlights alerts that are **new since last summary**, especially high-severity (Priority 1) and later-phase indicators (e.g., RCE, privilege escalation) inferred from signatures.
-- Provides per-honeypot context on targeted services and compromise indicators.
-- Extracts **evidence quotes** from the signature text (fast.log has no payload); include minimal substrings like CVE IDs, “RCE”, “Reverse shell”, “uid=0” if present in signature.
-- Different alerts can share the same inferred phase; both must be represented.
-- Prioritize higher severity and later-phase indicators while still listing reconnaissance/earlier stages.
+Produce a **concise structured summary** of all honeypot-related security alerts, formatted strictly as valid JSON according to the schema below.  
+Focus on accuracy, normalization, and coverage — do not add reasoning text or explanations.  
+Return **only** the JSON object.
 
-## NORMALIZATION & PARSING RULES
+## RULES
+- Prioritize alerts related to the **currently exposed honeypot** first; other honeypots follow.
+- Include **all alerts** in this batch.
+- List the alerts for each honeypot in ascending order of severity (from 1=highest to 3=lowest).
+- Highlight alerts that are **new since the last summary**, especially privilege escalation and root-level exfiltration inferred from signatures.
+- Provide per-honeypot context: targeted services and compromise indicators.
+- **Evidence quotes come only from the signature text** (fast.log has no payload).
+- Each alert group: (src_ip, dest_ip, service, signature)
+  - Include: count, first_seen, last_seen (ISO timestamps), severity (1=High, 2=Medium, 3=Low; 4=Info → treat as 3/Low), representative evidence quotes.
+  - Set `"new": true` if unseen in last summary or newer timestamp.
+- Service mapping: `"proto/port"`; where feasible, **infer service name from well-known ports** (e.g., 22→ssh, 80→http, 443→https, 3306→mysql, 6379→redis, 5432→postgres, 21→ftp, 25→smtp, 3389→rdp). Format as `"name@proto/port"`; if unknown, use `"unknown@proto/port"`. Do **not** include app_proto (not available in fast.log).
+- Collapse duplicates by (src_ip, dest_ip, service, signature) with counts.
+- Sort indicators within each honeypot by: later-phase > higher severity > most recent last_seen.
+- Sort honeypots: currently exposed first; others by highest severity then most recent activity.
+- The `payload` field must be present per schema but **set to empty string ''** for fast.log.
+- Do **not** include any explanations, reasoning, or extra keys beyond those defined in the schema.
+
+## NORMALIZATION & PARSING
 - Parse each fast.log line using the canonical pattern:
   "MM/DD/YYYY-HH:MM:SS.xxxxxx  [**] [gid:sid:rev] Signature text [**] [Classification: X] [Priority: N] {PROTO} SRC:SPT -> DST:DPT"
-- Timestamps: convert to ISO8601 UTC with 'Z' (assume input is UTC unless stated otherwise).
-- Severity: map from Priority (1=High, 2=Medium, 3=Low, 4=Info). If missing, set to null.
+- Timestamps: convert to ISO-8601 UTC with 'Z' (assume input is UTC unless stated otherwise).
+- Severity: map from Priority (1=High, 2=Medium, 3=Low, 4=Info→3/Low). If missing, set to null.
 - Category: take the value after "Classification:" when present; else null.
 - SID: from [gid:sid:rev] if present; else null.
-- Service mapping: "proto/port" (e.g., "tcp/22"); app_proto is unavailable in fast.log, so omit it.
-- Collapse duplicates by key = (src_ip, dst_ip, service, signature) with counts; preserve first_seen and last_seen (min/max timestamps in this batch).
-- Evidence quotes: extract minimal substrings from the **signature** (fast.log has no payload). Examples to capture when present: "uid=0", "sudo -l", "Reverse shell", "cat /etc/shadow", CVE-YYYY-NNNN, "information leak", "command injection", "SQL injection".
-- "new": true if the (src_ip, dst_ip, service, signature) did not appear in the Last Summary OR if its last_seen is more recent than the same key in Last Summary.
-- Payload field: since fast.log lacks payload, set to "" (empty string).
+- Service key: lowercased proto and integer port (e.g., "tcp/22"), then apply name inference rule above.
+- Evidence quotes: extract minimal substrings from the **signature** (examples: "uid=0", "sudo -l", "Reverse shell", "cat /etc/shadow", CVE-YYYY-NNNN, "information leak", "command injection", "SQL injection").
 
-## OUTPUT SECTIONS (STRICT, MACHINE-PARSABLE)
-Output exactly as JSON below, with the shown keys and JSON blocks. Do not add commentary.
+## OUTPUT REQUIREMENTS
+- Must be valid JSON.
+- "security_summary" field is mandatory; cannot be empty if there are alerts.
+- All required subfields must be present even if empty lists.
+- No extra commentary, text, or markdown.
 
-Target Analysis:
-{
+## OUTPUT STRUCTURE (STRICT, MACHINE-PARSABLE)
+Output **exactly** this fields:
+
+"security_summary": {
   "honeypots": [
     {
       "ip": "172.20.x.y",
-      "service_name": "service name from honeypot config dictionary (e.g. unauthorized-rce-docker-1)",
-      "services_under_attack": [ "tcp/22", "tcp/80", "udp/53", ... ],
+      "service_name": "name from honeypot config (e.g., unauthorized-rce-docker-1)",
+      "services_under_attack": ["ssh@tcp/22", "http@tcp/80", "..."],
       "compromise_indicators": [
         {
           "signature": "string",
-          "count": int,
-          "severity": int,
-          "new": true|false,
-          "src_ip": "source ip address",
-          "src_port": "source port or '' if missing",
-          "evidence_quotes": ["exact substrings from signature"]        }
+          "service": "ssh@tcp/22",
+          "count": 0,
+          "severity": 1,
+          "new": true,
+          "src_ip": "string",
+          "src_port": 0,
+          "first_seen": "ISO-8601 timestamp",
+          "last_seen": "ISO-8601 timestamp",
+          "evidence_quotes": ["exact substrings (≤120 chars each)"],
+        }
       ]
     }
   ]
 }
-
-## GUIDELINES
-- Always include all alerts, not just new ones.
-- Strongly highlight **new** alerts, especially later-phase ones (RCE, privilege escalation, data exfiltration) as inferred from signature text.
-- Per honeypot, show which services were attacked and which evidence was collected.
-- Output must be deterministic, strict JSON, and unambiguous. No extra prose.
 """)

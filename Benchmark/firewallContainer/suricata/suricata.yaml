@@ -4,7 +4,7 @@
 vars:
   address-groups:
     HOME_NET: "[172.20.0.2, 172.20.0.3, 172.20.0.4, 172.20.0.5, 172.20.0.8, 172.20.0.10, 172.20.0.11, 172.20.0.30, 192.168.100.254]"
-    EXTERNAL_NET: "192.168.0.2"
+    EXTERNAL_NET: "192.168.100.2"
     
     # Focused server definitions for attack targets
     HTTP_SERVERS: "$HOME_NET"
@@ -93,14 +93,14 @@ outputs:
 
 # Single interface configuration for container
 af-packet:
-  - interface: eth1
+  - interface: eth0
     threads: 2                              # Single thread for resource efficiency
     cluster-id: 99
     cluster-type: cluster_flow
     defrag: yes
     ring-size: 2048                         # Reduced ring size
     
-  - interface: eth2
+  - interface: eth1
     threads: 2                              # Single thread for resource efficiency
     cluster-id: 98
     cluster-type: cluster_flow

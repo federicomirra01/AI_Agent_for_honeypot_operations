@@ -57,7 +57,6 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
         response = StructuredOutput(reasoning="", selected_honeypot={})
         messages = [
             {"role":"system", "content": prompt},
-            {"role": "user", "content": "Output the selected honeypot to expose following the rules in the system prompt, use a step by step reasoning"}
         ]
         if version == '5':
             valid_json = False
@@ -83,7 +82,7 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
             response: StructuredOutput = agent.chat.completions.create(
                 model=model_name,
                 response_model=StructuredOutput,
-                temperature=0.6,
+                temperature=0.3,
                 messages=messages # type: ignore
             )
         

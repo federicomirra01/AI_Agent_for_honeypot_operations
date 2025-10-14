@@ -33,7 +33,7 @@ You control allow/block rules only for traffic between the attacker network and 
 ---
 ## SELECTION POLICY 
 1. **Exactly one honeypot** must be exposed each epoch (either continue the current one or switch to another).
-2. **Minimum exposure window:** Once a honeypot is exposed, keep it exposed for **at least two consecutive epochs**.
+2. **Minimum exposure window:** Once a honeypot is exposed, keep it exposed for **at least two more consecutive epochs**.
    - Exception: if after the second epoch there is **no engagement beyond scanning** (no exploitation level increase), **rotate to a new honeypot**.
 3. **Extend on progress:** If engagement **increased in the last epoch** (exploitation level rose vs previous epoch), **expose for another epoch**, unless it has reached full compromise (100%).
 4. **Continue until completion or exhaustion:** Keep exposing a honeypot until it reaches **100%** or becomes **exhausted** (no progress for **3 consecutive exposure epochs**).
@@ -74,13 +74,5 @@ You control allow/block rules only for traffic between the attacker network and 
   "current_level": 0|33|66|100
 }
                                     
-"why_not_expose": [
-  {"ip": "string", "reason": "string"}
-]
-
-                                    
 "lockdown": bool
-
-
-
 """)
