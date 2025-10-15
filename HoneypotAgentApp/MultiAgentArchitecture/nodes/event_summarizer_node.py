@@ -92,8 +92,8 @@ async def event_summarizer(state: state.HoneypotStateReact, config) -> Dict[str,
 
 
     messages = [
-        {"role":"system", "content": eve_summary_prompt.SYSTEM_PROMPT},
-        {"role" : "user", "content" : eve_summary_prompt.USER_PROMPT.substitute(
+        # {"role":"system", "content": eve_summary_prompt.SYSTEM_PROMPT},
+        {"role" : "system", "content" : eve_summary_prompt.SUMMARIZER_PROMPT.substitute(
             last_summary=last_summary,
             last_exposed=last_exposed,
             security_events=state.security_events,

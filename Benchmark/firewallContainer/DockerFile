@@ -45,7 +45,8 @@ COPY firewall_scripts/init_firewall.sh /firewall/scripts/
 COPY firewall_scripts/setup_routing.sh /firewall/scripts/
 COPY firewall_scripts/suricata_API.py /firewall/scripts
 COPY startup.sh /firewall/
-
+COPY netmap.sh /usr/local/bin/netmap.sh
+RUN chmod +x /usr/local/bin/netmap.sh
 # Make scripts executable
 RUN chmod +x /firewall/scripts/*.sh /firewall/startup.sh
 
@@ -66,5 +67,6 @@ EXPOSE 5000 7000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/health || exit 1
 
+ENTRYPOINT ["/usr/local/bin/netmap.sh"]
 # Start the firewall container
 CMD ["/firewall/startup.sh"]

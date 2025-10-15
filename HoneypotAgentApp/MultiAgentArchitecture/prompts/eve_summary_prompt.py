@@ -1,6 +1,60 @@
 from string import Template
 
-from HoneypotAgentApp.MultiAgentArchitecture.prompts.graph_and_exploitation_inference_prompt import USER_PROMPT
+SUMMARIZER_PROMPT = Template("""
+<analysis>
+You are the Honeypot Security Alert Summarizer. Perform step-by-step internal reasoning ONLY inside this block. Do NOT leak this analysis.
+
+1) Parse the raw Suricata alerts.
+2) Identify targeted honeypots by `dest_ip`. Mark which one(s) match the "Currently Exposed" IPs.
+3) Normalize service as `app@proto/port` (rules above).
+4) Group by (src_ip, dest_ip, service, signature). For each group compute:
+   - count, first_seen, last_seen (UTC ISO8601 Z), max-severity (1 best),
+   - evidence_quotes (≤3; ≤120 chars each; apply base64 truncation),
+   - payload (representative or "").
+   - later-phase indicators: reverse shell, PE drop/exec, data exfil hints.
+5) Inspect payload to check if the alert signature is coherent or is a false positive
+6) Build `services_under_attack` as the distinct services seen for the honeypot (ordered by first appearance).
+7) Validate total coverage: every alert appears in exactly one group.
+8) Order groups and honeypots by the rules above.
+9) Ensure the output JSON conforms exactly to the schema:
+   {
+     "security_summary": {
+       "honeypots": [
+         {
+           "ip": "172.20.x.y",
+           "service_name": "name from honeypot config",
+           "services_under_attack": ["ssh@tcp/22", "..."],
+           "compromise_indicators": [
+             {
+               "signature": "string",
+               "service": "ssh@tcp/22",
+               "count": 0,
+               "severity": 1,
+               "src_ip": "string",
+               "src_port": 0,
+               "evidence_quotes": ["..."],
+               "payload": "..."
+             }
+           ]
+         }
+       ]
+     }
+   }
+10) Double-check: JSON validity, required fields present, correct ordering, base64 truncation, and `"new"` flags.
+</analysis>
+
+{
+  "security_summary": {
+    "honeypots": []
+  }
+}
+
+## INPUT DATA
+Security alerts (raw): $security_events
+Honeypots available: $honeypot_config
+Last Summary: $last_summary
+Currently Exposed: $last_exposed
+""")
 
 SYSTEM_PROMPT = """
 ROLE: Honeypot Security Alert Summarizer
@@ -54,7 +108,6 @@ Return strictly valid JSON with exactly this structure:
       {
         "ip": "172.20.x.y",
         "service_name": "name from honeypot config (e.g., unauthorized-rce-docker-1)",
-        "services_under_attack": ["ssh@tcp/22", "http@tcp/80", "..."],
         "compromise_indicators": [
           {
             "signature": "string",
@@ -65,8 +118,6 @@ Return strictly valid JSON with exactly this structure:
             "src_port": 0,
             "evidence_quotes": ["exact substrings (≤120 chars each)"],
             "payload": "payload text with base64 truncated or ''",
-            "first_seen": "YYYY-MM-DDTHH:MM:SSZ",
-            "last_seen": "YYYY-MM-DDTHH:MM:SSZ",
             "new": true
           }
         ]

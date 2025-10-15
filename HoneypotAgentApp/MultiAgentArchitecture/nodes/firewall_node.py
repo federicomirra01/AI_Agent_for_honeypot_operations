@@ -54,7 +54,7 @@ async def firewall_executor(state:state.HoneypotStateReact, config):
     logger.info(f"Using: {model_name}")
 
     messages = [
-        {"role":"system", "content":firewall_executor_prompt.SYSTEM_PROMPT},
+        {"role":"system", "content": firewall_executor_prompt.SYSTEM_PROMPT},
         {"role" : "user", "content" : firewall_executor_prompt.USER_PROMPT.substitute(
             selected_honeypot=state.currently_exposed,
             firewall_config=state.firewall_config,
@@ -89,9 +89,9 @@ async def firewall_executor(state:state.HoneypotStateReact, config):
             response: StructuredOutput = agent.chat.completions.create(
                 model=model_name,
                 response_model=StructuredOutput,
-                messages=[messages] # type: ignore
+                messages=messages # type: ignore
             )
-        
+        logger.info(f"Response: {response}")
         message = f"Reasoning:" + str(response.reasoning)
         message += f"\nAction: {str(response.action)}"
         message = AIMessage(content=message)
@@ -99,7 +99,7 @@ async def firewall_executor(state:state.HoneypotStateReact, config):
         return {"messages": [message], "firewall_resoning":response.reasoning, "firewall_action": response.action}
 
     except Exception as e:
-        logger.error(f"Error splitting reasoning in firewall executor:\n{e}")
+        logger.error(f"Error in firewall executor:\n{e}")
     
 
 async def tools_firewall(state: state.HoneypotStateReact):

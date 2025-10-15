@@ -105,12 +105,12 @@ def get_docker_containers() -> Dict[str, Any]:
 
             info = {
                 'id': container.id[:12],  # Short ID
-                'name': container.name,
+                'service': container.name,
                 'image': container.image.tags[0] if container.image.tags else container.image.id[:12],
                 'status': container.status,
                 'created': container.attrs['Created'],
                 'ports': list(container.ports.keys()),
-                'ip_address': ip_address
+                'ip': ip_address
             }
             container_info.append(info)
             

@@ -103,14 +103,14 @@ af-packet:
     bpf-filter: not net 192.168.200.0/24
     
 
-  - interface: eth1
-    threads: 2
-    cluster-id: 98
-    cluster-type: cluster_flow
-    defrag: yes
-    ring-size: 2048
-    snaplen: 0
-    bpf-filter: not net 192.168.200.0/24
+  #- interface: eth1
+  #  threads: 2
+  #  cluster-id: 98
+  #  cluster-type: cluster_flow
+  #  defrag: yes
+  #  ring-size: 2048
+  #  snaplen: 0
+  #  bpf-filter: not net 192.168.200.0/24
 
 
 # Application layer protocols - focused on attack vectors

@@ -45,11 +45,11 @@ alert tcp any ![22,25,53,80,88,143,443,445,465,587,853,993,1194,8080,51820] -> a
 # UDP destination port: 4444
 #alert udp any ![53,67,68,69,123,161,162,389,520,1026,1027,1028,1029,1194,1434,1900,11211,12345,27017,51820] -> any 4444 (msg:"POSSBL SCAN SHELL M-SPLOIT UDP"; classtype:trojan-activity; sid:3400021; priority:1; rev:2;)
 
-alert tcp any any -> any any (msg:"User-Level File Discovery";pcre:"/find\s+[^\s]*\s+-type\s+f\s+-name\s+['\"]?user\.txt['\"]?.*2>\s*\/dev\/null/i";classtype:attempted-recon;priority:2;sid:9100002; rev:1;)
+alert tcp any any -> any any (msg:"User-Level File Discovery";content:"/home/"; nocase; pcre:"/\/home(\/|\b)/i";classtype:attempted-recon;priority:2;sid:9100002; rev:1;)
 
-alert tcp any any -> any any (msg:"Root-Level File Discovery";pcre:"/find\s+[^\s]*\s+-type\s+f\s+-name\s+['\"]?root\.txt['\"]?.*2>\s*\/dev\/null/i";classtype:attempted-recon;priority:1;sid:9100003; rev:1;)
+#alert tcp any any -> any any (msg:"Root-Level File Discovery";pcre:"/find\s+[^\s]*\s+-type\s+f\s+-name\s+['\"]?root\.txt['\"]?.*2>\s*\/dev\/null/i";classtype:attempted-recon;priority:1;sid:9100003; rev:1;)
 
-alert tcp any any -> any any (msg:"Root-Level File Access)";content:"root"; nocase;sid:9100006; priority:1; rev:1;)
+alert tcp any any -> any any (msg:"Root-Level File Access)";content:"/root/"; nocase; pcre:"/\/root(\/|\b)/i";sid:9100006; priority:1; rev:1;)
 
 alert tcp any any -> any any (msg:"SUID Binary Enumeration Detected";pcre:"/find\s+[^\s]*\s+-perm\s+-?4000\s+-type\s+f/i";classtype:attempted-recon;priority:1;sid:9100004; rev:1;)
 

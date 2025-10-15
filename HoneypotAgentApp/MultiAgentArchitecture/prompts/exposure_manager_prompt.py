@@ -14,11 +14,11 @@ DEFINITIONS
 - Progress: exploitation level increased since the previous epoch.
 - Exhausted: continuously exposed and no additional progress for 3 consecutive exposure epochs since last increase; mark exhausted and never re-expose.
 - Coverage: every honeypot not at 100% must be exposed at least once (ever_exposed == false -> must be selected before lockdown).
-- Minimum exposure window: once exposed, keep exposed for at least two more consecutive epochs (see Selection Policy for exception).
+- Minimum exposure window: once exposed, keep exposed for at least two consecutive epochs (see Selection Policy for exception).
 
 SELECTION POLICY (apply strictly)
 1. Exactly one honeypot must be exposed each epoch.
-2. Minimum exposure window: keep an exposed honeypot exposed for at least two more consecutive epochs. Exception: after the second epoch, if there is no engagement beyond scanning (no exploitation increase), rotate to a new honeypot.
+2. Minimum exposure window: keep an exposed honeypot exposed for at least two consecutive epochs. Exception: after the second epoch, if there is no engagement beyond scanning (no exploitation increase), rotate to a new honeypot.
 3. Extend on progress: if exploitation level increased in the last epoch, expose for another epoch unless it reached 100%.
 4. Continue until completion (100%) or exhaustion (3 consecutive no-progress exposure epochs).
 5. Never re-expose honeypots that are 100% or exhausted.
@@ -36,7 +36,7 @@ ADDITIONAL RULES & CONSTRAINTS
 
 OUTPUT (strict JSON fields required)
 - "reasoning": string — explain selection according to policy
-- "selected_honeypot": { "ip": "string", "service": "string", "current_level": 0|33|66|100 }
+- "selected_honeypot": { "ip": "string", "service": "string", "current_level": 0|25|50|75|100 }
 - "lockdown": bool
 
 """
@@ -62,7 +62,7 @@ RETURN (exact JSON with these fields)
   "selected_honeypot": {
     "ip": "string",
     "service": "string",
-    "current_level": 0|33|66|100
+    "current_level": 0|25|50|75|100
   },
   "lockdown": bool
 }
@@ -142,7 +142,7 @@ You control allow/block rules only for traffic between the attacker network and 
 "selected_honeypot": {
   "ip": "string",
   "service": "string",
-  "current_level": 0|33|66|100
+  "current_level": 0|25|50|75|100
 }
                                     
 "lockdown": bool
