@@ -1,15 +1,15 @@
 {
   "epoch_number": 4,
-  "start_time": 1757779427.661371,
-  "end_time": 1757779480.854878,
+  "start_time": 1760622808.9175792,
+  "end_time": 1760622865.6135259,
   "phase_timings": {
-    "initialization": 1757779427.6613894,
-    "attack_execution": 1757779427.6757042,
-    "monitoring_accumulation": 1757779443.7836096,
-    "agent_analysis": 1757779448.7846596,
-    "firewall_update_wait": 1757779478.8296585,
-    "metrics_collection": 1757779480.8318832,
-    "epoch_complete": 1757779480.8537512
+    "initialization": 1760622808.9175887,
+    "attack_execution": 1760622808.9274595,
+    "monitoring_accumulation": 1760622824.7859597,
+    "agent_analysis": 1760622834.786909,
+    "firewall_update_wait": 1760622863.601522,
+    "metrics_collection": 1760622865.6025603,
+    "epoch_complete": 1760622865.6126294
   },
   "services_detected": [
     "UNKNOWN(172.20.0.4:61616)",
@@ -19,34 +19,20 @@
   "exploits_attempted": [],
   "flags_captured": [],
   "attack_success_rate": 0.0,
-  "firewall_rules_added": [
-    {
-      "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.3 (tcp)"
-    },
-    {
-      "rules_added_current_epoch": "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
-    }
-  ],
-  "firewall_rules_removed": [
-    {
-      "rules_removed_current_epoch": [
-        "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.4           192.168.100.0/24",
-        "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4"
-      ]
-    }
-  ],
+  "firewall_rules_added": [],
+  "firewall_rules_removed": [],
   "honeypots_exposed": {
-    "ip": "172.20.0.3",
-    "service": "s2-057-struts2-1",
-    "current_level": 33,
+    "ip": "172.20.0.4",
+    "service": "cve-2015-5254-activemq-1",
+    "current_level": 25,
     "epoch": 4
   },
   "honeypots_exploitation": [
     {
       "ip": "172.20.0.5",
       "service": "cve-2014-6271-web-1",
-      "level_prev": 0,
-      "level_new": 33,
+      "level_prev": 25,
+      "level_new": 25,
       "changed": false,
       "evidence_quotes": []
     },
@@ -54,15 +40,17 @@
       "ip": "172.20.0.4",
       "service": "cve-2015-5254-activemq-1",
       "level_prev": 0,
-      "level_new": 33,
-      "changed": false,
-      "evidence_quotes": []
+      "level_new": 25,
+      "changed": true,
+      "evidence_quotes": [
+        "SURICATA Applayer Detect protocol only one direction"
+      ]
     },
     {
       "ip": "172.20.0.10",
       "service": "cve-2021-22205-gitlab-1-proxy",
       "level_prev": 0,
-      "level_new": 33,
+      "level_new": 0,
       "changed": false,
       "evidence_quotes": []
     },
@@ -70,92 +58,49 @@
       "ip": "172.20.0.3",
       "service": "s2-057-struts2-1",
       "level_prev": 0,
-      "level_new": 33,
+      "level_new": 0,
       "changed": false,
       "evidence_quotes": []
     }
   ],
   "inferred_attack_graph": {
-    "interesting": [],
     "edges": [
       {
         "from": "192.168.100.2",
         "to": "172.20.0.5",
-        "edge_id": "",
-        "vector": "scan",
         "phases": [
           {
             "phase": "scan",
             "evidence_quotes": [
+              "ET SCAN Suspicious inbound to mySQL port 3306",
+              "ET SCAN Suspicious inbound to MSSQL port 1433",
               "POSSBL PORT SCAN (NMAP -sS)",
-              "ET SCAN Suspicious inbound to MSSQL port 1433"
-            ],
-            "seen_in_epoch": 1
+              "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+            ]
           }
         ],
-        "first_seen": 1,
-        "last_seen": 1,
-        "current_phase": "scan"
+        "current_phase": "scan",
+        "vector": "scan"
       },
       {
         "from": "192.168.100.2",
         "to": "172.20.0.4",
-        "edge_id": "",
-        "vector": "scan",
         "phases": [
           {
             "phase": "scan",
             "evidence_quotes": [
+              "SURICATA Applayer Detect protocol only one direction",
+              "GET /showcase HTTP/1.1\r\nHost: 172.20.0.4:8161\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n",
               "POSSBL PORT SCAN (NMAP -sS)",
-              "ET SCAN Suspicious inbound to MSSQL port 1433",
-              "ET SCAN Potential SSH Scan"
-            ],
-            "seen_in_epoch": 1
+              "ET SCAN Suspicious inbound to mySQL port 3306"
+            ]
           }
         ],
-        "first_seen": 1,
-        "last_seen": 1,
-        "current_phase": "scan"
-      },
-      {
-        "from": "192.168.100.2",
-        "to": "172.20.0.10",
-        "edge_id": "",
-        "vector": "scan",
-        "phases": [
-          {
-            "phase": "scan",
-            "evidence_quotes": [
-              "POSSBL PORT SCAN (NMAP -sS)"
-            ],
-            "seen_in_epoch": 1
-          }
-        ],
-        "first_seen": 1,
-        "last_seen": 1,
-        "current_phase": "scan"
-      },
-      {
-        "from": "192.168.100.2",
-        "to": "172.20.0.3",
-        "edge_id": "",
-        "vector": "scan",
-        "phases": [
-          {
-            "phase": "scan",
-            "evidence_quotes": [
-              "POSSBL PORT SCAN (NMAP -sS)",
-              "ET SCAN Suspicious inbound to MSSQL port 1433"
-            ],
-            "seen_in_epoch": 1
-          }
-        ],
-        "first_seen": 1,
-        "last_seen": 1,
-        "current_phase": "scan"
+        "current_phase": "scan",
+        "vector": "scan"
       }
     ],
-    "edge_updates": []
+    "interesting": []
   },
   "service_epoch_context": [],
   "lockdown_activated": false

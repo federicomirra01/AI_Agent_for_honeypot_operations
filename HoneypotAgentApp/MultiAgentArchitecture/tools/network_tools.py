@@ -104,11 +104,8 @@ def get_docker_containers() -> Dict[str, Any]:
                 continue # Skip the firewall and attacker containers and backend containers
 
             info = {
-                'id': container.id[:12],  # Short ID
                 'service': container.name,
                 'image': container.image.tags[0] if container.image.tags else container.image.id[:12],
-                'status': container.status,
-                'created': container.attrs['Created'],
                 'ports': list(container.ports.keys()),
                 'ip': ip_address
             }

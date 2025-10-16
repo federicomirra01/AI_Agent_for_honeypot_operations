@@ -1,7 +1,7 @@
 from langchain_core.messages import AIMessage
 from configuration import state
 from prompts import exposure_manager_prompt
-from .node_utils import OPEN_AI_KEY, BOFFA_KEY, OPENROUTER_URL, DEEPSEEK_STRING
+from .node_utils import OPEN_AI_KEY
 from openai import BadRequestError
 import logging
 from pydantic import BaseModel, ValidationError
@@ -42,12 +42,7 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
     last_epochs = episodic_memory.get_recent_iterations(limit=20)
     exposure_registry = _extract_exposure_registry(last_epochs)
     logger.info(f"Exposure registry: {exposure_registry}")
-    prompt = exposure_manager_prompt.EXPLOITATION_PLAN_PROMPT.substitute(
-        available_honeypots=state.honeypot_config,
-        honeypots_exploitations=state.honeypots_exploitation,
-        exposure_registry=exposure_registry
-
-    )
+    
     size, version = model_config.split(':')
   
     model_name = f"gpt-{version}" if "4.1" in model_config or "5" in model_config else "deepseek"
@@ -67,11 +62,11 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
             valid_json = False
             while(not valid_json):
                 logger.info(f"Using gpt5 low effort")
-                schema = StructuredOutput.model_json_schema()
                 client = OpenAI()
-                raw = client.responses.create( # type: ignore
+                raw = client.responses.create( 
                     model="gpt-5",
-                    input=f"{prompt}\n\nReturn valid JSON matching this schema:\n{schema}",
+                    temperature=0.3,
+                    input=[messages],# type: ignore
                     reasoning={"effort":"low"},
                     
                 )
@@ -82,11 +77,13 @@ async def exposure_manager(state: state.HoneypotStateReact, config):
                 except ValidationError as e:
                     logger.error(f"Schema validation failed: \n{e}")
                     response = StructuredOutput(reasoning="", selected_honeypot={})
+            return
         elif version == '4.1':
             agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
             response: StructuredOutput = agent.chat.completions.create(
                 model=model_name,
                 response_model=StructuredOutput,
+                temperature=0.3,
                 messages=messages # type: ignore
             )
         

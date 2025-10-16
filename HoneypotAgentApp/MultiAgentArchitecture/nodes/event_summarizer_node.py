@@ -2,7 +2,7 @@ from langchain_core.messages import AIMessage
 from configuration import state
 from typing import Dict, Any, List
 from prompts import eve_summary_prompt, fast_summary_prompt
-from .node_utils import OPEN_AI_KEY, POLITO_CLUSTER_KEY, POLITO_URL, DEEPSEEK_STRING, BOFFA_KEY, OPENROUTER_URL
+from .node_utils import OPEN_AI_KEY, POLITO_CLUSTER_KEY, POLITO_URL, DEEPSEEK_STRING 
 from openai import BadRequestError 
 import logging
 from pydantic import BaseModel
@@ -27,7 +27,7 @@ def _build_prompt(configuration: str, state: state.HoneypotStateReact, last_summ
             last_exposed=last_exposed
             )
     else:
-        return eve_summary_prompt.SUMMARY_PROMPT_EVE.substitute(
+        return eve_summary_prompt.SUMMARIZER_PROMPT.substitute(
             last_summary=last_summary,
             last_exposed=last_exposed,
             security_events=state.security_events,
@@ -35,28 +35,23 @@ def _build_prompt(configuration: str, state: state.HoneypotStateReact, last_summ
         )
 
 def _build_model_config(model_config: str):
-    if "open" in model_config:
 
-        model_name = DEEPSEEK_STRING
-        version = '0.1'
-    
+    version = model_config.split(':')[1]
+    if "small" in model_config:
+        model_name = f"gpt-{version}-mini"
     else:
-        version = model_config.split(':')[1]
-        if "small" in model_config:
-            model_name = f"gpt-{version}-mini"
-        else:
-            model_name = f"gpt-{version}"
+        model_name = f"gpt-{version}"
     return model_name, version
 
 def _build_response(model_name: str, version: str, prompt: str, messages: List[Dict]) -> StructuredOutput:
     response = StructuredOutput(security_summary="")
     if version == '5':
         logger.info(f"Using gpt5 minimal effort")
-        schema = StructuredOutput.model_json_schema()
         client = OpenAI()
-        raw = client.responses.create( # type: ignore
+        raw = client.responses.create( 
             model=model_name,
-            input=f"{prompt}\n\nReturn valid JSON matching this schema:\n{schema}",
+            temperature=0.3,
+            input=messages,  # type: ignore
             reasoning={"effort":"minimal"},
             
         )
@@ -67,6 +62,7 @@ def _build_response(model_name: str, version: str, prompt: str, messages: List[D
         response: StructuredOutput = agent.chat.completions.create(
             model=model_name,
             response_model=StructuredOutput,
+            temperature=0.3,
             messages=messages # type: ignore
         )
     

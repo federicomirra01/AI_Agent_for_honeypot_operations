@@ -4,7 +4,7 @@
     "attacker_image": "attacker:latest",
     "attacker_container_name": "attackercontainer-attacker",
     "attack_duration": 240,
-    "monitor_accumulation_wait": 5,
+    "monitor_accumulation_wait": 10,
     "firewall_update_wait": 2,
     "between_epoch_wait": 1,
     "attacker_network": "192.168.100.0/24",
@@ -14,26 +14,26 @@
     "stop_on_lockdown": true,
     "clear_memory_between_epochs": false,
     "results_dir": "./benchmark/benchmark_results",
-    "dir_name": "2_vuln_2_decoy",
+    "dir_name": "test_1",
     "save_detailed_logs": true,
     "log_level": "INFO"
   },
-  "start_time": 1757779258.4714205,
-  "end_time": 1757780139.3408473,
-  "total_epochs": 13,
+  "start_time": 1760622658.9717946,
+  "end_time": 1760623560.1545763,
+  "total_epochs": 12,
   "epochs": [
     {
       "epoch_number": 1,
-      "start_time": 1757779258.4714205,
-      "end_time": 1757779324.3051994,
+      "start_time": 1760622658.9717946,
+      "end_time": 1760622698.0249064,
       "phase_timings": {
-        "initialization": 1757779258.4714465,
-        "attack_execution": 1757779258.4842813,
-        "monitoring_accumulation": 1757779275.168138,
-        "agent_analysis": 1757779280.1690023,
-        "firewall_update_wait": 1757779322.283153,
-        "metrics_collection": 1757779324.2846243,
-        "epoch_complete": 1757779324.304118
+        "initialization": 1760622658.9718313,
+        "attack_execution": 1760622658.9862227,
+        "monitoring_accumulation": 1760622676.028626,
+        "agent_analysis": 1760622686.029485,
+        "firewall_update_wait": 1760622696.0095532,
+        "metrics_collection": 1760622698.011112,
+        "epoch_complete": 1760622698.0237286
       },
       "services_detected": [],
       "services_successfully_exploited": [],
@@ -52,7 +52,7 @@
       "honeypots_exposed": {
         "ip": "172.20.0.5",
         "service": "cve-2014-6271-web-1",
-        "current_level": 33,
+        "current_level": 0,
         "epoch": 1
       },
       "honeypots_exploitation": [
@@ -60,177 +60,54 @@
           "ip": "172.20.0.5",
           "service": "cve-2014-6271-web-1",
           "level_prev": 0,
-          "level_new": 33,
-          "changed": true,
-          "evidence_quotes": [
-            "POSSBL PORT SCAN (NMAP -sS)",
-            "ET SCAN Suspicious inbound to MSSQL port 1433"
-          ]
+          "level_new": 0,
+          "changed": false,
+          "evidence_quotes": []
         },
         {
           "ip": "172.20.0.4",
           "service": "cve-2015-5254-activemq-1",
           "level_prev": 0,
-          "level_new": 33,
-          "changed": true,
-          "evidence_quotes": [
-            "POSSBL PORT SCAN (NMAP -sS)",
-            "ET SCAN Suspicious inbound to MSSQL port 1433",
-            "ET SCAN Potential SSH Scan"
-          ]
+          "level_new": 0,
+          "changed": false,
+          "evidence_quotes": []
         },
         {
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
           "level_prev": 0,
-          "level_new": 33,
-          "changed": true,
-          "evidence_quotes": [
-            "POSSBL PORT SCAN (NMAP -sS)"
-          ]
+          "level_new": 0,
+          "changed": false,
+          "evidence_quotes": []
         },
         {
           "ip": "172.20.0.3",
           "service": "s2-057-struts2-1",
           "level_prev": 0,
-          "level_new": 33,
-          "changed": true,
-          "evidence_quotes": [
-            "POSSBL PORT SCAN (NMAP -sS)",
-            "ET SCAN Suspicious inbound to MSSQL port 1433"
-          ]
+          "level_new": 0,
+          "changed": false,
+          "evidence_quotes": []
         }
       ],
       "inferred_attack_graph": {
-        "interesting": [],
-        "edges": [
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.5",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS)",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433"
-                ],
-                "seen_in_epoch": 1
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.4",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS)",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433",
-                  "ET SCAN Potential SSH Scan"
-                ],
-                "seen_in_epoch": 1
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.10",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 1
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.3",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS)",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433"
-                ],
-                "seen_in_epoch": 1
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          }
-        ],
-        "edge_updates": [
-          {
-            "edge_id": "",
-            "edge_id_hint": "192.168.100.2->172.20.0.5",
-            "added_phases": [
-              "scan"
-            ],
-            "seen_in_epoch": 1
-          },
-          {
-            "edge_id": "",
-            "edge_id_hint": "192.168.100.2->172.20.0.4",
-            "added_phases": [
-              "scan"
-            ],
-            "seen_in_epoch": 1
-          },
-          {
-            "edge_id": "",
-            "edge_id_hint": "192.168.100.2->172.20.0.10",
-            "added_phases": [
-              "scan"
-            ],
-            "seen_in_epoch": 1
-          },
-          {
-            "edge_id": "",
-            "edge_id_hint": "192.168.100.2->172.20.0.3",
-            "added_phases": [
-              "scan"
-            ],
-            "seen_in_epoch": 1
-          }
-        ]
+        "edges": [],
+        "interesting": []
       },
       "service_epoch_context": [],
       "lockdown_activated": false
     },
     {
       "epoch_number": 2,
-      "start_time": 1757779325.3131297,
-      "end_time": 1757779373.73437,
+      "start_time": 1760622699.0303798,
+      "end_time": 1760622752.2709973,
       "phase_timings": {
-        "initialization": 1757779325.3131776,
-        "attack_execution": 1757779325.3339725,
-        "monitoring_accumulation": 1757779341.1362813,
-        "agent_analysis": 1757779346.1372013,
-        "firewall_update_wait": 1757779371.7133708,
-        "metrics_collection": 1757779373.7156157,
-        "epoch_complete": 1757779373.732938
+        "initialization": 1760622699.0304024,
+        "attack_execution": 1760622699.0401855,
+        "monitoring_accumulation": 1760622714.6268146,
+        "agent_analysis": 1760622724.627364,
+        "firewall_update_wait": 1760622750.2597709,
+        "metrics_collection": 1760622752.260744,
+        "epoch_complete": 1760622752.270522
       },
       "services_detected": [
         "HTTP(172.20.0.5:80)"
@@ -244,7 +121,7 @@
       "honeypots_exposed": {
         "ip": "172.20.0.5",
         "service": "cve-2014-6271-web-1",
-        "current_level": 33,
+        "current_level": 25,
         "epoch": 2
       },
       "honeypots_exploitation": [
@@ -252,15 +129,17 @@
           "ip": "172.20.0.5",
           "service": "cve-2014-6271-web-1",
           "level_prev": 0,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": []
+          "level_new": 25,
+          "changed": true,
+          "evidence_quotes": [
+            "ET SCAN Suspicious inbound to mySQL port 3306"
+          ]
         },
         {
           "ip": "172.20.0.4",
           "service": "cve-2015-5254-activemq-1",
           "level_prev": 0,
-          "level_new": 33,
+          "level_new": 0,
           "changed": false,
           "evidence_quotes": []
         },
@@ -268,7 +147,7 @@
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
           "level_prev": 0,
-          "level_new": 33,
+          "level_new": 0,
           "changed": false,
           "evidence_quotes": []
         },
@@ -276,108 +155,48 @@
           "ip": "172.20.0.3",
           "service": "s2-057-struts2-1",
           "level_prev": 0,
-          "level_new": 33,
+          "level_new": 0,
           "changed": false,
           "evidence_quotes": []
         }
       ],
       "inferred_attack_graph": {
-        "interesting": [],
         "edges": [
           {
             "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS)",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433"
-                ],
-                "seen_in_epoch": 1
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.4",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
                   "ET SCAN Suspicious inbound to MSSQL port 1433",
-                  "ET SCAN Potential SSH Scan"
-                ],
-                "seen_in_epoch": 1
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.10",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 1
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.3",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
                   "POSSBL PORT SCAN (NMAP -sS)",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433"
-                ],
-                "seen_in_epoch": 1
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           }
         ],
-        "edge_updates": []
+        "interesting": []
       },
       "service_epoch_context": [],
       "lockdown_activated": false
     },
     {
       "epoch_number": 3,
-      "start_time": 1757779374.7425358,
-      "end_time": 1757779426.6539357,
+      "start_time": 1760622753.2744896,
+      "end_time": 1760622807.91457,
       "phase_timings": {
-        "initialization": 1757779374.742567,
-        "attack_execution": 1757779374.762933,
-        "monitoring_accumulation": 1757779390.5706217,
-        "agent_analysis": 1757779395.5712624,
-        "firewall_update_wait": 1757779424.6332736,
-        "metrics_collection": 1757779426.6355312,
-        "epoch_complete": 1757779426.6530545
+        "initialization": 1760622753.2745008,
+        "attack_execution": 1760622753.284641,
+        "monitoring_accumulation": 1760622768.8173437,
+        "agent_analysis": 1760622778.818988,
+        "firewall_update_wait": 1760622805.9048092,
+        "metrics_collection": 1760622807.9055293,
+        "epoch_complete": 1760622807.9139287
       },
       "services_detected": [
         "HTTP(172.20.0.5:80)"
@@ -405,15 +224,15 @@
       "honeypots_exposed": {
         "ip": "172.20.0.4",
         "service": "cve-2015-5254-activemq-1",
-        "current_level": 33,
+        "current_level": 0,
         "epoch": 3
       },
       "honeypots_exploitation": [
         {
           "ip": "172.20.0.5",
           "service": "cve-2014-6271-web-1",
-          "level_prev": 0,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
@@ -421,7 +240,7 @@
           "ip": "172.20.0.4",
           "service": "cve-2015-5254-activemq-1",
           "level_prev": 0,
-          "level_new": 33,
+          "level_new": 0,
           "changed": false,
           "evidence_quotes": []
         },
@@ -429,7 +248,7 @@
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
           "level_prev": 0,
-          "level_new": 33,
+          "level_new": 0,
           "changed": false,
           "evidence_quotes": []
         },
@@ -437,108 +256,48 @@
           "ip": "172.20.0.3",
           "service": "s2-057-struts2-1",
           "level_prev": 0,
-          "level_new": 33,
+          "level_new": 0,
           "changed": false,
           "evidence_quotes": []
         }
       ],
       "inferred_attack_graph": {
-        "interesting": [],
         "edges": [
           {
             "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS)",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433"
-                ],
-                "seen_in_epoch": 1
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.4",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
                   "ET SCAN Suspicious inbound to MSSQL port 1433",
-                  "ET SCAN Potential SSH Scan"
-                ],
-                "seen_in_epoch": 1
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.10",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 1
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.3",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
                   "POSSBL PORT SCAN (NMAP -sS)",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433"
-                ],
-                "seen_in_epoch": 1
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           }
         ],
-        "edge_updates": []
+        "interesting": []
       },
       "service_epoch_context": [],
       "lockdown_activated": false
     },
     {
       "epoch_number": 4,
-      "start_time": 1757779427.661371,
-      "end_time": 1757779480.854878,
+      "start_time": 1760622808.9175792,
+      "end_time": 1760622865.6135259,
       "phase_timings": {
-        "initialization": 1757779427.6613894,
-        "attack_execution": 1757779427.6757042,
-        "monitoring_accumulation": 1757779443.7836096,
-        "agent_analysis": 1757779448.7846596,
-        "firewall_update_wait": 1757779478.8296585,
-        "metrics_collection": 1757779480.8318832,
-        "epoch_complete": 1757779480.8537512
+        "initialization": 1760622808.9175887,
+        "attack_execution": 1760622808.9274595,
+        "monitoring_accumulation": 1760622824.7859597,
+        "agent_analysis": 1760622834.786909,
+        "firewall_update_wait": 1760622863.601522,
+        "metrics_collection": 1760622865.6025603,
+        "epoch_complete": 1760622865.6126294
       },
       "services_detected": [
         "UNKNOWN(172.20.0.4:61616)",
@@ -548,34 +307,20 @@
       "exploits_attempted": [],
       "flags_captured": [],
       "attack_success_rate": 0.0,
-      "firewall_rules_added": [
-        {
-          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.3 (tcp)"
-        },
-        {
-          "rules_added_current_epoch": "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
-        }
-      ],
-      "firewall_rules_removed": [
-        {
-          "rules_removed_current_epoch": [
-            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.4           192.168.100.0/24",
-            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4"
-          ]
-        }
-      ],
+      "firewall_rules_added": [],
+      "firewall_rules_removed": [],
       "honeypots_exposed": {
-        "ip": "172.20.0.3",
-        "service": "s2-057-struts2-1",
-        "current_level": 33,
+        "ip": "172.20.0.4",
+        "service": "cve-2015-5254-activemq-1",
+        "current_level": 25,
         "epoch": 4
       },
       "honeypots_exploitation": [
         {
           "ip": "172.20.0.5",
           "service": "cve-2014-6271-web-1",
-          "level_prev": 0,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
@@ -583,15 +328,17 @@
           "ip": "172.20.0.4",
           "service": "cve-2015-5254-activemq-1",
           "level_prev": 0,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": []
+          "level_new": 25,
+          "changed": true,
+          "evidence_quotes": [
+            "SURICATA Applayer Detect protocol only one direction"
+          ]
         },
         {
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
           "level_prev": 0,
-          "level_new": 33,
+          "level_new": 0,
           "changed": false,
           "evidence_quotes": []
         },
@@ -599,325 +346,65 @@
           "ip": "172.20.0.3",
           "service": "s2-057-struts2-1",
           "level_prev": 0,
-          "level_new": 33,
+          "level_new": 0,
           "changed": false,
           "evidence_quotes": []
         }
       ],
       "inferred_attack_graph": {
-        "interesting": [],
         "edges": [
           {
             "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
                   "POSSBL PORT SCAN (NMAP -sS)",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433"
-                ],
-                "seen_in_epoch": 1
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.4",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
+                  "SURICATA Applayer Detect protocol only one direction",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.4:8161\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n",
                   "POSSBL PORT SCAN (NMAP -sS)",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433",
-                  "ET SCAN Potential SSH Scan"
-                ],
-                "seen_in_epoch": 1
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.10",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 1
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.3",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "POSSBL PORT SCAN (NMAP -sS)",
-                  "ET SCAN Suspicious inbound to MSSQL port 1433"
-                ],
-                "seen_in_epoch": 1
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           }
         ],
-        "edge_updates": []
+        "interesting": []
       },
       "service_epoch_context": [],
       "lockdown_activated": false
     },
     {
       "epoch_number": 5,
-      "start_time": 1757779481.8596041,
-      "end_time": 1757779551.9753573,
+      "start_time": 1760622866.6179476,
+      "end_time": 1760622919.948167,
       "phase_timings": {
-        "initialization": 1757779481.8596249,
-        "attack_execution": 1757779481.8741517,
-        "monitoring_accumulation": 1757779499.8440113,
-        "agent_analysis": 1757779504.8450475,
-        "firewall_update_wait": 1757779549.9527333,
-        "metrics_collection": 1757779551.9542365,
-        "epoch_complete": 1757779551.974168
-      },
-      "services_detected": [
-        "HTTP-PROXY(172.20.0.3:8080)"
-      ],
-      "services_successfully_exploited": [],
-      "exploits_attempted": [],
-      "flags_captured": [],
-      "attack_success_rate": 0.0,
-      "firewall_rules_added": [
-        {
-          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.4 (tcp)"
-        },
-        {
-          "rules_added_current_epoch": "ALLOW 172.20.0.4 -> 192.168.100.0/24 (tcp)"
-        },
-        {
-          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.4 (tcp)"
-        },
-        {
-          "rules_added_current_epoch": "ALLOW 172.20.0.4 -> 192.168.100.0/24 (tcp)"
-        }
-      ],
-      "firewall_rules_removed": [
-        {
-          "rules_removed_current_epoch": [
-            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.3           192.168.100.0/24",
-            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3"
-          ]
-        }
-      ],
-      "honeypots_exposed": {
-        "ip": "172.20.0.4",
-        "service": "cve-2015-5254-activemq-1",
-        "current_level": 33,
-        "epoch": 5
-      },
-      "honeypots_exploitation": [
-        {
-          "ip": "172.20.0.5",
-          "service": "cve-2014-6271-web-1",
-          "level_prev": 33,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": []
-        },
-        {
-          "ip": "172.20.0.4",
-          "service": "cve-2015-5254-activemq-1",
-          "level_prev": 33,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": []
-        },
-        {
-          "ip": "172.20.0.10",
-          "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 33,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": []
-        },
-        {
-          "ip": "172.20.0.3",
-          "service": "s2-057-struts2-1",
-          "level_prev": 33,
-          "level_new": 100,
-          "changed": true,
-          "evidence_quotes": [
-            "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)",
-            "OGNL injection strings and HTTP GET for /struts2-showcase"
-          ]
-        }
-      ],
-      "inferred_attack_graph": {
-        "interesting": [
-          {
-            "ip": "172.20.0.3",
-            "service": "s2-057-struts2-1"
-          }
-        ],
-        "edges": [
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.5",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.4",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "repeated suspicious inbound probes to MySQL (tcp/3306) and MSSQL (tcp/1433) ports",
-                  "web crawl attempts using curl user-agent on tcp/8161",
-                  "Multiple Generic Protocol Command Decode alerts on tcp/61616 involving activeMQ honeypot (172.20.0.4)",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.10",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.3",
-            "edge_id": "",
-            "vector": "privilege-escalation",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/8080",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              },
-              {
-                "phase": "initial-access/rce",
-                "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)",
-                  "OGNL injection strings and HTTP GET for /struts2-showcase"
-                ],
-                "seen_in_epoch": 5
-              },
-              {
-                "phase": "privilege-escalation",
-                "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 5,
-            "current_phase": "privilege-escalation"
-          }
-        ],
-        "edge_updates": [
-          {
-            "edge_id": "",
-            "edge_id_hint": "192.168.100.2->172.20.0.3",
-            "added_phases": [
-              "initial-access/rce",
-              "privilege-escalation"
-            ],
-            "seen_in_epoch": 5
-          }
-        ]
-      },
-      "service_epoch_context": [
-        {
-          "service_id": "struts:172.20.0.3:8080",
-          "service": "struts",
-          "host": "172.20.0.3",
-          "port": "8080",
-          "path": "struts2-showcase",
-          "first_exposed_epoch": 5,
-          "local_epoch": 1,
-          "allowed_phase": "initial-access/rce"
-        }
-      ],
-      "lockdown_activated": false
-    },
-    {
-      "epoch_number": 6,
-      "start_time": 1757779552.9834266,
-      "end_time": 1757779608.5615673,
-      "phase_timings": {
-        "initialization": 1757779552.9834635,
-        "attack_execution": 1757779553.0009933,
-        "monitoring_accumulation": 1757779569.1477745,
-        "agent_analysis": 1757779574.1482909,
-        "firewall_update_wait": 1757779606.5419612,
-        "metrics_collection": 1757779608.5436573,
-        "epoch_complete": 1757779608.5602424
+        "initialization": 1760622866.6179574,
+        "attack_execution": 1760622866.6262577,
+        "monitoring_accumulation": 1760622882.6485367,
+        "agent_analysis": 1760622892.6498137,
+        "firewall_update_wait": 1760622917.9365375,
+        "metrics_collection": 1760622919.9375646,
+        "epoch_complete": 1760622919.9474623
       },
       "services_detected": [
         "PATROL-SNMP(172.20.0.4:8161)",
@@ -939,175 +426,104 @@
         {
           "rules_removed_current_epoch": [
             "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.4           192.168.100.0/24",
-            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4",
-            "REMOVED rule #3:    ACCEPT     tcp  --  172.20.0.4           192.168.100.0/24",
-            "REMOVED rule #4:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4"
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.4"
           ]
         }
       ],
       "honeypots_exposed": {
         "ip": "172.20.0.10",
         "service": "cve-2021-22205-gitlab-1-proxy",
-        "current_level": 33,
-        "epoch": 6
+        "current_level": 0,
+        "epoch": 5
       },
       "honeypots_exploitation": [
         {
           "ip": "172.20.0.5",
           "service": "cve-2014-6271-web-1",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
         {
           "ip": "172.20.0.4",
           "service": "cve-2015-5254-activemq-1",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
         {
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 0,
+          "level_new": 0,
           "changed": false,
           "evidence_quotes": []
         },
         {
           "ip": "172.20.0.3",
           "service": "s2-057-struts2-1",
-          "level_prev": 100,
-          "level_new": 100,
+          "level_prev": 0,
+          "level_new": 0,
           "changed": false,
           "evidence_quotes": []
         }
       ],
       "inferred_attack_graph": {
-        "interesting": [
-          {
-            "ip": "172.20.0.3",
-            "service": "s2-057-struts2-1"
-          }
-        ],
         "edges": [
           {
             "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.4",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "repeated suspicious inbound probes to MySQL (tcp/3306) and MSSQL (tcp/1433) ports",
-                  "web crawl attempts using curl user-agent on tcp/8161",
-                  "Multiple Generic Protocol Command Decode alerts on tcp/61616 involving activeMQ honeypot (172.20.0.4)",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "SURICATA Applayer Detect protocol only one direction",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.4:8161\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.10",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.3",
-            "edge_id": "",
-            "vector": "privilege-escalation",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/8080",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              },
-              {
-                "phase": "initial-access/rce",
-                "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)",
-                  "OGNL injection strings and HTTP GET for /struts2-showcase"
-                ],
-                "seen_in_epoch": 5
-              },
-              {
-                "phase": "privilege-escalation",
-                "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 5,
-            "current_phase": "privilege-escalation"
+            "current_phase": "scan",
+            "vector": "scan"
           }
         ],
-        "edge_updates": []
+        "interesting": []
       },
       "service_epoch_context": [],
       "lockdown_activated": false
     },
     {
-      "epoch_number": 7,
-      "start_time": 1757779609.5697796,
-      "end_time": 1757779681.7588887,
+      "epoch_number": 6,
+      "start_time": 1760622920.952341,
+      "end_time": 1760622973.4817283,
       "phase_timings": {
-        "initialization": 1757779609.5697997,
-        "attack_execution": 1757779609.585823,
-        "monitoring_accumulation": 1757779632.135172,
-        "agent_analysis": 1757779637.1360886,
-        "firewall_update_wait": 1757779679.736377,
-        "metrics_collection": 1757779681.7381604,
-        "epoch_complete": 1757779681.7580638
+        "initialization": 1760622920.9523594,
+        "attack_execution": 1760622920.9635634,
+        "monitoring_accumulation": 1760622944.4816222,
+        "agent_analysis": 1760622954.4825177,
+        "firewall_update_wait": 1760622971.4673371,
+        "metrics_collection": 1760622973.4680567,
+        "epoch_complete": 1760622973.4807596
       },
       "services_detected": [
         "HTTP(172.20.0.10:80)"
@@ -1121,150 +537,81 @@
       "honeypots_exposed": {
         "ip": "172.20.0.10",
         "service": "cve-2021-22205-gitlab-1-proxy",
-        "current_level": 33,
-        "epoch": 7
+        "current_level": 0,
+        "epoch": 6
       },
       "honeypots_exploitation": [
         {
           "ip": "172.20.0.5",
           "service": "cve-2014-6271-web-1",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
         {
           "ip": "172.20.0.4",
           "service": "cve-2015-5254-activemq-1",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
         {
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 0,
+          "level_new": 0,
           "changed": false,
           "evidence_quotes": []
         },
         {
           "ip": "172.20.0.3",
           "service": "s2-057-struts2-1",
-          "level_prev": 100,
-          "level_new": 100,
+          "level_prev": 0,
+          "level_new": 0,
           "changed": false,
           "evidence_quotes": []
         }
       ],
       "inferred_attack_graph": {
-        "interesting": [
-          {
-            "ip": "172.20.0.3",
-            "service": "s2-057-struts2-1"
-          }
-        ],
         "edges": [
           {
             "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.4",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "repeated suspicious inbound probes to MySQL (tcp/3306) and MSSQL (tcp/1433) ports",
-                  "web crawl attempts using curl user-agent on tcp/8161",
-                  "Multiple Generic Protocol Command Decode alerts on tcp/61616 involving activeMQ honeypot (172.20.0.4)",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "SURICATA Applayer Detect protocol only one direction",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.4:8161\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.10",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.3",
-            "edge_id": "",
-            "vector": "privilege-escalation",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/8080",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              },
-              {
-                "phase": "initial-access/rce",
-                "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)",
-                  "OGNL injection strings and HTTP GET for /struts2-showcase"
-                ],
-                "seen_in_epoch": 5
-              },
-              {
-                "phase": "privilege-escalation",
-                "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 5,
-            "current_phase": "privilege-escalation"
+            "current_phase": "scan",
+            "vector": "scan"
           }
         ],
-        "edge_updates": []
+        "interesting": []
       },
       "service_epoch_context": [
         {
@@ -1274,7 +621,7 @@
           "port": "80",
           "url": "http://172.20.0.10:80",
           "version": "13.12.3",
-          "first_exposed_epoch": 7,
+          "first_exposed_epoch": 6,
           "local_epoch": 1,
           "allowed_phase": "initial-access/rce"
         }
@@ -1282,17 +629,17 @@
       "lockdown_activated": false
     },
     {
-      "epoch_number": 8,
-      "start_time": 1757779682.7667575,
-      "end_time": 1757779756.3512774,
+      "epoch_number": 7,
+      "start_time": 1760622974.486297,
+      "end_time": 1760623059.3156598,
       "phase_timings": {
-        "initialization": 1757779682.7667835,
-        "attack_execution": 1757779682.7846925,
-        "monitoring_accumulation": 1757779711.226609,
-        "agent_analysis": 1757779716.2300098,
-        "firewall_update_wait": 1757779754.330031,
-        "metrics_collection": 1757779756.3316994,
-        "epoch_complete": 1757779756.3503678
+        "initialization": 1760622974.4863114,
+        "attack_execution": 1760622974.4969907,
+        "monitoring_accumulation": 1760623002.903161,
+        "agent_analysis": 1760623012.9041991,
+        "firewall_update_wait": 1760623057.3038204,
+        "metrics_collection": 1760623059.304557,
+        "epoch_complete": 1760623059.3149831
       },
       "services_detected": [
         "HTTP(172.20.0.10:80)"
@@ -1308,169 +655,123 @@
         }
       ],
       "attack_success_rate": 0.0,
-      "firewall_rules_added": [
-        {
-          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.5 (tcp)"
-        },
-        {
-          "rules_added_current_epoch": "ALLOW 172.20.0.5 -> 192.168.100.0/24 (tcp)"
-        }
-      ],
-      "firewall_rules_removed": [
-        {
-          "rules_removed_current_epoch": [
-            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
-            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10"
-          ]
-        }
-      ],
+      "firewall_rules_added": [],
+      "firewall_rules_removed": [],
       "honeypots_exposed": {
-        "ip": "172.20.0.5",
-        "service": "cve-2014-6271-web-1",
-        "current_level": 33,
-        "epoch": 8
+        "ip": "172.20.0.10",
+        "service": "cve-2021-22205-gitlab-1-proxy",
+        "current_level": 75,
+        "epoch": 7
       },
       "honeypots_exploitation": [
         {
           "ip": "172.20.0.5",
           "service": "cve-2014-6271-web-1",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
         {
           "ip": "172.20.0.4",
           "service": "cve-2015-5254-activemq-1",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
         {
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 33,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": []
+          "level_prev": 0,
+          "level_new": 75,
+          "changed": true,
+          "evidence_quotes": [
+            "User-Level File Discovery"
+          ]
         },
         {
           "ip": "172.20.0.3",
           "service": "s2-057-struts2-1",
-          "level_prev": 100,
-          "level_new": 100,
+          "level_prev": 0,
+          "level_new": 0,
           "changed": false,
           "evidence_quotes": []
         }
       ],
       "inferred_attack_graph": {
-        "interesting": [
-          {
-            "ip": "172.20.0.3",
-            "service": "s2-057-struts2-1"
-          }
-        ],
         "edges": [
           {
             "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.4",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "repeated suspicious inbound probes to MySQL (tcp/3306) and MSSQL (tcp/1433) ports",
-                  "web crawl attempts using curl user-agent on tcp/8161",
-                  "Multiple Generic Protocol Command Decode alerts on tcp/61616 involving activeMQ honeypot (172.20.0.4)",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "SURICATA Applayer Detect protocol only one direction",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.4:8161\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.10",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.3",
-            "edge_id": "",
-            "vector": "privilege-escalation",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/8080",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.10\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
               },
               {
                 "phase": "initial-access/rce",
                 "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)",
-                  "OGNL injection strings and HTTP GET for /struts2-showcase"
-                ],
-                "seen_in_epoch": 5
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ]
               },
               {
-                "phase": "privilege-escalation",
+                "phase": "data-exfil-user",
                 "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)"
-                ],
-                "seen_in_epoch": 5
+                  "User-Level File Discovery",
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 5,
-            "current_phase": "privilege-escalation"
+            "current_phase": "data-exfil-user",
+            "vector": "data-exfil-user"
           }
         ],
-        "edge_updates": []
+        "interesting": [
+          {
+            "ip": "172.20.0.10",
+            "service": "cve-2021-22205-gitlab-1-proxy"
+          }
+        ]
       },
       "service_epoch_context": [
         {
@@ -1480,7 +781,7 @@
           "port": "80",
           "url": "http://172.20.0.10:80",
           "version": "13.12.3",
-          "first_exposed_epoch": 7,
+          "first_exposed_epoch": 6,
           "local_epoch": 2,
           "allowed_phase": "data-exfil"
         }
@@ -1488,241 +789,17 @@
       "lockdown_activated": false
     },
     {
-      "epoch_number": 9,
-      "start_time": 1757779757.359198,
-      "end_time": 1757779827.1447434,
+      "epoch_number": 8,
+      "start_time": 1760623060.3193016,
+      "end_time": 1760623164.4989858,
       "phase_timings": {
-        "initialization": 1757779757.3592255,
-        "attack_execution": 1757779757.3750823,
-        "monitoring_accumulation": 1757779772.9879782,
-        "agent_analysis": 1757779777.988831,
-        "firewall_update_wait": 1757779825.1280951,
-        "metrics_collection": 1757779827.1292276,
-        "epoch_complete": 1757779827.1437418
-      },
-      "services_detected": [
-        "HTTP(172.20.0.5:80)"
-      ],
-      "services_successfully_exploited": [],
-      "exploits_attempted": [],
-      "flags_captured": [],
-      "attack_success_rate": 0.0,
-      "firewall_rules_added": [
-        {
-          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.10 (tcp)"
-        },
-        {
-          "rules_added_current_epoch": "ALLOW 172.20.0.10 -> 192.168.100.0/24 (tcp)"
-        }
-      ],
-      "firewall_rules_removed": [
-        {
-          "rules_removed_current_epoch": [
-            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.5           192.168.100.0/24",
-            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.5"
-          ]
-        }
-      ],
-      "honeypots_exposed": {
-        "ip": "172.20.0.10",
-        "service": "cve-2021-22205-gitlab-1-proxy",
-        "current_level": 66,
-        "epoch": 9
-      },
-      "honeypots_exploitation": [
-        {
-          "ip": "172.20.0.5",
-          "service": "cve-2014-6271-web-1",
-          "level_prev": 33,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": []
-        },
-        {
-          "ip": "172.20.0.4",
-          "service": "cve-2015-5254-activemq-1",
-          "level_prev": 33,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": []
-        },
-        {
-          "ip": "172.20.0.10",
-          "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 33,
-          "level_new": 66,
-          "changed": true,
-          "evidence_quotes": [
-            "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3",
-            "Reverse Shell Detected - No Job Control",
-            "find / -type f -name 'user.txt'",
-            "cat /home/ctf/user.txt",
-            "flag{user_access_gitlab}"
-          ]
-        },
-        {
-          "ip": "172.20.0.3",
-          "service": "s2-057-struts2-1",
-          "level_prev": 100,
-          "level_new": 100,
-          "changed": false,
-          "evidence_quotes": []
-        }
-      ],
-      "inferred_attack_graph": {
-        "interesting": [
-          {
-            "ip": "172.20.0.3",
-            "service": "s2-057-struts2-1"
-          },
-          {
-            "ip": "172.20.0.10",
-            "service": "cve-2021-22205-gitlab-1-proxy"
-          }
-        ],
-        "edges": [
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.5",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.4",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "repeated suspicious inbound probes to MySQL (tcp/3306) and MSSQL (tcp/1433) ports",
-                  "web crawl attempts using curl user-agent on tcp/8161",
-                  "Multiple Generic Protocol Command Decode alerts on tcp/61616 involving activeMQ honeypot (172.20.0.4)",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.10",
-            "edge_id": "",
-            "vector": "data-exfil-user",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              },
-              {
-                "phase": "initial-access/rce",
-                "evidence_quotes": [
-                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3",
-                  "Reverse Shell Detected - No Job Control"
-                ],
-                "seen_in_epoch": 9
-              },
-              {
-                "phase": "data-exfil-user",
-                "evidence_quotes": [
-                  "find / -type f -name 'user.txt'",
-                  "cat /home/ctf/user.txt",
-                  "flag{user_access_gitlab}"
-                ],
-                "seen_in_epoch": 9
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 9,
-            "current_phase": "data-exfil-user"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.3",
-            "edge_id": "",
-            "vector": "privilege-escalation",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/8080",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              },
-              {
-                "phase": "initial-access/rce",
-                "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)",
-                  "OGNL injection strings and HTTP GET for /struts2-showcase"
-                ],
-                "seen_in_epoch": 5
-              },
-              {
-                "phase": "privilege-escalation",
-                "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 5,
-            "current_phase": "privilege-escalation"
-          }
-        ],
-        "edge_updates": [
-          {
-            "edge_id": "",
-            "edge_id_hint": "192.168.100.2->172.20.0.10",
-            "added_phases": [
-              "initial-access/rce",
-              "data-exfil-user"
-            ],
-            "seen_in_epoch": 9
-          }
-        ]
-      },
-      "service_epoch_context": [],
-      "lockdown_activated": false
-    },
-    {
-      "epoch_number": 10,
-      "start_time": 1757779828.1490629,
-      "end_time": 1757779907.4039657,
-      "phase_timings": {
-        "initialization": 1757779828.1490793,
-        "attack_execution": 1757779828.1614642,
-        "monitoring_accumulation": 1757779861.6545897,
-        "agent_analysis": 1757779866.6557095,
-        "firewall_update_wait": 1757779905.3869643,
-        "metrics_collection": 1757779907.387872,
-        "epoch_complete": 1757779907.4029815
+        "initialization": 1760623060.31932,
+        "attack_execution": 1760623060.3281856,
+        "monitoring_accumulation": 1760623097.5847952,
+        "agent_analysis": 1760623107.5853293,
+        "firewall_update_wait": 1760623162.4806986,
+        "metrics_collection": 1760623164.4821465,
+        "epoch_complete": 1760623164.4977891
       },
       "services_detected": [
         "HTTP(172.20.0.10:80)"
@@ -1734,7 +811,385 @@
       "flags_captured": [
         {
           "service": "GITLAB",
+          "flag": "flag{user_access_gitlab}"
+        },
+        {
+          "service": "GITLAB",
           "flag": "flag{privileged_access_gitlab}"
+        }
+      ],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [
+        {
+          "rules_added_current_epoch": "ALLOW 192.168.100.0/24 -> 172.20.0.3 (tcp)"
+        },
+        {
+          "rules_added_current_epoch": "ALLOW 172.20.0.3 -> 192.168.100.0/24 (tcp)"
+        }
+      ],
+      "firewall_rules_removed": [
+        {
+          "rules_removed_current_epoch": [
+            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10"
+          ]
+        }
+      ],
+      "honeypots_exposed": {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1",
+        "current_level": 0,
+        "epoch": 8
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 25,
+          "level_new": 25,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 25,
+          "level_new": 25,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 75,
+          "level_new": 100,
+          "changed": true,
+          "evidence_quotes": [
+            "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\nfind / -perm -4000 -type f 2>/dev/null\n/bin/bash -p\ncat /root/root.txt\n"
+          ]
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 0,
+          "level_new": 0,
+          "changed": false,
+          "evidence_quotes": []
+        }
+      ],
+      "inferred_attack_graph": {
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
+              }
+            ],
+            "current_phase": "scan",
+            "vector": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "SURICATA Applayer Detect protocol only one direction",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.4:8161\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ]
+              }
+            ],
+            "current_phase": "scan",
+            "vector": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.10\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
+              },
+              {
+                "phase": "initial-access/rce",
+                "evidence_quotes": [
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ]
+              },
+              {
+                "phase": "data-exfil-user",
+                "evidence_quotes": [
+                  "User-Level File Discovery",
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\n"
+                ]
+              },
+              {
+                "phase": "privilege-escalation",
+                "evidence_quotes": [
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\nfind / -perm -4000 -type f 2>/dev/null\n/bin/bash -p\ncat /root/root.txt\n"
+                ]
+              },
+              {
+                "phase": "data-exfil-root",
+                "evidence_quotes": [
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\nfind / -perm -4000 -type f 2>/dev/null\n/bin/bash -p\ncat /root/root.txt\n"
+                ]
+              }
+            ],
+            "current_phase": "data-exfil-root",
+            "vector": "data-exfil-root"
+          }
+        ],
+        "interesting": [
+          {
+            "ip": "172.20.0.10",
+            "service": "cve-2021-22205-gitlab-1-proxy"
+          }
+        ]
+      },
+      "service_epoch_context": [
+        {
+          "service_id": "gitlab:172.20.0.10:80",
+          "service": "gitlab",
+          "host": "172.20.0.10",
+          "port": "80",
+          "url": "http://172.20.0.10:80",
+          "version": "13.12.3",
+          "first_exposed_epoch": 6,
+          "local_epoch": 3,
+          "allowed_phase": "privilege_escalation"
+        }
+      ],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 9,
+      "start_time": 1760623165.5032666,
+      "end_time": 1760623291.2165563,
+      "phase_timings": {
+        "initialization": 1760623165.5032825,
+        "attack_execution": 1760623165.5110605,
+        "monitoring_accumulation": 1760623184.5916283,
+        "agent_analysis": 1760623194.5924742,
+        "firewall_update_wait": 1760623289.195467,
+        "metrics_collection": 1760623291.196649,
+        "epoch_complete": 1760623291.215598
+      },
+      "services_detected": [
+        "HTTP-PROXY(172.20.0.3:8080)"
+      ],
+      "services_successfully_exploited": [],
+      "exploits_attempted": [],
+      "flags_captured": [],
+      "attack_success_rate": 0.0,
+      "firewall_rules_added": [],
+      "firewall_rules_removed": [],
+      "honeypots_exposed": {
+        "ip": "172.20.0.3",
+        "service": "s2-057-struts2-1",
+        "current_level": 50,
+        "epoch": 9
+      },
+      "honeypots_exploitation": [
+        {
+          "ip": "172.20.0.5",
+          "service": "cve-2014-6271-web-1",
+          "level_prev": 25,
+          "level_new": 25,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.4",
+          "service": "cve-2015-5254-activemq-1",
+          "level_prev": 25,
+          "level_new": 25,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy",
+          "level_prev": 100,
+          "level_new": 100,
+          "changed": false,
+          "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 0,
+          "level_new": 50,
+          "changed": true,
+          "evidence_quotes": [
+            "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI"
+          ]
+        }
+      ],
+      "inferred_attack_graph": {
+        "edges": [
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.5",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
+              }
+            ],
+            "current_phase": "scan",
+            "vector": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.4",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "SURICATA Applayer Detect protocol only one direction",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.4:8161\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ]
+              }
+            ],
+            "current_phase": "scan",
+            "vector": "scan"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.10",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.10\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
+              },
+              {
+                "phase": "initial-access/rce",
+                "evidence_quotes": [
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ]
+              },
+              {
+                "phase": "data-exfil-user",
+                "evidence_quotes": [
+                  "User-Level File Discovery",
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\n"
+                ]
+              },
+              {
+                "phase": "privilege-escalation",
+                "evidence_quotes": [
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\nfind / -perm -4000 -type f 2>/dev/null\n/bin/bash -p\ncat /root/root.txt\n"
+                ]
+              },
+              {
+                "phase": "data-exfil-root",
+                "evidence_quotes": [
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\nfind / -perm -4000 -type f 2>/dev/null\n/bin/bash -p\ncat /root/root.txt\n"
+                ]
+              }
+            ],
+            "current_phase": "data-exfil-root",
+            "vector": "data-exfil-root"
+          },
+          {
+            "from": "192.168.100.2",
+            "to": "172.20.0.3",
+            "phases": [
+              {
+                "phase": "scan",
+                "evidence_quotes": [
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "POSSBL PORT SCAN (NMAP -sS)"
+                ]
+              },
+              {
+                "phase": "initial-access/rce",
+                "evidence_quotes": [
+                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt",
+                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt"
+                ]
+              }
+            ],
+            "current_phase": "initial-access/rce",
+            "vector": "initial-access/rce"
+          }
+        ],
+        "interesting": [
+          {
+            "ip": "172.20.0.10",
+            "service": "cve-2021-22205-gitlab-1-proxy"
+          }
+        ]
+      },
+      "service_epoch_context": [
+        {
+          "service_id": "struts:172.20.0.3:8080",
+          "service": "struts",
+          "host": "172.20.0.3",
+          "port": "8080",
+          "path": "struts2-showcase",
+          "first_exposed_epoch": 9,
+          "local_epoch": 1,
+          "allowed_phase": "initial-access/rce"
+        }
+      ],
+      "lockdown_activated": false
+    },
+    {
+      "epoch_number": 10,
+      "start_time": 1760623292.2206361,
+      "end_time": 1760623417.948772,
+      "phase_timings": {
+        "initialization": 1760623292.2206476,
+        "attack_execution": 1760623292.231417,
+        "monitoring_accumulation": 1760623315.8128836,
+        "agent_analysis": 1760623325.8136046,
+        "firewall_update_wait": 1760623415.928441,
+        "metrics_collection": 1760623417.929933,
+        "epoch_complete": 1760623417.948049
+      },
+      "services_detected": [
+        "HTTP-PROXY(172.20.0.3:8080)"
+      ],
+      "services_successfully_exploited": [
+        "STRUTS"
+      ],
+      "exploits_attempted": [],
+      "flags_captured": [
+        {
+          "service": "STRUTS",
+          "flag": "flag{privileged_access_struts}"
         }
       ],
       "attack_success_rate": 0.0,
@@ -1749,225 +1204,199 @@
       "firewall_rules_removed": [
         {
           "rules_removed_current_epoch": [
-            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.10          192.168.100.0/24",
-            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.10"
+            "REMOVED rule #1:    ACCEPT     tcp  --  172.20.0.3           192.168.100.0/24",
+            "REMOVED rule #2:    ACCEPT     tcp  --  192.168.100.0/24     172.20.0.3"
           ]
         }
       ],
       "honeypots_exposed": {
         "ip": "172.20.0.5",
         "service": "cve-2014-6271-web-1",
-        "current_level": 33,
+        "current_level": 25,
         "epoch": 10
       },
       "honeypots_exploitation": [
         {
           "ip": "172.20.0.5",
           "service": "cve-2014-6271-web-1",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
         {
           "ip": "172.20.0.4",
           "service": "cve-2015-5254-activemq-1",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
         {
           "ip": "172.20.0.10",
           "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 66,
-          "level_new": 100,
-          "changed": true,
-          "evidence_quotes": [
-            "multiple new privilege escalation attempts on tcp/45520 at 172.20.0.10 with SUID Binary Enumeration and bash -p execution, marked severity 1."
-          ]
-        },
-        {
-          "ip": "172.20.0.3",
-          "service": "s2-057-struts2-1",
           "level_prev": 100,
           "level_new": 100,
           "changed": false,
           "evidence_quotes": []
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1",
+          "level_prev": 50,
+          "level_new": 100,
+          "changed": true,
+          "evidence_quotes": [
+            "find / -type f -name 'root.txt' 2>/dev/null\\ncat /root/root.txt\\n"
+          ]
         }
       ],
       "inferred_attack_graph": {
-        "interesting": [
-          {
-            "ip": "172.20.0.3",
-            "service": "s2-057-struts2-1"
-          },
-          {
-            "ip": "172.20.0.10",
-            "service": "cve-2021-22205-gitlab-1-proxy"
-          }
-        ],
         "edges": [
           {
             "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.4",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "repeated suspicious inbound probes to MySQL (tcp/3306) and MSSQL (tcp/1433) ports",
-                  "web crawl attempts using curl user-agent on tcp/8161",
-                  "Multiple Generic Protocol Command Decode alerts on tcp/61616 involving activeMQ honeypot (172.20.0.4)",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "SURICATA Applayer Detect protocol only one direction",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.4:8161\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.10",
-            "edge_id": "",
-            "vector": "privilege-escalation",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.10\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
               },
               {
                 "phase": "initial-access/rce",
                 "evidence_quotes": [
-                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3",
-                  "Reverse Shell Detected - No Job Control"
-                ],
-                "seen_in_epoch": 9
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ]
               },
               {
                 "phase": "data-exfil-user",
                 "evidence_quotes": [
-                  "find / -type f -name 'user.txt'",
-                  "cat /home/ctf/user.txt",
-                  "flag{user_access_gitlab}"
-                ],
-                "seen_in_epoch": 9
+                  "User-Level File Discovery",
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\n"
+                ]
               },
               {
                 "phase": "privilege-escalation",
                 "evidence_quotes": [
-                  "multiple new privilege escalation attempts on tcp/45520 at 172.20.0.10 with SUID Binary Enumeration and bash -p execution, marked severity 1."
-                ],
-                "seen_in_epoch": 10
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\nfind / -perm -4000 -type f 2>/dev/null\n/bin/bash -p\ncat /root/root.txt\n"
+                ]
+              },
+              {
+                "phase": "data-exfil-root",
+                "evidence_quotes": [
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\nfind / -perm -4000 -type f 2>/dev/null\n/bin/bash -p\ncat /root/root.txt\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 10,
-            "current_phase": "privilege-escalation"
+            "current_phase": "data-exfil-root",
+            "vector": "data-exfil-root"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.3",
-            "edge_id": "",
-            "vector": "privilege-escalation",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/8080",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
                   "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                ]
               },
               {
                 "phase": "initial-access/rce",
                 "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)",
-                  "OGNL injection strings and HTTP GET for /struts2-showcase"
-                ],
-                "seen_in_epoch": 5
+                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt",
+                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt"
+                ]
               },
               {
-                "phase": "privilege-escalation",
+                "phase": "data-exfil-root",
                 "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)"
-                ],
-                "seen_in_epoch": 5
+                  "find / -type f -name 'root.txt' 2>/dev/null\\ncat /root/root.txt\\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 5,
-            "current_phase": "privilege-escalation"
+            "current_phase": "data-exfil-root",
+            "vector": "data-exfil-root"
           }
         ],
-        "edge_updates": [
+        "interesting": [
           {
-            "edge_id": "",
-            "edge_id_hint": "192.168.100.2->172.20.0.10",
-            "added_phases": [
-              "privilege-escalation"
-            ],
-            "seen_in_epoch": 10
+            "ip": "172.20.0.10",
+            "service": "cve-2021-22205-gitlab-1-proxy"
+          },
+          {
+            "ip": "172.20.0.3",
+            "service": "s2-057-struts2-1"
           }
         ]
       },
       "service_epoch_context": [
         {
-          "service_id": "gitlab:172.20.0.10:80",
-          "service": "gitlab",
-          "host": "172.20.0.10",
-          "port": "80",
-          "url": "http://172.20.0.10:80",
-          "version": "13.12.3",
-          "first_exposed_epoch": 7,
-          "local_epoch": 4,
-          "allowed_phase": "privilege_escalation"
+          "service_id": "struts:172.20.0.3:8080",
+          "service": "struts",
+          "host": "172.20.0.3",
+          "port": "8080",
+          "path": "struts2-showcase",
+          "first_exposed_epoch": 9,
+          "local_epoch": 2,
+          "allowed_phase": "data-exfil"
         }
       ],
       "lockdown_activated": false
     },
     {
       "epoch_number": 11,
-      "start_time": 1757779908.4086692,
-      "end_time": 1757779973.938801,
+      "start_time": 1760623418.9519796,
+      "end_time": 1760623495.2460127,
       "phase_timings": {
-        "initialization": 1757779908.4086862,
-        "attack_execution": 1757779908.4221156,
-        "monitoring_accumulation": 1757779924.0747573,
-        "agent_analysis": 1757779929.0752988,
-        "firewall_update_wait": 1757779971.912529,
-        "metrics_collection": 1757779973.9154654,
-        "epoch_complete": 1757779973.93772
+        "initialization": 1760623418.9519897,
+        "attack_execution": 1760623418.9604208,
+        "monitoring_accumulation": 1760623434.5534487,
+        "agent_analysis": 1760623444.5544417,
+        "firewall_update_wait": 1760623493.232945,
+        "metrics_collection": 1760623495.2337146,
+        "epoch_complete": 1760623495.2452252
       },
       "services_detected": [
         "HTTP(172.20.0.5:80)"
@@ -1995,23 +1424,23 @@
       "honeypots_exposed": {
         "ip": "172.20.0.4",
         "service": "cve-2015-5254-activemq-1",
-        "current_level": 33,
+        "current_level": 25,
         "epoch": 11
       },
       "honeypots_exploitation": [
         {
           "ip": "172.20.0.5",
           "service": "cve-2014-6271-web-1",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
         {
           "ip": "172.20.0.4",
           "service": "cve-2015-5254-activemq-1",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
@@ -2033,358 +1462,140 @@
         }
       ],
       "inferred_attack_graph": {
-        "interesting": [
-          {
-            "ip": "172.20.0.3",
-            "service": "s2-057-struts2-1"
-          },
-          {
-            "ip": "172.20.0.10",
-            "service": "cve-2021-22205-gitlab-1-proxy"
-          }
-        ],
         "edges": [
           {
             "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.4",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "repeated suspicious inbound probes to MySQL (tcp/3306) and MSSQL (tcp/1433) ports",
-                  "web crawl attempts using curl user-agent on tcp/8161",
-                  "Multiple Generic Protocol Command Decode alerts on tcp/61616 involving activeMQ honeypot (172.20.0.4)",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "SURICATA Applayer Detect protocol only one direction",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.4:8161\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.10",
-            "edge_id": "",
-            "vector": "privilege-escalation",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.10\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
               },
               {
                 "phase": "initial-access/rce",
                 "evidence_quotes": [
-                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3",
-                  "Reverse Shell Detected - No Job Control"
-                ],
-                "seen_in_epoch": 9
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ]
               },
               {
                 "phase": "data-exfil-user",
                 "evidence_quotes": [
-                  "find / -type f -name 'user.txt'",
-                  "cat /home/ctf/user.txt",
-                  "flag{user_access_gitlab}"
-                ],
-                "seen_in_epoch": 9
+                  "User-Level File Discovery",
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\n"
+                ]
               },
               {
                 "phase": "privilege-escalation",
                 "evidence_quotes": [
-                  "multiple new privilege escalation attempts on tcp/45520 at 172.20.0.10 with SUID Binary Enumeration and bash -p execution, marked severity 1."
-                ],
-                "seen_in_epoch": 10
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\nfind / -perm -4000 -type f 2>/dev/null\n/bin/bash -p\ncat /root/root.txt\n"
+                ]
+              },
+              {
+                "phase": "data-exfil-root",
+                "evidence_quotes": [
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\nfind / -perm -4000 -type f 2>/dev/null\n/bin/bash -p\ncat /root/root.txt\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 10,
-            "current_phase": "privilege-escalation"
+            "current_phase": "data-exfil-root",
+            "vector": "data-exfil-root"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.3",
-            "edge_id": "",
-            "vector": "privilege-escalation",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/8080",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
                   "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                ]
               },
               {
                 "phase": "initial-access/rce",
                 "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)",
-                  "OGNL injection strings and HTTP GET for /struts2-showcase"
-                ],
-                "seen_in_epoch": 5
+                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt",
+                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt"
+                ]
               },
               {
-                "phase": "privilege-escalation",
+                "phase": "data-exfil-root",
                 "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)"
-                ],
-                "seen_in_epoch": 5
+                  "find / -type f -name 'root.txt' 2>/dev/null\\ncat /root/root.txt\\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 5,
-            "current_phase": "privilege-escalation"
+            "current_phase": "data-exfil-root",
+            "vector": "data-exfil-root"
           }
         ],
-        "edge_updates": []
+        "interesting": [
+          {
+            "ip": "172.20.0.10",
+            "service": "cve-2021-22205-gitlab-1-proxy"
+          },
+          {
+            "ip": "172.20.0.3",
+            "service": "s2-057-struts2-1"
+          }
+        ]
       },
       "service_epoch_context": [],
       "lockdown_activated": false
     },
     {
       "epoch_number": 12,
-      "start_time": 1757779974.9457166,
-      "end_time": 1757780056.7564275,
+      "start_time": 1760623496.249676,
+      "end_time": 1760623560.1545763,
       "phase_timings": {
-        "initialization": 1757779974.9457397,
-        "attack_execution": 1757779974.968882,
-        "monitoring_accumulation": 1757779991.1369362,
-        "agent_analysis": 1757779996.138308,
-        "firewall_update_wait": 1757780054.7274318,
-        "metrics_collection": 1757780056.7305782,
-        "epoch_complete": 1757780056.755514
-      },
-      "services_detected": [
-        "PATROL-SNMP(172.20.0.4:8161)",
-        "UNKNOWN(172.20.0.4:61616)"
-      ],
-      "services_successfully_exploited": [],
-      "exploits_attempted": [],
-      "flags_captured": [],
-      "attack_success_rate": 0.0,
-      "firewall_rules_added": [],
-      "firewall_rules_removed": [],
-      "honeypots_exposed": {
-        "ip": "172.20.0.4",
-        "service": "cve-2015-5254-activemq-1",
-        "current_level": 33,
-        "epoch": 12
-      },
-      "honeypots_exploitation": [
-        {
-          "ip": "172.20.0.5",
-          "service": "cve-2014-6271-web-1",
-          "level_prev": 33,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": []
-        },
-        {
-          "ip": "172.20.0.4",
-          "service": "cve-2015-5254-activemq-1",
-          "level_prev": 33,
-          "level_new": 33,
-          "changed": false,
-          "evidence_quotes": []
-        },
-        {
-          "ip": "172.20.0.10",
-          "service": "cve-2021-22205-gitlab-1-proxy",
-          "level_prev": 100,
-          "level_new": 100,
-          "changed": false,
-          "evidence_quotes": []
-        },
-        {
-          "ip": "172.20.0.3",
-          "service": "s2-057-struts2-1",
-          "level_prev": 100,
-          "level_new": 100,
-          "changed": false,
-          "evidence_quotes": []
-        }
-      ],
-      "inferred_attack_graph": {
-        "interesting": [
-          {
-            "ip": "172.20.0.3",
-            "service": "s2-057-struts2-1"
-          },
-          {
-            "ip": "172.20.0.10",
-            "service": "cve-2021-22205-gitlab-1-proxy"
-          }
-        ],
-        "edges": [
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.5",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.4",
-            "edge_id": "",
-            "vector": "scan",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "repeated suspicious inbound probes to MySQL (tcp/3306) and MSSQL (tcp/1433) ports",
-                  "web crawl attempts using curl user-agent on tcp/8161",
-                  "Multiple Generic Protocol Command Decode alerts on tcp/61616 involving activeMQ honeypot (172.20.0.4)",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.10",
-            "edge_id": "",
-            "vector": "privilege-escalation",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              },
-              {
-                "phase": "initial-access/rce",
-                "evidence_quotes": [
-                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3",
-                  "Reverse Shell Detected - No Job Control"
-                ],
-                "seen_in_epoch": 9
-              },
-              {
-                "phase": "data-exfil-user",
-                "evidence_quotes": [
-                  "find / -type f -name 'user.txt'",
-                  "cat /home/ctf/user.txt",
-                  "flag{user_access_gitlab}"
-                ],
-                "seen_in_epoch": 9
-              },
-              {
-                "phase": "privilege-escalation",
-                "evidence_quotes": [
-                  "multiple new privilege escalation attempts on tcp/45520 at 172.20.0.10 with SUID Binary Enumeration and bash -p execution, marked severity 1."
-                ],
-                "seen_in_epoch": 10
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 10,
-            "current_phase": "privilege-escalation"
-          },
-          {
-            "from": "192.168.100.2",
-            "to": "172.20.0.3",
-            "edge_id": "",
-            "vector": "privilege-escalation",
-            "phases": [
-              {
-                "phase": "scan",
-                "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/8080",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
-              },
-              {
-                "phase": "initial-access/rce",
-                "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)",
-                  "OGNL injection strings and HTTP GET for /struts2-showcase"
-                ],
-                "seen_in_epoch": 5
-              },
-              {
-                "phase": "privilege-escalation",
-                "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)"
-                ],
-                "seen_in_epoch": 5
-              }
-            ],
-            "first_seen": 1,
-            "last_seen": 5,
-            "current_phase": "privilege-escalation"
-          }
-        ],
-        "edge_updates": []
-      },
-      "service_epoch_context": [],
-      "lockdown_activated": false
-    },
-    {
-      "epoch_number": 13,
-      "start_time": 1757780057.7671702,
-      "end_time": 1757780139.3408473,
-      "phase_timings": {
-        "initialization": 1757780057.767204,
-        "attack_execution": 1757780057.7843764,
-        "monitoring_accumulation": 1757780073.9031363,
-        "agent_analysis": 1757780078.9040716,
-        "firewall_update_wait": 1757780137.3156617,
-        "metrics_collection": 1757780139.3176258,
-        "epoch_complete": 1757780139.3390949
+        "initialization": 1760623496.2496996,
+        "attack_execution": 1760623496.2629936,
+        "monitoring_accumulation": 1760623512.0137694,
+        "agent_analysis": 1760623522.0147133,
+        "firewall_update_wait": 1760623558.1441839,
+        "metrics_collection": 1760623560.1450663,
+        "epoch_complete": 1760623560.1539583
       },
       "services_detected": [
         "PATROL-SNMP(172.20.0.4:8161)",
@@ -2406,23 +1617,23 @@
       "honeypots_exposed": {
         "ip": "none",
         "service": "none",
-        "current_level": 0,
-        "epoch": 13
+        "current_level": 100,
+        "epoch": 12
       },
       "honeypots_exploitation": [
         {
           "ip": "172.20.0.5",
           "service": "cve-2014-6271-web-1",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
         {
           "ip": "172.20.0.4",
           "service": "cve-2015-5254-activemq-1",
-          "level_prev": 33,
-          "level_new": 33,
+          "level_prev": 25,
+          "level_new": 25,
           "changed": false,
           "evidence_quotes": []
         },
@@ -2444,164 +1655,148 @@
         }
       ],
       "inferred_attack_graph": {
-        "interesting": [
-          {
-            "ip": "172.20.0.3",
-            "service": "s2-057-struts2-1"
-          },
-          {
-            "ip": "172.20.0.10",
-            "service": "cve-2021-22205-gitlab-1-proxy"
-          }
-        ],
         "edges": [
           {
             "from": "192.168.100.2",
             "to": "172.20.0.5",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.4",
-            "edge_id": "",
-            "vector": "scan",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "repeated suspicious inbound probes to MySQL (tcp/3306) and MSSQL (tcp/1433) ports",
-                  "web crawl attempts using curl user-agent on tcp/8161",
-                  "Multiple Generic Protocol Command Decode alerts on tcp/61616 involving activeMQ honeypot (172.20.0.4)",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "SURICATA Applayer Detect protocol only one direction",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.4:8161\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to mySQL port 3306"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 1,
-            "current_phase": "scan"
+            "current_phase": "scan",
+            "vector": "scan"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.10",
-            "edge_id": "",
-            "vector": "privilege-escalation",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/80",
-                  "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
+                  "POSSBL PORT SCAN (NMAP -sS)",
+                  "ET SCAN Suspicious inbound to MSSQL port 1433",
+                  "GET /showcase HTTP/1.1\r\nHost: 172.20.0.10\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+                ]
               },
               {
                 "phase": "initial-access/rce",
                 "evidence_quotes": [
-                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3",
-                  "Reverse Shell Detected - No Job Control"
-                ],
-                "seen_in_epoch": 9
+                  "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+                ]
               },
               {
                 "phase": "data-exfil-user",
                 "evidence_quotes": [
-                  "find / -type f -name 'user.txt'",
-                  "cat /home/ctf/user.txt",
-                  "flag{user_access_gitlab}"
-                ],
-                "seen_in_epoch": 9
+                  "User-Level File Discovery",
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\n"
+                ]
               },
               {
                 "phase": "privilege-escalation",
                 "evidence_quotes": [
-                  "multiple new privilege escalation attempts on tcp/45520 at 172.20.0.10 with SUID Binary Enumeration and bash -p execution, marked severity 1."
-                ],
-                "seen_in_epoch": 10
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\nfind / -perm -4000 -type f 2>/dev/null\n/bin/bash -p\ncat /root/root.txt\n"
+                ]
+              },
+              {
+                "phase": "data-exfil-root",
+                "evidence_quotes": [
+                  "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\nfind / -perm -4000 -type f 2>/dev/null\n/bin/bash -p\ncat /root/root.txt\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 10,
-            "current_phase": "privilege-escalation"
+            "current_phase": "data-exfil-root",
+            "vector": "data-exfil-root"
           },
           {
             "from": "192.168.100.2",
             "to": "172.20.0.3",
-            "edge_id": "",
-            "vector": "privilege-escalation",
             "phases": [
               {
                 "phase": "scan",
                 "evidence_quotes": [
-                  "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                  "web crawl attempts using curl user-agent on tcp/8080",
+                  "ET SCAN Suspicious inbound to mySQL port 3306",
                   "POSSBL PORT SCAN (NMAP -sS)"
-                ],
-                "seen_in_epoch": 5
+                ]
               },
               {
                 "phase": "initial-access/rce",
                 "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)",
-                  "OGNL injection strings and HTTP GET for /struts2-showcase"
-                ],
-                "seen_in_epoch": 5
+                  "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                  "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                  "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt",
+                  "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt"
+                ]
               },
               {
-                "phase": "privilege-escalation",
+                "phase": "data-exfil-root",
                 "evidence_quotes": [
-                  "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)"
-                ],
-                "seen_in_epoch": 5
+                  "find / -type f -name 'root.txt' 2>/dev/null\\ncat /root/root.txt\\n"
+                ]
               }
             ],
-            "first_seen": 1,
-            "last_seen": 5,
-            "current_phase": "privilege-escalation"
+            "current_phase": "data-exfil-root",
+            "vector": "data-exfil-root"
           }
         ],
-        "edge_updates": []
+        "interesting": [
+          {
+            "ip": "172.20.0.10",
+            "service": "cve-2021-22205-gitlab-1-proxy"
+          },
+          {
+            "ip": "172.20.0.3",
+            "service": "s2-057-struts2-1"
+          }
+        ]
       },
       "service_epoch_context": [],
       "lockdown_activated": true
     }
   ],
   "summary": {
-    "total_flags_captured": 2,
-    "average_epoch_duration": 66.82941667850201,
+    "total_flags_captured": 4,
+    "average_epoch_duration": 74.17823076248169,
     "lockdown_triggered": true,
-    "lockdown_epoch": 13,
+    "lockdown_epoch": 12,
     "final_honeypots_exploitation": [
       {
         "ip": "172.20.0.5",
         "service": "cve-2014-6271-web-1",
-        "level_prev": 33,
-        "level_new": 33,
+        "level_prev": 25,
+        "level_new": 25,
         "changed": false,
         "evidence_quotes": []
       },
       {
         "ip": "172.20.0.4",
         "service": "cve-2015-5254-activemq-1",
-        "level_prev": 33,
-        "level_new": 33,
+        "level_prev": 25,
+        "level_new": 25,
         "changed": false,
         "evidence_quotes": []
       },
@@ -2623,140 +1818,124 @@
       }
     ],
     "final_inferred_attack_graph": {
-      "interesting": [
-        {
-          "ip": "172.20.0.3",
-          "service": "s2-057-struts2-1"
-        },
-        {
-          "ip": "172.20.0.10",
-          "service": "cve-2021-22205-gitlab-1-proxy"
-        }
-      ],
       "edges": [
         {
           "from": "192.168.100.2",
           "to": "172.20.0.5",
-          "edge_id": "",
-          "vector": "scan",
           "phases": [
             {
               "phase": "scan",
               "evidence_quotes": [
-                "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                "web crawl attempts using curl user-agent on tcp/80",
-                "POSSBL PORT SCAN (NMAP -sS)"
-              ],
-              "seen_in_epoch": 5
+                "ET SCAN Suspicious inbound to mySQL port 3306",
+                "ET SCAN Suspicious inbound to MSSQL port 1433",
+                "POSSBL PORT SCAN (NMAP -sS)",
+                "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+              ]
             }
           ],
-          "first_seen": 1,
-          "last_seen": 1,
-          "current_phase": "scan"
+          "current_phase": "scan",
+          "vector": "scan"
         },
         {
           "from": "192.168.100.2",
           "to": "172.20.0.4",
-          "edge_id": "",
-          "vector": "scan",
           "phases": [
             {
               "phase": "scan",
               "evidence_quotes": [
-                "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                "repeated suspicious inbound probes to MySQL (tcp/3306) and MSSQL (tcp/1433) ports",
-                "web crawl attempts using curl user-agent on tcp/8161",
-                "Multiple Generic Protocol Command Decode alerts on tcp/61616 involving activeMQ honeypot (172.20.0.4)",
-                "POSSBL PORT SCAN (NMAP -sS)"
-              ],
-              "seen_in_epoch": 5
+                "SURICATA Applayer Detect protocol only one direction",
+                "GET /showcase HTTP/1.1\r\nHost: 172.20.0.4:8161\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n",
+                "POSSBL PORT SCAN (NMAP -sS)",
+                "ET SCAN Suspicious inbound to mySQL port 3306"
+              ]
             }
           ],
-          "first_seen": 1,
-          "last_seen": 1,
-          "current_phase": "scan"
+          "current_phase": "scan",
+          "vector": "scan"
         },
         {
           "from": "192.168.100.2",
           "to": "172.20.0.10",
-          "edge_id": "",
-          "vector": "privilege-escalation",
           "phases": [
             {
               "phase": "scan",
               "evidence_quotes": [
-                "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                "web crawl attempts using curl user-agent on tcp/80",
-                "POSSBL PORT SCAN (NMAP -sS)"
-              ],
-              "seen_in_epoch": 5
+                "ET SCAN Suspicious inbound to mySQL port 3306",
+                "POSSBL PORT SCAN (NMAP -sS)",
+                "ET SCAN Suspicious inbound to MSSQL port 1433",
+                "GET /showcase HTTP/1.1\r\nHost: 172.20.0.10\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+              ]
             },
             {
               "phase": "initial-access/rce",
               "evidence_quotes": [
-                "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3",
-                "Reverse Shell Detected - No Job Control"
-              ],
-              "seen_in_epoch": 9
+                "ET WEB_SERVER Possible bash shell piped to dev tcp Inbound to WebServer M3"
+              ]
             },
             {
               "phase": "data-exfil-user",
               "evidence_quotes": [
-                "find / -type f -name 'user.txt'",
-                "cat /home/ctf/user.txt",
-                "flag{user_access_gitlab}"
-              ],
-              "seen_in_epoch": 9
+                "User-Level File Discovery",
+                "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\n"
+              ]
             },
             {
               "phase": "privilege-escalation",
               "evidence_quotes": [
-                "multiple new privilege escalation attempts on tcp/45520 at 172.20.0.10 with SUID Binary Enumeration and bash -p execution, marked severity 1."
-              ],
-              "seen_in_epoch": 10
+                "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\nfind / -perm -4000 -type f 2>/dev/null\n/bin/bash -p\ncat /root/root.txt\n"
+              ]
+            },
+            {
+              "phase": "data-exfil-root",
+              "evidence_quotes": [
+                "find / -type f -name 'user.txt' 2>/dev/null\ncat /home/ctf/user.txt\nfind / -perm -4000 -type f 2>/dev/null\n/bin/bash -p\ncat /root/root.txt\n"
+              ]
             }
           ],
-          "first_seen": 1,
-          "last_seen": 10,
-          "current_phase": "privilege-escalation"
+          "current_phase": "data-exfil-root",
+          "vector": "data-exfil-root"
         },
         {
           "from": "192.168.100.2",
           "to": "172.20.0.3",
-          "edge_id": "",
-          "vector": "privilege-escalation",
           "phases": [
             {
               "phase": "scan",
               "evidence_quotes": [
-                "mass Nmap SYN scans on a wide array of ports across all honeypots",
-                "web crawl attempts using curl user-agent on tcp/8080",
+                "ET SCAN Suspicious inbound to mySQL port 3306",
                 "POSSBL PORT SCAN (NMAP -sS)"
-              ],
-              "seen_in_epoch": 5
+              ]
             },
             {
               "phase": "initial-access/rce",
               "evidence_quotes": [
-                "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)",
-                "OGNL injection strings and HTTP GET for /struts2-showcase"
-              ],
-              "seen_in_epoch": 5
+                "ET EXPLOIT Apache Struts Possible OGNL Java Exec In URI",
+                "ET WEB_SERVER Possible Apache Struts OGNL in Dynamic Action",
+                "ET WEB_SPECIFIC_APPS Apache Struts ognl inbound OGNL injection remote code execution attempt",
+                "ET WEB_SPECIFIC_APPS Apache Struts java.lang inbound OGNL injection remote code execution attempt"
+              ]
             },
             {
-              "phase": "privilege-escalation",
+              "phase": "data-exfil-root",
               "evidence_quotes": [
-                "High-severity alerts indicating attempted user and administrator privilege gain with Apache Struts OGNL remote code execution exploiting struts2-showcase (tcp/8080) on 172.20.0.3 (s2-057-struts2-1)"
-              ],
-              "seen_in_epoch": 5
+                "find / -type f -name 'root.txt' 2>/dev/null\\ncat /root/root.txt\\n"
+              ]
             }
           ],
-          "first_seen": 1,
-          "last_seen": 5,
-          "current_phase": "privilege-escalation"
+          "current_phase": "data-exfil-root",
+          "vector": "data-exfil-root"
         }
       ],
-      "edge_updates": []
+      "interesting": [
+        {
+          "ip": "172.20.0.10",
+          "service": "cve-2021-22205-gitlab-1-proxy"
+        },
+        {
+          "ip": "172.20.0.3",
+          "service": "s2-057-struts2-1"
+        }
+      ]
     }
   }
 }

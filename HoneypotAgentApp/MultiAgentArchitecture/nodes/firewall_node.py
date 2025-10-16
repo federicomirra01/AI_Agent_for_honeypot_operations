@@ -1,7 +1,7 @@
 from langchain_core.messages import AIMessage
 from configuration import state
 from prompts import firewall_executor_prompt
-from .node_utils import OPEN_AI_KEY, BOFFA_KEY, OPENROUTER_URL, DEEPSEEK_STRING
+from .node_utils import OPEN_AI_KEY
 from tools import firewall_tools
 import logging
 from pydantic import BaseModel, Field, ValidationError
@@ -65,30 +65,32 @@ async def firewall_executor(state:state.HoneypotStateReact, config):
     try:
         response = StructuredOutput()
         if version == '5':
-            # valid_json = False
-            # while(not valid_json):
-            #     logger.info(f"Using gpt5 minimal effort")
-            #     schema = StructuredOutput.model_json_schema()
-            #     client = OpenAI()
-            #     raw = client.responses.create( # type: ignore
-            #         model="gpt-5",
-            #         input=f"{prompt}\n\nReturn valid JSON matching this schema:\n{schema}",
-            #         reasoning={"effort":"minimal"},
+            valid_json = False
+            while(not valid_json):
+                logger.info(f"Using gpt5 minimal effort")
+                schema = StructuredOutput.model_json_schema()
+                client = OpenAI()
+                raw = client.responses.create( 
+                    model="gpt-5",
+                    temperature=0.3,
+                    input=[messages], # type: ignore
+                    reasoning={"effort":"minimal"},
                     
-            #     )
-            #     content = raw.output_text
-            #     try:
-            #         response = StructuredOutput.model_validate_json(content)
-            #         valid_json = True
-            #     except ValidationError as e:
-            #         logger.error(f"Schema validation failed: \n{e}")
-            #         response = StructuredOutput()
+                )
+                content = raw.output_text
+                try:
+                    response = StructuredOutput.model_validate_json(content)
+                    valid_json = True
+                except ValidationError as e:
+                    logger.error(f"Schema validation failed: \n{e}")
+                    response = StructuredOutput()
             return 
         elif version == "4.1":
             agent = instructor.from_openai(OpenAI(api_key=OPEN_AI_KEY))
             response: StructuredOutput = agent.chat.completions.create(
                 model=model_name,
                 response_model=StructuredOutput,
+                temperature=0.3,
                 messages=messages # type: ignore
             )
         logger.info(f"Response: {response}")

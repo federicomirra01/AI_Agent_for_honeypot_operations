@@ -1,15 +1,15 @@
 {
   "epoch_number": 2,
-  "start_time": 1757779325.3131297,
-  "end_time": 1757779373.73437,
+  "start_time": 1760622699.0303798,
+  "end_time": 1760622752.2709973,
   "phase_timings": {
-    "initialization": 1757779325.3131776,
-    "attack_execution": 1757779325.3339725,
-    "monitoring_accumulation": 1757779341.1362813,
-    "agent_analysis": 1757779346.1372013,
-    "firewall_update_wait": 1757779371.7133708,
-    "metrics_collection": 1757779373.7156157,
-    "epoch_complete": 1757779373.732938
+    "initialization": 1760622699.0304024,
+    "attack_execution": 1760622699.0401855,
+    "monitoring_accumulation": 1760622714.6268146,
+    "agent_analysis": 1760622724.627364,
+    "firewall_update_wait": 1760622750.2597709,
+    "metrics_collection": 1760622752.260744,
+    "epoch_complete": 1760622752.270522
   },
   "services_detected": [
     "HTTP(172.20.0.5:80)"
@@ -23,7 +23,7 @@
   "honeypots_exposed": {
     "ip": "172.20.0.5",
     "service": "cve-2014-6271-web-1",
-    "current_level": 33,
+    "current_level": 25,
     "epoch": 2
   },
   "honeypots_exploitation": [
@@ -31,15 +31,17 @@
       "ip": "172.20.0.5",
       "service": "cve-2014-6271-web-1",
       "level_prev": 0,
-      "level_new": 33,
-      "changed": false,
-      "evidence_quotes": []
+      "level_new": 25,
+      "changed": true,
+      "evidence_quotes": [
+        "ET SCAN Suspicious inbound to mySQL port 3306"
+      ]
     },
     {
       "ip": "172.20.0.4",
       "service": "cve-2015-5254-activemq-1",
       "level_prev": 0,
-      "level_new": 33,
+      "level_new": 0,
       "changed": false,
       "evidence_quotes": []
     },
@@ -47,7 +49,7 @@
       "ip": "172.20.0.10",
       "service": "cve-2021-22205-gitlab-1-proxy",
       "level_prev": 0,
-      "level_new": 33,
+      "level_new": 0,
       "changed": false,
       "evidence_quotes": []
     },
@@ -55,92 +57,32 @@
       "ip": "172.20.0.3",
       "service": "s2-057-struts2-1",
       "level_prev": 0,
-      "level_new": 33,
+      "level_new": 0,
       "changed": false,
       "evidence_quotes": []
     }
   ],
   "inferred_attack_graph": {
-    "interesting": [],
     "edges": [
       {
         "from": "192.168.100.2",
         "to": "172.20.0.5",
-        "edge_id": "",
-        "vector": "scan",
         "phases": [
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN (NMAP -sS)",
-              "ET SCAN Suspicious inbound to MSSQL port 1433"
-            ],
-            "seen_in_epoch": 1
-          }
-        ],
-        "first_seen": 1,
-        "last_seen": 1,
-        "current_phase": "scan"
-      },
-      {
-        "from": "192.168.100.2",
-        "to": "172.20.0.4",
-        "edge_id": "",
-        "vector": "scan",
-        "phases": [
-          {
-            "phase": "scan",
-            "evidence_quotes": [
-              "POSSBL PORT SCAN (NMAP -sS)",
+              "ET SCAN Suspicious inbound to mySQL port 3306",
               "ET SCAN Suspicious inbound to MSSQL port 1433",
-              "ET SCAN Potential SSH Scan"
-            ],
-            "seen_in_epoch": 1
-          }
-        ],
-        "first_seen": 1,
-        "last_seen": 1,
-        "current_phase": "scan"
-      },
-      {
-        "from": "192.168.100.2",
-        "to": "172.20.0.10",
-        "edge_id": "",
-        "vector": "scan",
-        "phases": [
-          {
-            "phase": "scan",
-            "evidence_quotes": [
-              "POSSBL PORT SCAN (NMAP -sS)"
-            ],
-            "seen_in_epoch": 1
-          }
-        ],
-        "first_seen": 1,
-        "last_seen": 1,
-        "current_phase": "scan"
-      },
-      {
-        "from": "192.168.100.2",
-        "to": "172.20.0.3",
-        "edge_id": "",
-        "vector": "scan",
-        "phases": [
-          {
-            "phase": "scan",
-            "evidence_quotes": [
               "POSSBL PORT SCAN (NMAP -sS)",
-              "ET SCAN Suspicious inbound to MSSQL port 1433"
-            ],
-            "seen_in_epoch": 1
+              "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+            ]
           }
         ],
-        "first_seen": 1,
-        "last_seen": 1,
-        "current_phase": "scan"
+        "current_phase": "scan",
+        "vector": "scan"
       }
     ],
-    "edge_updates": []
+    "interesting": []
   },
   "service_epoch_context": [],
   "lockdown_activated": false

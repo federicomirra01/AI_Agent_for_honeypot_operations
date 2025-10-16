@@ -1,15 +1,15 @@
 {
   "epoch_number": 3,
-  "start_time": 1757779374.7425358,
-  "end_time": 1757779426.6539357,
+  "start_time": 1760622753.2744896,
+  "end_time": 1760622807.91457,
   "phase_timings": {
-    "initialization": 1757779374.742567,
-    "attack_execution": 1757779374.762933,
-    "monitoring_accumulation": 1757779390.5706217,
-    "agent_analysis": 1757779395.5712624,
-    "firewall_update_wait": 1757779424.6332736,
-    "metrics_collection": 1757779426.6355312,
-    "epoch_complete": 1757779426.6530545
+    "initialization": 1760622753.2745008,
+    "attack_execution": 1760622753.284641,
+    "monitoring_accumulation": 1760622768.8173437,
+    "agent_analysis": 1760622778.818988,
+    "firewall_update_wait": 1760622805.9048092,
+    "metrics_collection": 1760622807.9055293,
+    "epoch_complete": 1760622807.9139287
   },
   "services_detected": [
     "HTTP(172.20.0.5:80)"
@@ -37,15 +37,15 @@
   "honeypots_exposed": {
     "ip": "172.20.0.4",
     "service": "cve-2015-5254-activemq-1",
-    "current_level": 33,
+    "current_level": 0,
     "epoch": 3
   },
   "honeypots_exploitation": [
     {
       "ip": "172.20.0.5",
       "service": "cve-2014-6271-web-1",
-      "level_prev": 0,
-      "level_new": 33,
+      "level_prev": 25,
+      "level_new": 25,
       "changed": false,
       "evidence_quotes": []
     },
@@ -53,7 +53,7 @@
       "ip": "172.20.0.4",
       "service": "cve-2015-5254-activemq-1",
       "level_prev": 0,
-      "level_new": 33,
+      "level_new": 0,
       "changed": false,
       "evidence_quotes": []
     },
@@ -61,7 +61,7 @@
       "ip": "172.20.0.10",
       "service": "cve-2021-22205-gitlab-1-proxy",
       "level_prev": 0,
-      "level_new": 33,
+      "level_new": 0,
       "changed": false,
       "evidence_quotes": []
     },
@@ -69,92 +69,32 @@
       "ip": "172.20.0.3",
       "service": "s2-057-struts2-1",
       "level_prev": 0,
-      "level_new": 33,
+      "level_new": 0,
       "changed": false,
       "evidence_quotes": []
     }
   ],
   "inferred_attack_graph": {
-    "interesting": [],
     "edges": [
       {
         "from": "192.168.100.2",
         "to": "172.20.0.5",
-        "edge_id": "",
-        "vector": "scan",
         "phases": [
           {
             "phase": "scan",
             "evidence_quotes": [
-              "POSSBL PORT SCAN (NMAP -sS)",
-              "ET SCAN Suspicious inbound to MSSQL port 1433"
-            ],
-            "seen_in_epoch": 1
-          }
-        ],
-        "first_seen": 1,
-        "last_seen": 1,
-        "current_phase": "scan"
-      },
-      {
-        "from": "192.168.100.2",
-        "to": "172.20.0.4",
-        "edge_id": "",
-        "vector": "scan",
-        "phases": [
-          {
-            "phase": "scan",
-            "evidence_quotes": [
-              "POSSBL PORT SCAN (NMAP -sS)",
+              "ET SCAN Suspicious inbound to mySQL port 3306",
               "ET SCAN Suspicious inbound to MSSQL port 1433",
-              "ET SCAN Potential SSH Scan"
-            ],
-            "seen_in_epoch": 1
-          }
-        ],
-        "first_seen": 1,
-        "last_seen": 1,
-        "current_phase": "scan"
-      },
-      {
-        "from": "192.168.100.2",
-        "to": "172.20.0.10",
-        "edge_id": "",
-        "vector": "scan",
-        "phases": [
-          {
-            "phase": "scan",
-            "evidence_quotes": [
-              "POSSBL PORT SCAN (NMAP -sS)"
-            ],
-            "seen_in_epoch": 1
-          }
-        ],
-        "first_seen": 1,
-        "last_seen": 1,
-        "current_phase": "scan"
-      },
-      {
-        "from": "192.168.100.2",
-        "to": "172.20.0.3",
-        "edge_id": "",
-        "vector": "scan",
-        "phases": [
-          {
-            "phase": "scan",
-            "evidence_quotes": [
               "POSSBL PORT SCAN (NMAP -sS)",
-              "ET SCAN Suspicious inbound to MSSQL port 1433"
-            ],
-            "seen_in_epoch": 1
+              "GET /showcase HTTP/1.1\r\nHost: 172.20.0.5\r\nUser-Agent: curl/8.15.0\r\nAccept: */*\r\n\r\n"
+            ]
           }
         ],
-        "first_seen": 1,
-        "last_seen": 1,
-        "current_phase": "scan"
+        "current_phase": "scan",
+        "vector": "scan"
       }
     ],
-    "edge_updates": []
+    "interesting": []
   },
   "service_epoch_context": [],
   "lockdown_activated": false
